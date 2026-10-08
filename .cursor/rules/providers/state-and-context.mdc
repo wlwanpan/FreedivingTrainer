@@ -1,0 +1,24 @@
+---
+description: App providers, formatting, and warning titles
+globs: providers/**
+alwaysApply: false
+---
+
+# State & Context
+
+Providers wrap the app from `app/_layout.tsx`:
+
+- `providers/sql.tsx` — database access and live queries for settings and sessions
+- `providers/formatter.tsx` — date and duration formatting
+- `providers/warning_modal.tsx` — warnings and confirmations
+- `providers/subscription.tsx` — RevenueCat lifetime access and the free session limit
+
+Format dates and durations through `providers/formatter` before rendering them.
+
+When surfacing an error, use a title from `constants/errors.ts`:
+
+- Short Breath! — bad user input
+- Lost the Line! — read or query failures
+- Off the Line! — navigation errors
+- Broke the Surface! — unexpected failures
+- Unexpected Drop! — SQL errors

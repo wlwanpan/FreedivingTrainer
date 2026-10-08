@@ -1,0 +1,15 @@
+---
+description: Expo Router navigation structure
+globs: app/**
+alwaysApply: false
+---
+
+# Navigation
+
+File-based routing via Expo Router. `app/_layout.tsx` opens SQLite, runs migrations, and mounts providers.
+
+- `app/(tabs)/` — Tables and Sessions
+- `app/onboarding.tsx` — first launch, creates the settings row
+- `app/settings/` — table configuration and purchases
+- `app/paywall.tsx` — RevenueCat lifetime access
+- `app/warning.tsx` — warning and confirmation sheet

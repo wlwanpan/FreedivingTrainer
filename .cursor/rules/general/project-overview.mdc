@@ -1,0 +1,17 @@
+---
+description: Project overview and key dependencies for Freediving & CO2 Tables
+alwaysApply: true
+---
+
+# Project Overview
+
+**Freediving & CO2 Tables** — an Expo/React Native iOS app for CO2 and O2 static-apnea tables. Sessions are stored on device.
+
+## Key Dependencies
+
+- **Expo 54** / React Native 0.81.5 / React 19 (new architecture enabled)
+- **styled-components/native** for component styles
+- **Drizzle ORM** + Expo SQLite for persistence
+- **RevenueCat** (`react-native-purchases`) for the lifetime access purchase
+
+Web is unsupported. iOS is the shipping target.
