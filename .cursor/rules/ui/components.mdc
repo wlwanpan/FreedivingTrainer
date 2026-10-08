@@ -1,0 +1,18 @@
+---
+description: React component structure and styled-components conventions
+globs: components/**, hooks/**, design/**, app/**
+alwaysApply: false
+---
+
+# UI
+
+- Name the top-most parent element `Wrapper`.
+- Style with `styled-components/native`. Prefix styled components with `S` (`const SButton = styled(Button)`).
+- Take colors and font sizes from `design/styles.ts`. Shared layout primitives live in `design/styled.ts`.
+- One component function per file.
+- If a screen holds more than a short handler of domain logic, move that logic into `hooks/`.
+- Use single quotes.
+
+## In-flight actions
+
+Show a small spinner and disable the control that started the request. `Button` already swaps its label for a spinner when `loading` is set.

@@ -1,0 +1,20 @@
+---
+description: Development commands for running, linting, and database tooling
+alwaysApply: false
+---
+
+# Commands
+
+```bash
+npm run dev          # Start with APP_VARIANT=development
+npm start            # Start Expo
+npm run ios          # Native iOS build
+npm run lint
+npm run typecheck
+
+npx drizzle-kit generate
+```
+
+Inspect SQLite in a dev client with Shift+M, then `expo-drizzle-studio-plugin`.
+
+iOS is the shipping target. Do not treat web bundle failures as bugs.

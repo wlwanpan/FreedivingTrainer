@@ -1,0 +1,16 @@
+---
+description: SQLite data layer, Drizzle ORM conventions, and migration rules
+globs: db/**, drizzle/**
+alwaysApply: false
+---
+
+# Data Layer
+
+SQLite via Drizzle ORM. Schema is in `db/schema.ts`.
+
+- `db/queries.ts` — reads
+- `db/inserts.ts` — inserts
+- `db/updates.ts` — updates
+- `db/deletions.ts` — deletes
+
+Migrations live in `drizzle/` and run on startup from `app/_layout.tsx`. After a schema change, run `npx drizzle-kit generate`. Do not edit migration files by hand. Renames go in a new migration.
