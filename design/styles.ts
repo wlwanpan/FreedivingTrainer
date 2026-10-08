@@ -22,6 +22,7 @@ export const Colors: Record<string, ColorHex> = {
 } as const
 
 export const FontSizes = {
+  Timer: '64px',
   XXLarge: '36px',
   XLarge: '26px',
   Large: '20px',

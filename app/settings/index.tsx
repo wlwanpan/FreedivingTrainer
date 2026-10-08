@@ -7,6 +7,7 @@ import { DateFormats } from '@/constants/dates'
 import { ErrorTitles } from '@/constants/errors'
 import { Colors, FontSizes } from '@/design/styles'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
+import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
@@ -18,6 +19,7 @@ import { styled } from 'styled-components/native'
 export default function SettingsScreen() {
   const router = useRouter()
   const { settings } = useSQLContext()
+  const { formatSeconds } = useFormatterContext()
   const subscription = useSubscriptionContext()
   const { showWarning } = useWarningModal()
   const updateSetting = useUpdateSetting()
@@ -52,6 +54,21 @@ export default function SettingsScreen() {
           onChange={(value) => { void updateSetting({ breatheUpSeconds: value }) }}
         />
 
+        <SSection>Baseline</SSection>
+        <SBaseline>
+          {settings.baselineMaxHoldSeconds == null
+            ? 'No maximum hold yet. A baseline test sizes the CO2 and O2 tables.'
+            : `Maximum ${formatSeconds(settings.baselineMaxHoldSeconds)}${
+              settings.baselineContractionSeconds == null
+                ? ''
+                : ` · contraction ${formatSeconds(settings.baselineContractionSeconds)}`
+            }`}
+        </SBaseline>
+        <Button
+          title={settings.baselineMaxHoldSeconds == null ? 'Take baseline test' : 'Retake baseline test'}
+          onPress={() => router.push('/baseline')}
+        />
+
         <SSection>CO2 table</SSection>
         <SettingsStepper
           label='Hold'
@@ -59,7 +76,7 @@ export default function SettingsScreen() {
           value={settings.co2HoldSeconds}
           step={15}
           min={15}
-          max={300}
+          max={900}
           onChange={(value) => { void updateSetting({ co2HoldSeconds: value }) }}
         />
         <SettingsStepper
@@ -68,7 +85,7 @@ export default function SettingsScreen() {
           value={settings.co2RestStartSeconds}
           step={15}
           min={15}
-          max={300}
+          max={900}
           onChange={(value) => { void updateSetting({ co2RestStartSeconds: value }) }}
         />
         <SettingsStepper
@@ -77,7 +94,7 @@ export default function SettingsScreen() {
           value={settings.co2RestStepSeconds}
           step={5}
           min={0}
-          max={60}
+          max={120}
           onChange={(value) => { void updateSetting({ co2RestStepSeconds: value }) }}
         />
         <SettingsStepper
@@ -95,7 +112,7 @@ export default function SettingsScreen() {
           value={settings.o2HoldStartSeconds}
           step={15}
           min={15}
-          max={300}
+          max={900}
           onChange={(value) => { void updateSetting({ o2HoldStartSeconds: value }) }}
         />
         <SettingsStepper
@@ -113,7 +130,7 @@ export default function SettingsScreen() {
           value={settings.o2RestSeconds}
           step={15}
           min={15}
-          max={300}
+          max={900}
           onChange={(value) => { void updateSetting({ o2RestSeconds: value }) }}
         />
         <SettingsStepper
@@ -166,6 +183,14 @@ const SSection = styled.Text`
   letter-spacing: 0.4px;
   text-transform: uppercase;
   color: ${Colors.GreyPrimary};
+`
+
+const SBaseline = styled.Text`
+  margin-top: 8px;
+  margin-bottom: 12px;
+  font-size: ${FontSizes.Medium};
+  line-height: 22px;
+  color: ${Colors.DeepPrimary};
 `
 
 const SChoiceRow = styled.View`

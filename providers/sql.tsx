@@ -34,6 +34,9 @@ export const DefaultSettings: Setting = {
   o2HoldStepSeconds: 15,
   o2RestSeconds: 120,
   o2Rounds: 8,
+  baselineMaxHoldSeconds: null,
+  baselineContractionSeconds: null,
+  baselineTestedAt: null,
   createdAt: null,
   updatedAt: null,
 }
