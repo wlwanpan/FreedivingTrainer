@@ -14,6 +14,9 @@ export const settings = sqliteTable('settings', {
   o2HoldStepSeconds: integer('o2_hold_step_seconds').notNull().default(15),
   o2RestSeconds: integer('o2_rest_seconds').notNull().default(120),
   o2Rounds: integer('o2_rounds').notNull().default(8),
+  baselineMaxHoldSeconds: integer('baseline_max_hold_seconds'),
+  baselineContractionSeconds: integer('baseline_contraction_seconds'),
+  baselineTestedAt: integer('baseline_tested_at', { mode: 'timestamp' }),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }),
 })

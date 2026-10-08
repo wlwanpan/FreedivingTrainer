@@ -20,13 +20,21 @@ export default function TabLayout() {
     if (sql.updatedAt === undefined) return
 
     if (onboardedAt === null) {
-      if (pathname !== '/onboarding') {
+      const finishingOnboarding = pathname === '/onboarding'
+        || pathname === '/baseline'
+        || pathname === '/warning'
+      if (!finishingOnboarding) {
         router.replace('/onboarding')
       }
       return
     }
 
-    if (!subscription.loading && subscription.shouldTriggerPaywall && pathname !== '/paywall') {
+    if (
+      !subscription.loading
+      && subscription.shouldTriggerPaywall
+      && pathname !== '/paywall'
+      && pathname !== '/baseline'
+    ) {
       router.replace('/paywall')
     }
   }, [

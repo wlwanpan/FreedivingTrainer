@@ -22,6 +22,10 @@ export default function OnboardingScreen() {
     }
   }, [onboardedAt, router])
 
+  const startTest = () => {
+    router.push({ pathname: '/baseline', params: { entry: 'onboarding' } })
+  }
+
   const start = async () => {
     setInFlight(true)
     const now = new Date()
@@ -40,21 +44,28 @@ export default function OnboardingScreen() {
     <WrapperScreen>
       <SBody>
         <SEyebrow>FreedivingTrainer</SEyebrow>
-        <STitle>Freediving & CO2 Tables</STitle>
+        <STitle>Find your baseline</STitle>
         <SCopy>
-          Build CO2 and O2 tables for static apnea. Logged sessions stay on this device.
+          One maximum static hold sizes your CO2 and O2 tables. Mark the first contraction, then keep holding until you need to breathe.
         </SCopy>
         <SCard>
           <SCardTitle>CO2</SCardTitle>
-          <SCardCopy>The hold stays the same. Rest gets shorter each round.</SCardCopy>
+          <SCardCopy>The hold is set to 50–60% of that maximum. Rest starts long and steps down each round.</SCardCopy>
         </SCard>
         <SCard>
           <SCardTitle>O2</SCardTitle>
-          <SCardCopy>The hold gets longer. Rest stays the same.</SCardCopy>
+          <SCardCopy>Holds climb toward about 80% of your maximum. Rest stays long enough to recover.</SCardCopy>
         </SCard>
       </SBody>
       <SFooter>
-        <Button title='Start training' onPress={() => { void start() }} loading={inFlight} />
+        <Button title='Start baseline test' onPress={startTest} disabled={inFlight} />
+        <Button
+          title='Use default tables'
+          onPress={() => { void start() }}
+          loading={inFlight}
+          defaultBGColor={Colors.GreyPrimary}
+          pressedBGColor={Colors.GreyFaded}
+        />
       </SFooter>
     </WrapperScreen>
   )

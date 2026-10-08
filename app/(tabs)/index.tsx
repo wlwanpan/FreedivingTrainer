@@ -37,6 +37,9 @@ export default function TablesScreen() {
       <TableTypeSwitch value={tableType} onChange={setTableType} />
       <SHint>{TableTypeDescription[tableType]}</SHint>
       <SHint>Breathe-up {formatSeconds(settings.breatheUpSeconds)}</SHint>
+      {settings.baselineMaxHoldSeconds != null ? (
+        <SHint>Baseline max {formatSeconds(settings.baselineMaxHoldSeconds)}</SHint>
+      ) : null}
       <SRounds>
         {rounds.map((round) => (
           <TableRoundRow key={round.index} round={round} />
