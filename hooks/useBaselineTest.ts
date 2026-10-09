@@ -80,8 +80,13 @@ export default function useBaselineTest(finishToHome: boolean) {
 
   const markContraction = () => {
     const started = startedAtRef.current
-    if (started == null || contractionAtRef.current != null || finishedRef.current) return
+    if (started == null || finishedRef.current) return
     if (Date.now() - started < CONTROL_DELAY_MS) return
+    if (contractionAtRef.current != null) {
+      contractionAtRef.current = null
+      setContractionAt(null)
+      return
+    }
     const t = Date.now()
     contractionAtRef.current = t
     setContractionAt(t)

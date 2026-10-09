@@ -138,10 +138,12 @@ export default function TrainingStep({
     >
       <SCard style={animatedStyle}>
         <SClip>
-          <SSprite
-            source={role === 'complete' ? Sprites.meditate : Sprites[kind]}
-            resizeMode='cover'
-          />
+          <SSpriteFrame>
+            <SSprite
+              source={role === 'complete' ? Sprites.meditate : Sprites[kind]}
+              resizeMode='contain'
+            />
+          </SSpriteFrame>
           <STitle style={{ color }}>{role === 'done' ? 'Completed' : title}</STitle>
           {role === 'done' ? (
             <SDoneLabel style={{ color: PhaseColor[kind] }}>{PhaseLabel[kind]}</SDoneLabel>
@@ -193,12 +195,19 @@ const SClip = styled.View`
   background-color: ${Colors.White};
 `
 
-const SSprite = styled.Image`
+const SSpriteFrame = styled.View`
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
+  align-items: center;
+  justify-content: center;
+`
+
+const SSprite = styled.Image`
+  width: 100%;
+  aspect-ratio: 1;
   opacity: 0.22;
 `
 

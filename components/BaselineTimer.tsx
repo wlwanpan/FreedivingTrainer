@@ -43,17 +43,13 @@ export default function BaselineTimer({
         </SStatus>
       </SClock>
       <Footer>
-        {marked ? (
-          <SMarked>
-            <SMarkedText>Contraction marked</SMarkedText>
-          </SMarked>
-        ) : (
-          <Button
-            title='First contraction'
-            onPress={onContraction}
-            disabled={!controlsReady}
-          />
-        )}
+        <Button
+          title={marked ? 'Undo contraction' : 'First contraction'}
+          onPress={onContraction}
+          disabled={!controlsReady}
+          defaultBGColor={marked ? Colors.GreyPrimary : undefined}
+          pressedBGColor={marked ? Colors.GreyFaded : undefined}
+        />
         <Button
           title='I need to breathe'
           onPress={onFinish}
@@ -93,17 +89,3 @@ const SStatus = styled.Text`
   color: ${Colors.GreyPrimary};
 `
 
-const SMarked = styled.View`
-  padding: 12px;
-  margin-bottom: 8px;
-  width: 100%;
-  border-radius: 12px;
-  background-color: ${Colors.TealBackground};
-`
-
-const SMarkedText = styled.Text`
-  text-align: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: ${Colors.TealPrimary};
-`
