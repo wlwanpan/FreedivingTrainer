@@ -1,6 +1,5 @@
 import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
-import TrainingBackdrop from '@/components/TrainingBackdrop'
 import TrainingStep, { trainingStepY } from '@/components/TrainingStep'
 import { Footer } from '@/design/styled'
 import { Colors } from '@/design/styles'
@@ -62,10 +61,6 @@ export default function TrainingClock({
         leftOnClick={done ? undefined : onCancel}
       />
       <SChain onLayout={onChainLayout}>
-        <TrainingBackdrop
-          kind={done ? null : current?.kind ?? null}
-          paused={paused}
-        />
         {chainHeight > 0 && previous ? (
           <TrainingStep
             key={previous.index}

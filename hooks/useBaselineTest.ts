@@ -7,12 +7,13 @@ import {
   MIN_BASELINE_SECONDS,
   tableSettingsFromPlan,
 } from '@/utils/baseline'
+import { TrainingPlanId, trainingPlanById, weeklyCo2Tables } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
 
 
-export type BaselineStage = 'prep' | 'hold' | 'result'
+export type BaselineStage = 'prep' | 'hold' | 'result' | 'plan'
 
 export type BaselineOutcome = {
   maxHoldSeconds: number
@@ -108,7 +109,7 @@ export default function useBaselineTest(finishToHome: boolean) {
         contractionSeconds: marked,
       }),
     })
-    setStage('result')
+    setStage(tooShort ? 'result' : 'plan')
     Vibration.vibrate(40)
   }
 
@@ -122,16 +123,38 @@ export default function useBaselineTest(finishToHome: boolean) {
     setStage('prep')
   }
 
-  const save = async () => {
+  const showPlan = () => {
+    if (outcome?.plan == null) return
+    setStage('plan')
+  }
+
+  const save = async (planId: TrainingPlanId) => {
     if (saving || outcome?.plan == null) return
+    const plan = trainingPlanById(planId)
+    const weekTables = plan == null
+      ? []
+      : weeklyCo2Tables({
+        baselineMaxSeconds: outcome.maxHoldSeconds,
+        contractionSeconds: outcome.contractionSeconds,
+        plan,
+        week: 1,
+      })
+    const storedTable = weekTables.find((table) => table.name === 'Full table') ?? weekTables[0]
+    if (plan == null || storedTable == null) return
     setSaving(true)
     const nowDate = new Date()
     const res = await sql.updateSettings({
       ...sql.settings,
       ...tableSettingsFromPlan(outcome.plan),
+      co2HoldSeconds: storedTable.holdSeconds,
+      co2RestStartSeconds: storedTable.restStartSeconds,
+      co2RestStepSeconds: storedTable.restStepSeconds,
+      co2Rounds: storedTable.rounds,
       baselineMaxHoldSeconds: outcome.maxHoldSeconds,
       baselineContractionSeconds: outcome.contractionSeconds,
       baselineTestedAt: nowDate,
+      trainingPlan: plan.id,
+      trainingPlanStartedAt: nowDate,
       createdAt: sql.settings.createdAt ?? nowDate,
       updatedAt: nowDate,
     })
@@ -159,6 +182,7 @@ export default function useBaselineTest(finishToHome: boolean) {
     finish,
     cancel: reset,
     retake: reset,
+    showPlan,
     save,
   }
 }

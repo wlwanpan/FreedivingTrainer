@@ -3,7 +3,7 @@ import { TableType } from '@/constants/tables'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import { todayDate } from '@/utils/date'
-import { TableRound } from '@/utils/table'
+import { buildCo2Table, TableRound } from '@/utils/table'
 import { useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
 import useTablePlan from './useTablePlan'
@@ -22,6 +22,13 @@ type TrainPhase = {
   kind: TrainPhaseKind
   seconds: number
   roundIndex: number | null
+}
+
+export type TrainTable = {
+  holdSeconds: number
+  restStartSeconds: number
+  restStepSeconds: number
+  rounds: number
 }
 
 type Location = {
@@ -58,10 +65,19 @@ function locate(phases: TrainPhase[], elapsedSeconds: number): Location {
   return { index: Math.max(0, phases.length - 1), remaining: 0, done: true }
 }
 
-export default function useTrainingClock(tableType: TableType | null) {
+export default function useTrainingClock(tableType: TableType | null, table: TrainTable | null = null) {
   const sql = useSQLContext()
   const { showWarning } = useWarningModal()
-  const rounds = useTablePlan(tableType ?? 'co2')
+  const plannedRounds = useTablePlan(tableType ?? 'co2')
+  const rounds = tableType === 'co2' && table != null
+    ? buildCo2Table({
+      ...sql.settings,
+      co2HoldSeconds: table.holdSeconds,
+      co2RestStartSeconds: table.restStartSeconds,
+      co2RestStepSeconds: table.restStepSeconds,
+      co2Rounds: table.rounds,
+    })
+    : plannedRounds
   const phases = tableType == null
     ? []
     : buildPhases(sql.settings.breatheUpSeconds, rounds)
@@ -152,7 +168,7 @@ export default function useTrainingClock(tableType: TableType | null) {
       roundsPlanned: rounds.length,
       holdSeconds: first.holdSeconds,
       restSeconds: tableType === 'co2'
-        ? sql.settings.co2RestStartSeconds
+        ? table?.restStartSeconds ?? sql.settings.co2RestStartSeconds
         : sql.settings.o2RestSeconds,
       createdAt,
       updatedAt: createdAt,

@@ -1,7 +1,7 @@
 import TrainingClock from '@/components/TrainingClock'
 import WrapperScreen from '@/components/WrapperScreen'
 import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
-import useTrainingClock from '@/hooks/useTrainingClock'
+import useTrainingClock, { TrainTable } from '@/hooks/useTrainingClock'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect } from 'react'
 
@@ -14,11 +14,41 @@ function parseTableType(value: string | string[] | undefined): TableType | null 
   return null
 }
 
+function parseCount(value: string | string[] | undefined, allowZero: boolean): number | null {
+  const raw = Array.isArray(value) ? value[0] : value
+  if (raw == null || raw === '') return null
+  const parsed = Number(raw)
+  if (!Number.isInteger(parsed) || parsed < 0 || (!allowZero && parsed === 0)) return null
+  return parsed
+}
+
+function parseTrainTable(params: {
+  hold?: string | string[]
+  restStart?: string | string[]
+  restStep?: string | string[]
+  rounds?: string | string[]
+}): TrainTable | null {
+  const holdSeconds = parseCount(params.hold, false)
+  const restStartSeconds = parseCount(params.restStart, true)
+  const restStepSeconds = parseCount(params.restStep, true)
+  const rounds = parseCount(params.rounds, false)
+  if (holdSeconds == null || restStartSeconds == null || restStepSeconds == null || rounds == null) {
+    return null
+  }
+  return { holdSeconds, restStartSeconds, restStepSeconds, rounds }
+}
+
 export default function TrainScreen() {
   const router = useRouter()
-  const { type } = useLocalSearchParams<{ type?: string | string[] }>()
-  const tableType = parseTableType(type)
-  const training = useTrainingClock(tableType)
+  const params = useLocalSearchParams<{
+    type?: string | string[]
+    hold?: string | string[]
+    restStart?: string | string[]
+    restStep?: string | string[]
+    rounds?: string | string[]
+  }>()
+  const tableType = parseTableType(params.type)
+  const training = useTrainingClock(tableType, parseTrainTable(params))
 
   useEffect(() => {
     if (tableType == null || !training.ready) {

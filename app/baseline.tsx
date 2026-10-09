@@ -1,3 +1,4 @@
+import BaselinePlans from '@/components/BaselinePlans'
 import BaselinePrep from '@/components/BaselinePrep'
 import BaselineResult from '@/components/BaselineResult'
 import BaselineTimer from '@/components/BaselineTimer'
@@ -27,11 +28,19 @@ export default function BaselineScreen() {
           onCancel={test.cancel}
         />
       ) : null}
+      {test.stage === 'plan' && test.outcome ? (
+        <BaselinePlans
+          outcome={test.outcome}
+          saving={test.saving}
+          onStart={(planId) => { void test.save(planId) }}
+          onRetake={test.retake}
+        />
+      ) : null}
       {test.stage === 'result' && test.outcome ? (
         <BaselineResult
           outcome={test.outcome}
-          saving={test.saving}
-          onUse={() => { void test.save() }}
+          saving={false}
+          onUse={test.showPlan}
           onRetake={test.retake}
         />
       ) : null}

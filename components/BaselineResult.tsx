@@ -85,7 +85,7 @@ export default function BaselineResult({ outcome, saving, onUse, onRetake }: Pro
         ))}
       </SScroll>
       <Footer>
-        <Button title='Use these tables' onPress={onUse} loading={saving} />
+        <Button title='Choose a plan' onPress={onUse} loading={saving} />
         <Button
           title='Retake test'
           onPress={onRetake}
