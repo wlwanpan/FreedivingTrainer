@@ -1,9 +1,12 @@
 import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
-import TrainingStep from '@/components/TrainingStep'
+import TrainingBackdrop from '@/components/TrainingBackdrop'
+import TrainingStep, { trainingStepY } from '@/components/TrainingStep'
 import { Footer } from '@/design/styled'
 import { Colors } from '@/design/styles'
 import { TrainStep } from '@/hooks/useTrainingClock'
+import { useState } from 'react'
+import { LayoutChangeEvent } from 'react-native'
 import { styled } from 'styled-components/native'
 
 
@@ -42,9 +45,14 @@ export default function TrainingClock({
   onRetry,
   onTogglePause,
 }: Props) {
+  const [chainHeight, setChainHeight] = useState(0)
   const note = saveFailed
     ? 'The session did not save.'
     : 'This session is saved on this device.'
+  const onChainLayout = (event: LayoutChangeEvent) => {
+    const height = event.nativeEvent.layout.height
+    setChainHeight((current) => (current === height ? current : height))
+  }
 
   return (
     <Wrapper>
@@ -53,21 +61,27 @@ export default function TrainingClock({
         leftText={done ? undefined : 'Cancel'}
         leftOnClick={done ? undefined : onCancel}
       />
-      <SChain>
-        {previous ? (
+      <SChain onLayout={onChainLayout}>
+        <TrainingBackdrop
+          kind={done ? null : current?.kind ?? null}
+          paused={paused}
+        />
+        {chainHeight > 0 && previous ? (
           <TrainingStep
             key={previous.index}
             role='done'
+            y={trainingStepY('done', chainHeight)}
             kind={previous.kind}
             seconds={previous.seconds}
             roundIndex={previous.roundIndex}
             roundCount={roundCount}
           />
         ) : null}
-        {current ? (
+        {chainHeight > 0 && current ? (
           <TrainingStep
             key={current.index}
             role='current'
+            y={trainingStepY('current', chainHeight)}
             kind={current.kind}
             seconds={current.seconds}
             remainingSeconds={remainingSeconds}
@@ -75,17 +89,19 @@ export default function TrainingClock({
             roundCount={roundCount}
           />
         ) : null}
-        {done ? (
+        {chainHeight > 0 && done ? (
           <TrainingStep
             key='complete'
             role='complete'
+            y={trainingStepY('complete', chainHeight)}
             note={note}
           />
         ) : null}
-        {next ? (
+        {chainHeight > 0 && next ? (
           <TrainingStep
             key={next.index}
             role='next'
+            y={trainingStepY('next', chainHeight)}
             kind={next.kind}
             seconds={next.seconds}
             roundIndex={next.roundIndex}
@@ -121,4 +137,5 @@ const Wrapper = styled.View`
 const SChain = styled.View`
   flex: 1;
   position: relative;
+  overflow: hidden;
 `

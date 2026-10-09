@@ -26,12 +26,30 @@ const PhaseColor: Record<TrainPhaseKind, string> = {
   rest: Colors.BluePrimary,
 }
 
-const Place = {
-  done: { y: 0, scale: 0.78, opacity: 0.78 },
-  current: { y: 168, scale: 1, opacity: 1 },
-  next: { y: 392, scale: 0.9, opacity: 1 },
-  complete: { y: 168, scale: 1, opacity: 1 },
+export const TrainingStepLayout = {
+  cardHeight: 176,
+  gap: 28,
+  edge: 16,
 } as const
+
+const Place = {
+  done: { scale: 0.78, opacity: 0.78 },
+  current: { scale: 1, opacity: 1 },
+  next: { scale: 0.9, opacity: 1 },
+  complete: { scale: 1, opacity: 1 },
+} as const
+
+export function trainingStepY(role: TrainingStepRole, chainHeight: number): number {
+  const current = Math.max(0, (chainHeight - TrainingStepLayout.cardHeight) / 2)
+  if (role === 'done') {
+    const lifted = current - TrainingStepLayout.gap - TrainingStepLayout.cardHeight * Place.done.scale
+    return Math.max(TrainingStepLayout.edge, lifted)
+  }
+  if (role === 'next') {
+    return current + TrainingStepLayout.cardHeight + TrainingStepLayout.gap
+  }
+  return current
+}
 
 const Motion = {
   duration: 460,
@@ -40,6 +58,7 @@ const Motion = {
 
 type Props = {
   role: TrainingStepRole
+  y: number
   kind?: TrainPhaseKind
   seconds?: number
   remainingSeconds?: number
@@ -50,6 +69,7 @@ type Props = {
 
 export default function TrainingStep({
   role,
+  y,
   kind = 'breathe',
   seconds = 0,
   remainingSeconds = 0,
@@ -59,18 +79,18 @@ export default function TrainingStep({
 }: Props) {
   const { formatSeconds } = useFormatterContext()
   const place = Place[role]
-  const translateY = useSharedValue(place.y)
+  const translateY = useSharedValue(y)
   const scale = useSharedValue(place.scale)
   const opacity = useSharedValue(place.opacity)
   const veil = useSharedValue(role === 'next' ? 1 : 0)
 
   useEffect(() => {
     const nextPlace = Place[role]
-    translateY.value = withTiming(nextPlace.y, Motion)
+    translateY.value = withTiming(y, Motion)
     scale.value = withTiming(nextPlace.scale, Motion)
     opacity.value = withTiming(nextPlace.opacity, Motion)
     veil.value = withTiming(role === 'next' ? 1 : 0, Motion)
-  }, [opacity, role, scale, translateY, veil])
+  }, [opacity, role, scale, translateY, veil, y])
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -136,7 +156,7 @@ const SCard = styled(Animated.View)`
   top: 0;
   left: 28px;
   right: 28px;
-  min-height: 176px;
+  min-height: ${TrainingStepLayout.cardHeight}px;
   justify-content: center;
   padding: 22px 20px 18px;
   border-radius: 22px;
