@@ -1,4 +1,6 @@
+import { createElement, ReactNode } from 'react'
 import { styled } from 'styled-components/native'
+import { useBottomControlInset } from './chrome'
 import { Colors } from './styles'
 
 
@@ -17,6 +19,18 @@ export const TabContainer = styled.View`
   background-color: ${Colors.White};
 `
 
-export const Footer = styled.View`
-  padding: 12px 20px 8px;
+type FooterProps = {
+  children: ReactNode
+  aboveTabs?: boolean
+}
+
+export function Footer({ children, aboveTabs = false }: FooterProps) {
+  const paddingBottom = useBottomControlInset(aboveTabs)
+
+  return createElement(SFooter, { style: { paddingBottom } }, children)
+}
+
+const SFooter = styled.View`
+  flex-shrink: 0;
+  padding: 12px 20px 0;
 `

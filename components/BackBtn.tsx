@@ -1,6 +1,7 @@
-import { Colors } from '@/design/styles'
+import { Colors, Layout } from '@/design/styles'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable } from 'react-native'
+import { styled } from 'styled-components/native'
 
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
 
 export default function BackBtn({ onPress, disabled }: Props) {
   return (
-    <Pressable onPress={onPress} disabled={disabled}>
+    <SButton onPress={onPress} disabled={disabled}>
       {({ pressed }) => (
         <Ionicons
           name='chevron-back-outline'
@@ -18,6 +19,13 @@ export default function BackBtn({ onPress, disabled }: Props) {
           color={pressed || disabled ? Colors.GreyPrimary : Colors.DeepPrimary}
         />
       )}
-    </Pressable>
+    </SButton>
   )
 }
+
+const SButton = styled(Pressable)`
+  flex-shrink: 0;
+  min-width: ${Layout.MinControl}px;
+  min-height: ${Layout.MinControl}px;
+  justify-content: center;
+`

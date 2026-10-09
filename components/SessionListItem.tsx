@@ -1,5 +1,5 @@
 import { TableTypeLabel } from '@/constants/tables'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, FontSizes, Layout } from '@/design/styles'
 import { Session } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
 import { styled } from 'styled-components/native'
@@ -53,6 +53,9 @@ const SMeta = styled.Text`
 `
 
 const SDelete = styled.Pressable`
+  flex-shrink: 0;
+  min-height: ${Layout.MinControl}px;
+  justify-content: center;
   padding: 8px;
 `
 

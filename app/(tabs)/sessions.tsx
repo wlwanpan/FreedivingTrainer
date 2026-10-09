@@ -7,12 +7,14 @@ import { ErrorTitles } from '@/constants/errors'
 import { Session } from '@/db/schema'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
+import { useBottomControlInset } from '@/design/chrome'
 import { styled } from 'styled-components/native'
 
 
 export default function SessionsScreen() {
   const { sessions, deleteSession } = useSQLContext()
   const { showConfirmDeletion, showWarning } = useWarningModal()
+  const bottomInset = useBottomControlInset(true)
 
   const remove = async (session: Session) => {
     const confirmed = await showConfirmDeletion(
@@ -30,7 +32,7 @@ export default function SessionsScreen() {
     <WrapperScreen skipBottomInset>
       <ScreenHeader title='Sessions' />
       <FreeSessionsBanner />
-      <SList>
+      <SList contentContainerStyle={{ paddingBottom: bottomInset }}>
         {sessions.length === 0 ? (
           <EmptyListPlaceholder message='No tables logged yet.' />
         ) : (

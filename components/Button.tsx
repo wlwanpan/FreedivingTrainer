@@ -1,4 +1,4 @@
-import { Colors } from '@/design/styles'
+import { Colors, Layout } from '@/design/styles'
 import { ActivityIndicator, PressableProps } from 'react-native'
 import { styled } from 'styled-components/native'
 
@@ -48,9 +48,11 @@ export default function Button({
 }
 
 const Wrapper = styled.Pressable`
+  flex-shrink: 0;
   padding: 12px;
   margin-bottom: 8px;
   width: 100%;
+  min-height: ${Layout.MinControl}px;
   border-radius: 12px;
 `
 

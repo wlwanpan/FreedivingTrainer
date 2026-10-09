@@ -31,3 +31,7 @@ export const FontSizes = {
   XSmall: '10px',
   XXSmall: '6px',
 } as const
+
+export const Layout = {
+  MinControl: 44,
+} as const

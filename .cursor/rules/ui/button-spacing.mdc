@@ -1,0 +1,26 @@
+---
+description: Keep buttons clear of the tab bar and the top safe area
+globs: components/**, hooks/**, design/**, app/**
+alwaysApply: false
+---
+
+# Button spacing
+
+Pinned actions sit between the top bar and the bottom navigation. They keep a gap from both, and they do not shrink when the content between them grows.
+
+- Bottom actions use `Footer`. On a tab screen pass `aboveTabs` so the control clears the floating tab bar. Elsewhere `Footer` clears the bottom safe area. The screen uses `skipBottomInset` so that inset is not applied twice.
+- Scrollable content on a tab screen may run under the bar. Its content container still uses `useBottomControlInset(true)` so the last control can scroll fully into view.
+- Header controls stay inside `ScreenHeader` or `HeaderWithBtn`. The row and the control use `Layout.MinControl` and `flex-shrink: 0`, so they stay below the status bar and do not collapse into the title.
+- Bottom clearance comes from `useBottomControlInset`: the device safe-area inset, plus the tab bar height on a tab screen. Do not hardcode a distance from the screen edge for one phone. `Layout.MinControl` is only the 44pt touch target.
+
+```tsx
+const bottomInset = useBottomControlInset(true)
+
+<WrapperScreen skipBottomInset>
+  <ScreenHeader title='Tables' right={<SIconButton />} />
+  <SList contentContainerStyle={{ paddingBottom: bottomInset }} />
+  <Footer aboveTabs>
+    <Button title='Log completed table' onPress={log} />
+  </Footer>
+</WrapperScreen>
+```
