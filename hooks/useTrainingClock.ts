@@ -11,6 +11,13 @@ import useTablePlan from './useTablePlan'
 
 export type TrainPhaseKind = 'breathe' | 'hold' | 'rest'
 
+export type TrainStep = {
+  index: number
+  kind: TrainPhaseKind
+  seconds: number
+  roundIndex: number | null
+}
+
 type TrainPhase = {
   kind: TrainPhaseKind
   seconds: number
@@ -60,21 +67,38 @@ export default function useTrainingClock(tableType: TableType | null) {
     : buildPhases(sql.settings.breatheUpSeconds, rounds)
 
   const startedAtRef = useRef(Date.now())
+  const pausedAtRef = useRef<number | null>(null)
   const announcedIndex = useRef(0)
   const saveStarted = useRef(false)
   const [now, setNow] = useState(startedAtRef.current)
+  const [paused, setPaused] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveFailed, setSaveFailed] = useState(false)
 
   const elapsedSeconds = Math.floor((now - startedAtRef.current) / 1000)
   const location = locate(phases, elapsedSeconds)
-  const phase = phases[location.index] ?? null
   const done = phases.length > 0 && location.done
-  const next = done ? null : phases[location.index + 1] ?? null
+  const stepAt = (index: number): TrainStep | null => {
+    const phase = phases[index]
+    if (!phase) return null
+    return {
+      index,
+      kind: phase.kind,
+      seconds: phase.seconds,
+      roundIndex: phase.roundIndex,
+    }
+  }
+  const previous = done
+    ? stepAt(location.index)
+    : location.index > 0
+      ? stepAt(location.index - 1)
+      : null
+  const current = done ? null : stepAt(location.index)
+  const next = done ? null : stepAt(location.index + 1)
 
   useEffect(() => {
-    if (done || phases.length === 0) return
+    if (done || paused || phases.length === 0) return
     const tick = () => setNow(Date.now())
     const id = setInterval(tick, 200)
     const sub = AppState.addEventListener('change', (state) => {
@@ -84,7 +108,23 @@ export default function useTrainingClock(tableType: TableType | null) {
       clearInterval(id)
       sub.remove()
     }
-  }, [done, phases.length])
+  }, [done, paused, phases.length])
+
+  const togglePause = () => {
+    if (done) return
+    if (!paused) {
+      pausedAtRef.current = Date.now()
+      setPaused(true)
+      return
+    }
+    const pausedAt = pausedAtRef.current
+    if (pausedAt != null) {
+      startedAtRef.current += Date.now() - pausedAt
+    }
+    pausedAtRef.current = null
+    setNow(Date.now())
+    setPaused(false)
+  }
 
   useEffect(() => {
     if (location.index === announcedIndex.current) return
@@ -142,16 +182,17 @@ export default function useTrainingClock(tableType: TableType | null) {
 
   return {
     ready: phases.length > 0,
+    paused,
     done,
     saving,
     saved,
     saveFailed,
-    kind: phase?.kind ?? 'breathe',
     remainingSeconds: location.remaining,
-    roundIndex: phase?.roundIndex ?? null,
     roundCount: rounds.length,
-    nextKind: next?.kind ?? null,
-    nextSeconds: next?.seconds ?? null,
+    previous,
+    current,
+    next,
     retry,
+    togglePause,
   }
 }
