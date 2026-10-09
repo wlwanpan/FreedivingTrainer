@@ -1,22 +1,23 @@
-import { Layout } from '@/design/styles'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 
-function iosMajor(): number {
-  const version = Platform.Version
-  return typeof version === 'string' ? parseFloat(version) : version
-}
+// Height of the bar itself. The home-indicator inset is added from the device,
+// so this does not change between phones.
+const TabBarHeight = 49
+const AndroidNativeTabBarHeight = 80
+const ChromeGap = 8
 
 /**
- * Space a pinned control needs below it.
- * On a tab screen the iOS 26 tab bar floats over the content, so the safe-area
- * inset alone leaves the control under the bar.
+ * Space under a pinned control.
+ * On a tab screen the bar floats over the content, so the safe-area inset
+ * alone leaves the control under the bar.
  */
 export function useBottomControlInset(aboveTabs = false): number {
   const insets = useSafeAreaInsets()
-  if (aboveTabs && Platform.OS === 'ios' && iosMajor() >= 26) {
-    return Layout.TabBarHeight + Layout.ChromeGap
+  if (!aboveTabs) {
+    return insets.bottom + ChromeGap
   }
-  return insets.bottom + Layout.ChromeGap
+  const barHeight = Platform.OS === 'android' ? AndroidNativeTabBarHeight : TabBarHeight
+  return insets.bottom + barHeight + ChromeGap
 }
