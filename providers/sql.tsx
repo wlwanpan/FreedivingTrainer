@@ -1,7 +1,7 @@
 import { DefaultDateFormat } from '@/constants/dates'
 import { SQLClient } from '@/db'
 import { drizzleDb } from '@/db/client'
-import { sqlDeleteSession } from '@/db/deletions'
+import { sqlDeleteSession, sqlEraseAllData } from '@/db/deletions'
 import { sqlInsertSession, sqlInsertSettings } from '@/db/inserts'
 import { sqlAllSessions, sqlFirstSettings } from '@/db/queries'
 import { Session, SessionInsert, Setting, SettingInsert } from '@/db/schema'
@@ -49,6 +49,7 @@ export interface ISQLContext {
   updateSettings: (setting: SettingInsert) => Promise<InsertionResults>
   insertSession: (session: SessionInsert) => Promise<InsertionResults>
   deleteSession: (id: number) => Promise<DeleteResults>
+  eraseAllData: () => Promise<DeleteResults>
 }
 
 export const SQLContext = createContext<ISQLContext | null>(null)
@@ -101,6 +102,15 @@ export default function SQLContextProvider({ children }: Props) {
     }
   }
 
+  const eraseAllData = async (): Promise<DeleteResults> => {
+    try {
+      await sqlEraseAllData(drizzleDb)
+      return { error: undefined }
+    } catch (e) {
+      return handleException(e)
+    }
+  }
+
   return (
     <SQLContext.Provider value={{
       drizzleDb,
@@ -110,6 +120,7 @@ export default function SQLContextProvider({ children }: Props) {
       updateSettings,
       insertSession,
       deleteSession,
+      eraseAllData,
     }}>
       {children}
     </SQLContext.Provider>

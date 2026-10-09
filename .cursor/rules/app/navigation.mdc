@@ -9,7 +9,7 @@ alwaysApply: false
 File-based routing via Expo Router. `app/_layout.tsx` opens SQLite, runs migrations, and mounts providers.
 
 - `app/(tabs)/` — Tables and Sessions
-- `app/onboarding.tsx` — first launch. The baseline test or "Use default tables" creates the settings row
+- `app/onboarding.tsx` — first launch. The baseline test creates the settings row
 - `app/baseline.tsx` — maximum static hold, then generated CO2 and O2 settings
 - `app/settings/` — table configuration and purchases
 - `app/paywall.tsx` — RevenueCat lifetime access

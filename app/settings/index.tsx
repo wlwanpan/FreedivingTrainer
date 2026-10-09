@@ -12,18 +12,39 @@ import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { styled } from 'styled-components/native'
 
 
 export default function SettingsScreen() {
   const router = useRouter()
-  const { settings } = useSQLContext()
+  const { settings, eraseAllData } = useSQLContext()
   const { formatSeconds } = useFormatterContext()
   const subscription = useSubscriptionContext()
-  const { showWarning } = useWarningModal()
+  const { showWarning, showConfirmDeletion } = useWarningModal()
   const updateSetting = useUpdateSetting()
   const [restoreInFlight, setRestoreInFlight] = useState(false)
+  const [eraseInFlight, setEraseInFlight] = useState(false)
+
+  useEffect(() => {
+    if (!eraseInFlight || settings.createdAt != null) return
+    router.replace('/onboarding')
+  }, [eraseInFlight, settings.createdAt, router])
+
+  const erase = async () => {
+    const confirmed = await showConfirmDeletion(
+      'Erase all data?',
+      'This removes your tables, logged sessions, and baseline from this device. The app will open as a new install. A lifetime purchase stays with your Apple ID.',
+    )
+    if (!confirmed) return
+
+    setEraseInFlight(true)
+    const res = await eraseAllData()
+    if (res.error) {
+      setEraseInFlight(false)
+      showWarning(ErrorTitles.Sql, res.error.message)
+    }
+  }
 
   const restore = async () => {
     if (!subscription.configured) {
@@ -55,7 +76,7 @@ export default function SettingsScreen() {
         />
 
         <SSection>Baseline</SSection>
-        <SBaseline>
+        <SNote>
           {settings.baselineMaxHoldSeconds == null
             ? 'No maximum hold yet. A baseline test sizes the CO2 and O2 tables.'
             : `Maximum ${formatSeconds(settings.baselineMaxHoldSeconds)}${
@@ -63,7 +84,7 @@ export default function SettingsScreen() {
                 ? ''
                 : ` · contraction ${formatSeconds(settings.baselineContractionSeconds)}`
             }`}
-        </SBaseline>
+        </SNote>
         <Button
           title={settings.baselineMaxHoldSeconds == null ? 'Take baseline test' : 'Retake baseline test'}
           onPress={() => router.push('/baseline')}
@@ -163,8 +184,22 @@ export default function SettingsScreen() {
           title='Restore purchase'
           onPress={() => { void restore() }}
           loading={restoreInFlight}
+          disabled={eraseInFlight}
           defaultBGColor={Colors.GreyPrimary}
           pressedBGColor={Colors.GreyFaded}
+        />
+
+        <SSection>Data</SSection>
+        <SNote>
+          Removes your tables, logged sessions, and baseline from this device.
+        </SNote>
+        <Button
+          title='Erase all data'
+          onPress={() => { void erase() }}
+          loading={eraseInFlight}
+          disabled={restoreInFlight}
+          defaultBGColor={Colors.RedPrimary}
+          pressedBGColor={Colors.RedBackground}
         />
       </SBody>
     </WrapperScreen>
@@ -185,7 +220,7 @@ const SSection = styled.Text`
   color: ${Colors.GreyPrimary};
 `
 
-const SBaseline = styled.Text`
+const SNote = styled.Text`
   margin-top: 8px;
   margin-bottom: 12px;
   font-size: ${FontSizes.Medium};
