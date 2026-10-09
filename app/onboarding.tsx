@@ -1,19 +1,15 @@
 import Button from '@/components/Button'
 import WrapperScreen from '@/components/WrapperScreen'
-import { ErrorTitles } from '@/constants/errors'
 import { Colors, FontSizes } from '@/design/styles'
 import { useSQLContext } from '@/providers/sql'
-import { useWarningModal } from '@/providers/warning_modal'
 import { useRouter } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { styled } from 'styled-components/native'
 
 
 export default function OnboardingScreen() {
   const router = useRouter()
   const sql = useSQLContext()
-  const { showWarning } = useWarningModal()
-  const [inFlight, setInFlight] = useState(false)
   const onboardedAt = sql.settings.createdAt?.getTime() ?? null
 
   useEffect(() => {
@@ -24,20 +20,6 @@ export default function OnboardingScreen() {
 
   const startTest = () => {
     router.push({ pathname: '/baseline', params: { entry: 'onboarding' } })
-  }
-
-  const start = async () => {
-    setInFlight(true)
-    const now = new Date()
-    const res = await sql.updateSettings({
-      ...sql.settings,
-      createdAt: now,
-      updatedAt: now,
-    })
-    if (res.error) {
-      setInFlight(false)
-      showWarning(ErrorTitles.Sql, res.error.message)
-    }
   }
 
   return (
@@ -58,14 +40,7 @@ export default function OnboardingScreen() {
         </SCard>
       </SBody>
       <SFooter>
-        <Button title='Start baseline test' onPress={startTest} disabled={inFlight} />
-        <Button
-          title='Use default tables'
-          onPress={() => { void start() }}
-          loading={inFlight}
-          defaultBGColor={Colors.GreyPrimary}
-          pressedBGColor={Colors.GreyFaded}
-        />
+        <Button title='Start baseline test' onPress={startTest} />
       </SFooter>
     </WrapperScreen>
   )
