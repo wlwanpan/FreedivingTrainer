@@ -1,4 +1,4 @@
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, FontSizes, Layout } from '@/design/styles'
 import { ReactNode } from 'react'
 import { styled } from 'styled-components/native'
 
@@ -22,13 +22,17 @@ export default function ScreenHeader({ title, right }: Props) {
 
 const Wrapper = styled.View`
   flex-direction: row;
+  flex-shrink: 0;
   align-items: center;
+  min-height: ${Layout.MinControl}px;
   padding: 8px 12px 4px;
 `
 
 const SSide = styled.View`
-  width: 44px;
+  width: ${Layout.MinControl}px;
+  height: ${Layout.MinControl}px;
   align-items: flex-end;
+  justify-content: center;
 `
 
 const STitle = styled.Text`

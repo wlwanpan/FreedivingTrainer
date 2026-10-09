@@ -31,3 +31,11 @@ export const FontSizes = {
   XSmall: '10px',
   XXSmall: '6px',
 } as const
+
+export const Layout = {
+  MinControl: 44,
+  /** Bottom edge to the top of the iOS 26 floating tab bar. */
+  TabBarHeight: 86,
+  /** Gap a control keeps from the tab bar, home indicator, or header. */
+  ChromeGap: 12,
+} as const

@@ -5,7 +5,7 @@ import TableTypeSwitch from '@/components/TableTypeSwitch'
 import WrapperScreen from '@/components/WrapperScreen'
 import { TableType, TableTypeDescription } from '@/constants/tables'
 import { Footer } from '@/design/styled'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, FontSizes, Layout } from '@/design/styles'
 import useLogTable from '@/hooks/useLogTable'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
@@ -45,7 +45,7 @@ export default function TablesScreen() {
           <TableRoundRow key={round.index} round={round} />
         ))}
       </SRounds>
-      <Footer>
+      <Footer aboveTabs>
         <Button
           title='Log completed table'
           onPress={() => { void logCompletedTable() }}
@@ -57,7 +57,10 @@ export default function TablesScreen() {
 }
 
 const SIconButton = styled.Pressable`
-  padding: 4px;
+  width: ${Layout.MinControl}px;
+  height: ${Layout.MinControl}px;
+  align-items: center;
+  justify-content: center;
 `
 
 const SHint = styled.Text`

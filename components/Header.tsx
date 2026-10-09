@@ -1,3 +1,4 @@
+import { Layout } from '@/design/styles'
 import { ReactNode } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import { styled } from 'styled-components/native'
@@ -17,6 +18,8 @@ export default function Header({ children, style }: Props) {
 }
 
 const Wrapper = styled.View`
+  flex-shrink: 0;
+  min-height: ${Layout.MinControl}px;
   padding-top: 8px;
   padding-bottom: 8px;
 `

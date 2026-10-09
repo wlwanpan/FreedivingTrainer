@@ -1,4 +1,4 @@
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, FontSizes, Layout } from '@/design/styles'
 import { PressableProps } from 'react-native'
 import { styled } from 'styled-components/native'
 
@@ -26,6 +26,9 @@ export default function HeaderTextBtn({ onClick, disabled, text, ...props }: Pro
 }
 
 const Wrapper = styled.Pressable`
+  flex-shrink: 0;
+  min-height: ${Layout.MinControl}px;
+  justify-content: center;
   padding: 6px 10px;
 `
 
