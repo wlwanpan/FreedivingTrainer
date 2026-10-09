@@ -1,3 +1,4 @@
+import { useTopControlInset } from '@/design/chrome'
 import { Colors } from '@/design/styles'
 import { ReactNode, RefObject } from 'react'
 import { ScrollView, StyleProp, ViewStyle } from 'react-native'
@@ -9,6 +10,7 @@ type Props = {
   children: ReactNode
   scrollable?: boolean
   skipBottomInset?: boolean
+  sheet?: boolean
   style?: StyleProp<ViewStyle>
   scrollViewRef?: RefObject<ScrollView | null>
 }
@@ -18,13 +20,15 @@ export default function WrapperScreen({
   style,
   scrollable = false,
   skipBottomInset = false,
+  sheet = false,
   scrollViewRef,
 }: Props) {
   const insets = useSafeAreaInsets()
+  const topPadding = useTopControlInset(sheet)
   const bottomPadding = skipBottomInset ? 0 : insets.bottom
 
   return scrollable ? (
-    <Wrapper style={[style, { paddingTop: insets.top }]}>
+    <Wrapper style={[style, { paddingTop: topPadding }]}>
       <SScrollable
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
@@ -34,7 +38,7 @@ export default function WrapperScreen({
       </SScrollable>
     </Wrapper>
   ) : (
-    <Wrapper style={[style, { paddingTop: insets.top, paddingBottom: bottomPadding }]}>
+    <Wrapper style={[style, { paddingTop: topPadding, paddingBottom: bottomPadding }]}>
       {children}
     </Wrapper>
   )

@@ -38,6 +38,13 @@ export default function RootNavigator() {
         }}
       />
       <Stack.Screen
+        name='train'
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
         name='paywall'
         options={{
           animation: 'slide_from_bottom',

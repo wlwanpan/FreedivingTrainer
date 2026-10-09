@@ -11,6 +11,7 @@ File-based routing via Expo Router. `app/_layout.tsx` opens SQLite, runs migrati
 - `app/(tabs)/` — Tables and Sessions
 - `app/onboarding.tsx` — first launch. The baseline test creates the settings row
 - `app/baseline.tsx` — maximum static hold, then generated CO2 and O2 settings
+- `app/train.tsx` — live table. Slides in from the right and counts down each breathe-up, hold, and rest
 - `app/settings/` — table configuration and purchases
 - `app/paywall.tsx` — RevenueCat lifetime access
 - `app/warning.tsx` — warning and confirmation sheet
