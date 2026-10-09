@@ -1,33 +1,20 @@
 import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
+import TrainingStep from '@/components/TrainingStep'
 import { Footer } from '@/design/styled'
-import { Colors, FontSizes } from '@/design/styles'
-import { TrainPhaseKind } from '@/hooks/useTrainingClock'
-import { useFormatterContext } from '@/providers/formatter'
-import { formatDuration } from '@/utils/duration'
+import { Colors } from '@/design/styles'
+import { TrainStep } from '@/hooks/useTrainingClock'
 import { styled } from 'styled-components/native'
 
 
-const PhaseLabel: Record<TrainPhaseKind, string> = {
-  breathe: 'Breathe-up',
-  hold: 'Hold',
-  rest: 'Rest',
-}
-
-const PhaseColor: Record<TrainPhaseKind, string> = {
-  breathe: Colors.DeepPrimary,
-  hold: Colors.TealPrimary,
-  rest: Colors.BluePrimary,
-}
-
 type Props = {
   title: string
-  kind: TrainPhaseKind
+  previous: TrainStep | null
+  current: TrainStep | null
+  next: TrainStep | null
   remainingSeconds: number
-  roundIndex: number | null
   roundCount: number
-  nextKind: TrainPhaseKind | null
-  nextSeconds: number | null
+  paused: boolean
   done: boolean
   saving: boolean
   saved: boolean
@@ -35,16 +22,17 @@ type Props = {
   onCancel: () => void
   onClose: () => void
   onRetry: () => void
+  onTogglePause: () => void
 }
 
 export default function TrainingClock({
   title,
-  kind,
+  previous,
+  current,
+  next,
   remainingSeconds,
-  roundIndex,
   roundCount,
-  nextKind,
-  nextSeconds,
+  paused,
   done,
   saving,
   saved,
@@ -52,14 +40,11 @@ export default function TrainingClock({
   onCancel,
   onClose,
   onRetry,
+  onTogglePause,
 }: Props) {
-  const { formatSeconds } = useFormatterContext()
-  const detail = roundIndex == null
-    ? 'Settle in. The first hold starts when this ends.'
-    : `Round ${roundIndex} of ${roundCount}`
-  const nextLine = nextKind == null || nextSeconds == null
-    ? 'Last interval'
-    : `Next ${PhaseLabel[nextKind].toLowerCase()} ${formatSeconds(nextSeconds)}`
+  const note = saveFailed
+    ? 'The session did not save.'
+    : 'This session is saved on this device.'
 
   return (
     <Wrapper>
@@ -68,30 +53,63 @@ export default function TrainingClock({
         leftText={done ? undefined : 'Cancel'}
         leftOnClick={done ? undefined : onCancel}
       />
-      <SClock>
-        <SPhase style={{ color: done ? Colors.TealPrimary : PhaseColor[kind] }}>
-          {done ? 'Table complete' : PhaseLabel[kind]}
-        </SPhase>
-        <STime
-          style={{ fontVariant: ['tabular-nums'], color: done ? Colors.DeepPrimary : PhaseColor[kind] }}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {done ? formatDuration(0) : formatDuration(remainingSeconds)}
-        </STime>
-        <SDetail>{done ? 'This session is saved on this device.' : detail}</SDetail>
-        {done ? null : <SNext>{nextLine}</SNext>}
-      </SClock>
-      {done ? (
-        <Footer>
+      <SChain>
+        {previous ? (
+          <TrainingStep
+            key={previous.index}
+            role='done'
+            kind={previous.kind}
+            seconds={previous.seconds}
+            roundIndex={previous.roundIndex}
+            roundCount={roundCount}
+          />
+        ) : null}
+        {current ? (
+          <TrainingStep
+            key={current.index}
+            role='current'
+            kind={current.kind}
+            seconds={current.seconds}
+            remainingSeconds={remainingSeconds}
+            roundIndex={current.roundIndex}
+            roundCount={roundCount}
+          />
+        ) : null}
+        {done ? (
+          <TrainingStep
+            key='complete'
+            role='complete'
+            note={note}
+          />
+        ) : null}
+        {next ? (
+          <TrainingStep
+            key={next.index}
+            role='next'
+            kind={next.kind}
+            seconds={next.seconds}
+            roundIndex={next.roundIndex}
+            roundCount={roundCount}
+          />
+        ) : null}
+      </SChain>
+      <Footer>
+        {done ? (
           <Button
             title={saveFailed ? 'Try again' : 'Done'}
             loading={saving}
             disabled={!saved && !saveFailed}
             onPress={saved ? onClose : onRetry}
           />
-        </Footer>
-      ) : null}
+        ) : (
+          <Button
+            title={paused ? 'Resume' : 'Pause'}
+            onPress={onTogglePause}
+            defaultBGColor={paused ? Colors.TealPrimary : Colors.GreyPrimary}
+            pressedBGColor={paused ? Colors.TealFaded : Colors.GreyFaded}
+          />
+        )}
+      </Footer>
     </Wrapper>
   )
 }
@@ -100,37 +118,7 @@ const Wrapper = styled.View`
   flex: 1;
 `
 
-const SClock = styled.View`
+const SChain = styled.View`
   flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-`
-
-const SPhase = styled.Text`
-  font-size: ${FontSizes.Large};
-  font-weight: 800;
-`
-
-const STime = styled.Text`
-  width: 100%;
-  margin-top: 8px;
-  font-size: ${FontSizes.Timer};
-  font-weight: 700;
-  text-align: center;
-`
-
-const SDetail = styled.Text`
-  margin-top: 16px;
-  font-size: ${FontSizes.Medium};
-  line-height: 22px;
-  text-align: center;
-  color: ${Colors.GreyPrimary};
-`
-
-const SNext = styled.Text`
-  margin-top: 8px;
-  font-size: ${FontSizes.Small};
-  text-align: center;
-  color: ${Colors.GreyPrimary};
+  position: relative;
 `

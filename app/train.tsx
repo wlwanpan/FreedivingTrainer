@@ -34,12 +34,12 @@ export default function TrainScreen() {
     <WrapperScreen skipBottomInset>
       <TrainingClock
         title={TableTypeLabel[tableType]}
-        kind={training.kind}
+        previous={training.previous}
+        current={training.current}
+        next={training.next}
         remainingSeconds={training.remainingSeconds}
-        roundIndex={training.roundIndex}
         roundCount={training.roundCount}
-        nextKind={training.nextKind}
-        nextSeconds={training.nextSeconds}
+        paused={training.paused}
         done={training.done}
         saving={training.saving}
         saved={training.saved}
@@ -47,6 +47,7 @@ export default function TrainScreen() {
         onCancel={() => router.back()}
         onClose={() => router.back()}
         onRetry={training.retry}
+        onTogglePause={training.togglePause}
       />
     </WrapperScreen>
   )
