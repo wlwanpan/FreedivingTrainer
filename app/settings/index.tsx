@@ -6,6 +6,7 @@ import WrapperScreen from '@/components/WrapperScreen'
 import { DateFormats } from '@/constants/dates'
 import { ErrorTitles } from '@/constants/errors'
 import { Colors, FontSizes } from '@/design/styles'
+import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
@@ -25,6 +26,7 @@ export default function SettingsScreen() {
   const updateSetting = useUpdateSetting()
   const [restoreInFlight, setRestoreInFlight] = useState(false)
   const [eraseInFlight, setEraseInFlight] = useState(false)
+  const planWeek = useCurrentPlanWeek()
 
   useEffect(() => {
     if (!eraseInFlight || settings.createdAt != null) return
@@ -91,40 +93,48 @@ export default function SettingsScreen() {
         />
 
         <SSection>CO2 table</SSection>
-        <SettingsStepper
-          label='Hold'
-          mode='duration'
-          value={settings.co2HoldSeconds}
-          step={15}
-          min={15}
-          max={900}
-          onChange={(value) => { void updateSetting({ co2HoldSeconds: value }) }}
-        />
-        <SettingsStepper
-          label='Starting rest'
-          mode='duration'
-          value={settings.co2RestStartSeconds}
-          step={15}
-          min={15}
-          max={900}
-          onChange={(value) => { void updateSetting({ co2RestStartSeconds: value }) }}
-        />
-        <SettingsStepper
-          label='Rest step'
-          mode='duration'
-          value={settings.co2RestStepSeconds}
-          step={5}
-          min={0}
-          max={120}
-          onChange={(value) => { void updateSetting({ co2RestStepSeconds: value }) }}
-        />
-        <SettingsStepper
-          label='Rounds'
-          value={settings.co2Rounds}
-          min={1}
-          max={20}
-          onChange={(value) => { void updateSetting({ co2Rounds: value }) }}
-        />
+        {planWeek ? (
+          <SNote>
+            {`${planWeek.planName} · week ${planWeek.week} of ${planWeek.weeks}. ${planWeek.tablesPerWeek} CO2 tables this week. Breath-hold can increase by ${formatSeconds(planWeek.gainSeconds)}.`}
+          </SNote>
+        ) : (
+          <>
+            <SettingsStepper
+              label='Hold'
+              mode='duration'
+              value={settings.co2HoldSeconds}
+              step={15}
+              min={15}
+              max={900}
+              onChange={(value) => { void updateSetting({ co2HoldSeconds: value }) }}
+            />
+            <SettingsStepper
+              label='Starting rest'
+              mode='duration'
+              value={settings.co2RestStartSeconds}
+              step={15}
+              min={15}
+              max={900}
+              onChange={(value) => { void updateSetting({ co2RestStartSeconds: value }) }}
+            />
+            <SettingsStepper
+              label='Rest step'
+              mode='duration'
+              value={settings.co2RestStepSeconds}
+              step={5}
+              min={0}
+              max={120}
+              onChange={(value) => { void updateSetting({ co2RestStepSeconds: value }) }}
+            />
+            <SettingsStepper
+              label='Rounds'
+              value={settings.co2Rounds}
+              min={1}
+              max={20}
+              onChange={(value) => { void updateSetting({ co2Rounds: value }) }}
+            />
+          </>
+        )}
 
         <SSection>O2 table</SSection>
         <SettingsStepper

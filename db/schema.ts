@@ -17,6 +17,8 @@ export const settings = sqliteTable('settings', {
   baselineMaxHoldSeconds: integer('baseline_max_hold_seconds'),
   baselineContractionSeconds: integer('baseline_contraction_seconds'),
   baselineTestedAt: integer('baseline_tested_at', { mode: 'timestamp' }),
+  trainingPlan: text('training_plan'),
+  trainingPlanStartedAt: integer('training_plan_started_at', { mode: 'timestamp' }),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }),
 })

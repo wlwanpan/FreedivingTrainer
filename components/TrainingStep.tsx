@@ -9,6 +9,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
+import { ImageSourcePropType } from 'react-native'
 import { styled } from 'styled-components/native'
 
 
@@ -49,6 +50,13 @@ export function trainingStepY(role: TrainingStepRole, chainHeight: number): numb
     return current + TrainingStepLayout.cardHeight + TrainingStepLayout.gap
   }
   return current
+}
+
+const Sprites: Record<TrainPhaseKind | 'meditate', ImageSourcePropType> = {
+  breathe: require('../assets/images/training/breathe.png'),
+  hold: require('../assets/images/training/hold.png'),
+  rest: require('../assets/images/training/rest.png'),
+  meditate: require('../assets/images/training/meditate.png'),
 }
 
 const Motion = {
@@ -129,25 +137,33 @@ export default function TrainingStep({
       pointerEvents={role === 'current' || role === 'complete' ? 'auto' : 'none'}
     >
       <SCard style={animatedStyle}>
-        <STitle style={{ color }}>{role === 'done' ? 'Completed' : title}</STitle>
-        {role === 'done' ? (
-          <SDoneLabel style={{ color: PhaseColor[kind] }}>{PhaseLabel[kind]}</SDoneLabel>
-        ) : (
-          <STime
-            style={{
-              color: role === 'complete' ? Colors.DeepPrimary : color,
-              fontVariant: ['tabular-nums'],
-            }}
-          >
-            {role === 'complete' ? 'Done' : formatSeconds(shownSeconds)}
-          </STime>
-        )}
-        {role === 'done' ? (
-          <SDoneTime>{formatSeconds(seconds)}</SDoneTime>
-        ) : (
-          <SDetail>{detail}</SDetail>
-        )}
-        <SVeil style={veilStyle} />
+        <SClip>
+          <SSpriteFrame>
+            <SSprite
+              source={role === 'complete' ? Sprites.meditate : Sprites[kind]}
+              resizeMode='contain'
+            />
+          </SSpriteFrame>
+          <STitle style={{ color }}>{role === 'done' ? 'Completed' : title}</STitle>
+          {role === 'done' ? (
+            <SDoneLabel style={{ color: PhaseColor[kind] }}>{PhaseLabel[kind]}</SDoneLabel>
+          ) : (
+            <STime
+              style={{
+                color: role === 'complete' ? Colors.DeepPrimary : color,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {role === 'complete' ? 'Done' : formatSeconds(shownSeconds)}
+            </STime>
+          )}
+          {role === 'done' ? (
+            <SDoneTime>{formatSeconds(seconds)}</SDoneTime>
+          ) : (
+            <SDetail>{detail}</SDetail>
+          )}
+          <SVeil style={veilStyle} />
+        </SClip>
       </SCard>
     </SExit>
   )
@@ -161,9 +177,6 @@ const SExit = styled(Animated.View)`
 `
 
 const SCard = styled(Animated.View)`
-  min-height: ${TrainingStepLayout.cardHeight}px;
-  justify-content: center;
-  padding: 22px 20px 18px;
   border-radius: 22px;
   background-color: ${Colors.White};
   shadow-color: ${Colors.Black};
@@ -171,6 +184,31 @@ const SCard = styled(Animated.View)`
   shadow-opacity: 0.08;
   shadow-radius: 18px;
   elevation: 4;
+`
+
+const SClip = styled.View`
+  min-height: ${TrainingStepLayout.cardHeight}px;
+  justify-content: center;
+  padding: 22px 20px 18px;
+  border-radius: 22px;
+  overflow: hidden;
+  background-color: ${Colors.White};
+`
+
+const SSpriteFrame = styled.View`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  align-items: center;
+  justify-content: center;
+`
+
+const SSprite = styled.Image`
+  width: 100%;
+  aspect-ratio: 1;
+  opacity: 0.22;
 `
 
 const STitle = styled.Text`

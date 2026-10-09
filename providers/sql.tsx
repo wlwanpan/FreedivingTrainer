@@ -37,6 +37,8 @@ export const DefaultSettings: Setting = {
   baselineMaxHoldSeconds: null,
   baselineContractionSeconds: null,
   baselineTestedAt: null,
+  trainingPlan: null,
+  trainingPlanStartedAt: null,
   createdAt: null,
   updatedAt: null,
 }

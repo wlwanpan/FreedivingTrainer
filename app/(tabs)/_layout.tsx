@@ -67,11 +67,11 @@ export default function TabLayout() {
           androidSrc={<VectorIcon family={Ionicons} name='timer-outline' />}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name='sessions'>
-        <Label>Sessions</Label>
+      <NativeTabs.Trigger name='analytics'>
+        <Label>Analytics</Label>
         <Icon
-          sf={{ default: 'list.bullet', selected: 'list.bullet' }}
-          androidSrc={<VectorIcon family={Ionicons} name='list-outline' />}
+          sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }}
+          androidSrc={<VectorIcon family={Ionicons} name='stats-chart-outline' />}
         />
       </NativeTabs.Trigger>
     </NativeTabs>
