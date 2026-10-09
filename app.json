@@ -54,7 +54,13 @@
       "reactCompiler": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "appVariant": "production",
+      "revenueCatIosApiKey": "",
+      "revenueCatAndroidApiKey": "",
+      "eas": {
+        "projectId": "3686bd0e-4427-42da-bdb2-b762b007e855"
+      }
     },
     "owner": "wlwanpan.dev"
   }
