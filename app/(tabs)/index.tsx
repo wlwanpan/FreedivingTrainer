@@ -1,27 +1,44 @@
+import Button from '@/components/Button'
 import FreeSessionsBanner from '@/components/FreeSessionsBanner'
 import ScreenHeader from '@/components/ScreenHeader'
 import TableRoundRow from '@/components/TableRoundRow'
 import TableTypeSwitch from '@/components/TableTypeSwitch'
 import WrapperScreen from '@/components/WrapperScreen'
+import { ErrorTitles } from '@/constants/errors'
 import { TableType, TableTypeDescription } from '@/constants/tables'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes, Layout } from '@/design/styles'
-import useLogTable from '@/hooks/useLogTable'
+import useTablePlan from '@/hooks/useTablePlan'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
+import { useSubscriptionContext } from '@/providers/subscription'
+import { useWarningModal } from '@/providers/warning_modal'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import { styled } from 'styled-components/native'
-import Button from '@/components/Button'
 
 
 export default function TablesScreen() {
   const router = useRouter()
   const { settings } = useSQLContext()
+  const subscription = useSubscriptionContext()
+  const { showWarning } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
   const [tableType, setTableType] = useState<TableType>('co2')
-  const { rounds, inFlight, logCompletedTable } = useLogTable(tableType)
+  const rounds = useTablePlan(tableType)
+
+  const startTraining = () => {
+    if (subscription.freeLimitReached) {
+      router.push('/paywall')
+      return
+    }
+    if (rounds.length === 0) {
+      showWarning(ErrorTitles.Input, 'Add at least one round before training.')
+      return
+    }
+    router.push({ pathname: '/train', params: { type: tableType } })
+  }
 
   return (
     <WrapperScreen skipBottomInset>
@@ -47,9 +64,8 @@ export default function TablesScreen() {
       </SRounds>
       <Footer aboveTabs>
         <Button
-          title='Log completed table'
-          onPress={() => { void logCompletedTable() }}
-          loading={inFlight}
+          title='Start Training'
+          onPress={startTraining}
         />
       </Footer>
     </WrapperScreen>

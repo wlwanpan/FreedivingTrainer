@@ -12,6 +12,7 @@ Pinned actions sit between the top bar and the bottom navigation. They keep a ga
 - Scrollable content on a tab screen may run under the bar. Its content container still uses `useBottomControlInset(true)` so the last control can scroll fully into view.
 - Header controls stay inside `ScreenHeader` or `HeaderWithBtn`. The row and the control use `Layout.MinControl` and `flex-shrink: 0`, so they stay below the status bar and do not collapse into the title.
 - Bottom clearance comes from `useBottomControlInset`: the device safe-area inset, plus the tab bar height on a tab screen. Do not hardcode a distance from the screen edge for one phone. `Layout.MinControl` is only the 44pt touch target.
+- Top clearance comes from `useTopControlInset`. `WrapperScreen` applies it. A full-screen route uses the device top inset. A modal sheet passes `sheet`, which keeps only the chrome gap, because the sheet already starts below the status bar. Do not add `insets.top` on a sheet.
 
 ```tsx
 const bottomInset = useBottomControlInset(true)
@@ -22,5 +23,9 @@ const bottomInset = useBottomControlInset(true)
   <Footer aboveTabs>
     <Button title='Log completed table' onPress={log} />
   </Footer>
+</WrapperScreen>
+
+<WrapperScreen scrollable sheet>
+  <HeaderWithBtn headerText='Lifetime access' leftText='Close' />
 </WrapperScreen>
 ```

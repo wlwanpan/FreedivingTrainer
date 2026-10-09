@@ -58,7 +58,7 @@ export default function PaywallScreen() {
   }
 
   return (
-    <WrapperScreen scrollable>
+    <WrapperScreen scrollable sheet>
       {dismissable && (
         <HeaderWithBtn
           headerText='Lifetime access'
