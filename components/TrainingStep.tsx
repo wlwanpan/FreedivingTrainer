@@ -123,39 +123,44 @@ export default function TrainingStep({
       : PhaseColor[kind]
 
   return (
-    <SCard
-      style={[animatedStyle, { zIndex }]}
+    <SExit
       exiting={FadeOutUp.duration(380)}
+      style={{ zIndex }}
       pointerEvents={role === 'current' || role === 'complete' ? 'auto' : 'none'}
     >
-      <STitle style={{ color }}>{role === 'done' ? 'Completed' : title}</STitle>
-      {role === 'done' ? (
-        <SDoneLabel style={{ color: PhaseColor[kind] }}>{PhaseLabel[kind]}</SDoneLabel>
-      ) : (
-        <STime
-          style={{
-            color: role === 'complete' ? Colors.DeepPrimary : color,
-            fontVariant: ['tabular-nums'],
-          }}
-        >
-          {role === 'complete' ? 'Done' : formatSeconds(shownSeconds)}
-        </STime>
-      )}
-      {role === 'done' ? (
-        <SDoneTime>{formatSeconds(seconds)}</SDoneTime>
-      ) : (
-        <SDetail>{detail}</SDetail>
-      )}
-      <SVeil style={veilStyle} />
-    </SCard>
+      <SCard style={animatedStyle}>
+        <STitle style={{ color }}>{role === 'done' ? 'Completed' : title}</STitle>
+        {role === 'done' ? (
+          <SDoneLabel style={{ color: PhaseColor[kind] }}>{PhaseLabel[kind]}</SDoneLabel>
+        ) : (
+          <STime
+            style={{
+              color: role === 'complete' ? Colors.DeepPrimary : color,
+              fontVariant: ['tabular-nums'],
+            }}
+          >
+            {role === 'complete' ? 'Done' : formatSeconds(shownSeconds)}
+          </STime>
+        )}
+        {role === 'done' ? (
+          <SDoneTime>{formatSeconds(seconds)}</SDoneTime>
+        ) : (
+          <SDetail>{detail}</SDetail>
+        )}
+        <SVeil style={veilStyle} />
+      </SCard>
+    </SExit>
   )
 }
 
-const SCard = styled(Animated.View)`
+const SExit = styled(Animated.View)`
   position: absolute;
   top: 0;
   left: 28px;
   right: 28px;
+`
+
+const SCard = styled(Animated.View)`
   min-height: ${TrainingStepLayout.cardHeight}px;
   justify-content: center;
   padding: 22px 20px 18px;
