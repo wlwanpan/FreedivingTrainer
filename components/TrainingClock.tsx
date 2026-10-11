@@ -1,12 +1,12 @@
 import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import TrainingBackdrop from '@/components/TrainingBackdrop'
-import TrainingStep, { trainingStepY } from '@/components/TrainingStep'
+import TrainingStep, { trainingCardSize, trainingStepY } from '@/components/TrainingStep'
 import { Footer } from '@/design/styled'
 import { Colors } from '@/design/styles'
 import { TrainStep } from '@/hooks/useTrainingClock'
 import { useState } from 'react'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, useWindowDimensions } from 'react-native'
 import { styled } from 'styled-components/native'
 
 
@@ -45,6 +45,8 @@ export default function TrainingClock({
   onRetry,
   onTogglePause,
 }: Props) {
+  const { width } = useWindowDimensions()
+  const cardSize = trainingCardSize(width)
   const [chainHeight, setChainHeight] = useState(0)
   const note = saveFailed
     ? 'The session did not save.'
@@ -70,7 +72,7 @@ export default function TrainingClock({
           <TrainingStep
             key={previous.index}
             role='done'
-            y={trainingStepY('done', chainHeight)}
+            y={trainingStepY('done', chainHeight, cardSize)}
             kind={previous.kind}
             seconds={previous.seconds}
             roundIndex={previous.roundIndex}
@@ -81,7 +83,7 @@ export default function TrainingClock({
           <TrainingStep
             key={current.index}
             role='current'
-            y={trainingStepY('current', chainHeight)}
+            y={trainingStepY('current', chainHeight, cardSize)}
             kind={current.kind}
             seconds={current.seconds}
             remainingSeconds={remainingSeconds}
@@ -93,7 +95,7 @@ export default function TrainingClock({
           <TrainingStep
             key='complete'
             role='complete'
-            y={trainingStepY('complete', chainHeight)}
+            y={trainingStepY('complete', chainHeight, cardSize)}
             note={note}
           />
         ) : null}
@@ -101,7 +103,7 @@ export default function TrainingClock({
           <TrainingStep
             key={next.index}
             role='next'
-            y={trainingStepY('next', chainHeight)}
+            y={trainingStepY('next', chainHeight, cardSize)}
             kind={next.kind}
             seconds={next.seconds}
             roundIndex={next.roundIndex}

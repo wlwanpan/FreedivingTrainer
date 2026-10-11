@@ -2,9 +2,9 @@ import { DefaultDateFormat } from '@/constants/dates'
 import { SQLClient } from '@/db'
 import { drizzleDb } from '@/db/client'
 import { sqlDeleteSession, sqlEraseAllData } from '@/db/deletions'
-import { sqlInsertSession, sqlInsertSettings } from '@/db/inserts'
-import { sqlAllSessions, sqlFirstSettings } from '@/db/queries'
-import { Session, SessionInsert, Setting, SettingInsert } from '@/db/schema'
+import { sqlInsertBaselineTest, sqlInsertSession, sqlInsertSettings } from '@/db/inserts'
+import { sqlAllSessions, sqlBaselineTests, sqlFirstSettings } from '@/db/queries'
+import { BaselineTest, BaselineTestInsert, Session, SessionInsert, Setting, SettingInsert } from '@/db/schema'
 import { sqlUpdateSettings } from '@/db/updates'
 import { parseSQLiteError } from '@/utils/sql_errors'
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite'
@@ -48,7 +48,9 @@ export interface ISQLContext {
   updatedAt?: Date
   settings: Setting
   sessions: Session[]
+  baselineTests: BaselineTest[]
   updateSettings: (setting: SettingInsert) => Promise<InsertionResults>
+  insertBaselineTest: (test: BaselineTestInsert) => Promise<InsertionResults>
   insertSession: (session: SessionInsert) => Promise<InsertionResults>
   deleteSession: (id: number) => Promise<DeleteResults>
   eraseAllData: () => Promise<DeleteResults>
@@ -75,11 +77,25 @@ export default function SQLContextProvider({ children }: Props) {
     console.error('Error fetching sessions:', sessionsErr)
   }
 
+  const { data: baselineTests, error: baselineTestsErr } = useLiveQuery(sqlBaselineTests(drizzleDb))
+  if (baselineTestsErr) {
+    console.error('Error fetching baseline tests:', baselineTestsErr)
+  }
+
   const updateSettings = async (setting: SettingInsert): Promise<InsertionResults> => {
     try {
       const res = !setting.id
         ? await sqlInsertSettings(drizzleDb, setting)
         : await sqlUpdateSettings(drizzleDb, { ...setting, id: setting.id })
+      return { insertionID: res.lastInsertRowId }
+    } catch (e) {
+      return handleException(e)
+    }
+  }
+
+  const insertBaselineTest = async (test: BaselineTestInsert): Promise<InsertionResults> => {
+    try {
+      const res = await sqlInsertBaselineTest(drizzleDb, test)
       return { insertionID: res.lastInsertRowId }
     } catch (e) {
       return handleException(e)
@@ -119,7 +135,9 @@ export default function SQLContextProvider({ children }: Props) {
       updatedAt,
       settings: settings ?? DefaultSettings,
       sessions: sessions ?? [],
+      baselineTests: baselineTests ?? [],
       updateSettings,
+      insertBaselineTest,
       insertSession,
       deleteSession,
       eraseAllData,

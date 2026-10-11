@@ -11,6 +11,7 @@ export async function sqlDeleteSession(db: SQLClient, id: number): Promise<SQLit
 export async function sqlEraseAllData(db: SQLClient): Promise<void> {
   await db.transaction(async (tx) => {
     await tx.delete(schema.sessions).where(sql`1 = 1`).run()
+    await tx.delete(schema.baselineTests).where(sql`1 = 1`).run()
     await tx.delete(schema.settings).where(sql`1 = 1`).run()
   })
 }

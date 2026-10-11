@@ -23,6 +23,13 @@ export const settings = sqliteTable('settings', {
   createdAt: integer('created_at', { mode: 'timestamp' }),
 })
 
+export const baselineTests = sqliteTable('baseline_tests', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  maxHoldSeconds: integer('max_hold_seconds').notNull(),
+  contractionSeconds: integer('contraction_seconds'),
+  testedAt: integer('tested_at', { mode: 'timestamp' }).notNull(),
+})
+
 export const sessions = sqliteTable('sessions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   tableType: text('table_type', { enum: TableTypes }).$type<TableType>().notNull(),
@@ -37,5 +44,7 @@ export const sessions = sqliteTable('sessions', {
 
 export type Setting = typeof settings.$inferSelect
 export type SettingInsert = typeof settings.$inferInsert
+export type BaselineTest = typeof baselineTests.$inferSelect
+export type BaselineTestInsert = typeof baselineTests.$inferInsert
 export type Session = typeof sessions.$inferSelect
 export type SessionInsert = typeof sessions.$inferInsert

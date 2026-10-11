@@ -1,7 +1,7 @@
 import { SQLiteRunResult } from 'expo-sqlite'
 import { SQLClient } from './client'
 import * as schema from './schema'
-import { SessionInsert, SettingInsert } from './schema'
+import { BaselineTestInsert, SessionInsert, SettingInsert } from './schema'
 
 
 export async function sqlInsertSettings(db: SQLClient, setting: SettingInsert): Promise<SQLiteRunResult> {
@@ -9,6 +9,13 @@ export async function sqlInsertSettings(db: SQLClient, setting: SettingInsert): 
     ...setting,
     id: undefined,
   }).run()
+}
+
+export async function sqlInsertBaselineTest(
+  db: SQLClient,
+  test: BaselineTestInsert,
+): Promise<SQLiteRunResult> {
+  return db.insert(schema.baselineTests).values(test).run()
 }
 
 export async function sqlInsertSession(db: SQLClient, session: SessionInsert): Promise<SQLiteRunResult> {
