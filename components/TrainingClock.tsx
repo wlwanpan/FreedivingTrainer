@@ -64,10 +64,7 @@ export default function TrainingClock({
         leftOnClick={done ? undefined : onCancel}
       />
       <SChain onLayout={onChainLayout}>
-        <TrainingBackdrop
-          kind={done ? null : current?.kind ?? null}
-          paused={paused}
-        />
+        <TrainingBackdrop paused={paused} />
         {chainHeight > 0 && previous ? (
           <TrainingStep
             key={previous.index}

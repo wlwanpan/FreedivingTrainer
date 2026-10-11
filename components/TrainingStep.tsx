@@ -1,7 +1,7 @@
 import { Colors, FontSizes } from '@/design/styles'
 import { TrainPhaseKind } from '@/hooks/useTrainingClock'
 import { useFormatterContext } from '@/providers/formatter'
-import { trainingSpriteFrame } from '@/utils/training_sprite'
+import { TrainingSpriteCorner, trainingSpriteFrame } from '@/utils/training_sprite'
 import { useEffect } from 'react'
 import { useWindowDimensions } from 'react-native'
 import Animated, {
@@ -35,7 +35,7 @@ export const TrainingStepLayout = {
 } as const
 
 export function trainingCardSize(windowWidth: number): number {
-  return Math.max(0, windowWidth - TrainingStepLayout.inset * 2)
+  return Math.max(0, (windowWidth - TrainingStepLayout.inset * 2) * 0.9)
 }
 
 const Place = {
@@ -86,6 +86,7 @@ export default function TrainingStep({
   const { formatSeconds } = useFormatterContext()
   const { width } = useWindowDimensions()
   const cardSize = trainingCardSize(width)
+  const corner = cardSize * TrainingSpriteCorner
   const place = Place[role]
   const translateY = useSharedValue(y)
   const scale = useSharedValue(place.scale)
@@ -111,7 +112,7 @@ export default function TrainingStep({
   const veilStyle = useAnimatedStyle(() => ({
     opacity: veil.value,
   }))
-  const zIndex = role === 'done' ? 3 : role === 'next' ? 1 : 2
+  const zIndex = role === 'current' || role === 'complete' ? 3 : role === 'done' ? 2 : 1
 
   const shownSeconds = role === 'current' ? remainingSeconds : seconds
   const detail = role === 'complete'
@@ -137,8 +138,8 @@ export default function TrainingStep({
       style={{ zIndex }}
       pointerEvents={role === 'current' || role === 'complete' ? 'auto' : 'none'}
     >
-      <SCard style={animatedStyle}>
-        <SClip style={{ height: cardSize }}>
+      <SCard style={[animatedStyle, { width: cardSize, borderRadius: corner }]}>
+        <SClip style={{ height: cardSize, borderRadius: corner }}>
           <SSpriteFrame>
             <SSpriteWindow>
               <SSprite source={sprite.source} style={sprite.style} />
@@ -162,7 +163,7 @@ export default function TrainingStep({
           ) : (
             <SDetail>{detail}</SDetail>
           )}
-          <SVeil style={veilStyle} />
+          <SVeil style={[veilStyle, { borderRadius: corner }]} />
         </SClip>
       </SCard>
     </SExit>
@@ -177,7 +178,7 @@ const SExit = styled(Animated.View)`
 `
 
 const SCard = styled(Animated.View)`
-  border-radius: 22px;
+  align-self: center;
   background-color: ${Colors.White};
   shadow-color: ${Colors.Black};
   shadow-offset: 0px 10px;
@@ -189,7 +190,6 @@ const SCard = styled(Animated.View)`
 const SClip = styled.View`
   justify-content: center;
   padding: 22px 20px 18px;
-  border-radius: 22px;
   overflow: hidden;
   background-color: ${Colors.White};
 `
@@ -256,6 +256,5 @@ const SVeil = styled(Animated.View)`
   right: 0;
   bottom: 0;
   left: 0;
-  border-radius: 22px;
   background-color: rgba(255, 255, 255, 0.42);
 `

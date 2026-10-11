@@ -14,8 +14,14 @@ export default function TableRoundRow({ round }: Props) {
   return (
     <Wrapper>
       <SIndex>Round {round.index}</SIndex>
-      <SDetail>Hold {formatSeconds(round.holdSeconds)}</SDetail>
-      <SDetail>Rest {formatSeconds(round.restSeconds)}</SDetail>
+      <SDetail>
+        <SHold>Hold</SHold>
+        {` ${formatSeconds(round.holdSeconds)}`}
+      </SDetail>
+      <SDetail>
+        <SRest>Rest</SRest>
+        {` ${formatSeconds(round.restSeconds)}`}
+      </SDetail>
     </Wrapper>
   )
 }
@@ -39,4 +45,14 @@ const SIndex = styled.Text`
 const SDetail = styled.Text`
   font-size: ${FontSizes.Small};
   color: ${Colors.GreyPrimary};
+`
+
+const SHold = styled.Text`
+  font-weight: 700;
+  color: ${Colors.TealPrimary};
+`
+
+const SRest = styled.Text`
+  font-weight: 700;
+  color: ${Colors.BluePrimary};
 `
