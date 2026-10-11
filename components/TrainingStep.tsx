@@ -71,6 +71,7 @@ type Props = {
   roundIndex?: number | null
   roundCount?: number
   note?: string
+  animated?: boolean
 }
 
 export default function TrainingStep({
@@ -82,6 +83,7 @@ export default function TrainingStep({
   roundIndex = null,
   roundCount = 0,
   note,
+  animated = true,
 }: Props) {
   const { formatSeconds } = useFormatterContext()
   const { width } = useWindowDimensions()
@@ -95,11 +97,19 @@ export default function TrainingStep({
 
   useEffect(() => {
     const nextPlace = Place[role]
+    const nextVeil = role === 'next' ? 1 : 0
+    if (!animated) {
+      translateY.value = y
+      scale.value = nextPlace.scale
+      opacity.value = nextPlace.opacity
+      veil.value = nextVeil
+      return
+    }
     translateY.value = withTiming(y, Motion)
     scale.value = withTiming(nextPlace.scale, Motion)
     opacity.value = withTiming(nextPlace.opacity, Motion)
-    veil.value = withTiming(role === 'next' ? 1 : 0, Motion)
-  }, [opacity, role, scale, translateY, veil, y])
+    veil.value = withTiming(nextVeil, Motion)
+  }, [animated, opacity, role, scale, translateY, veil, y])
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -134,7 +144,7 @@ export default function TrainingStep({
 
   return (
     <SExit
-      exiting={FadeOutUp.duration(380)}
+      exiting={animated ? FadeOutUp.duration(380) : undefined}
       style={{ zIndex }}
       pointerEvents={role === 'current' || role === 'complete' ? 'auto' : 'none'}
     >

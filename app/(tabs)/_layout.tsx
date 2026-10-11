@@ -74,6 +74,13 @@ export default function TabLayout() {
           androidSrc={<VectorIcon family={Ionicons} name='stats-chart-outline' />}
         />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name='settings'>
+        <Label>Settings</Label>
+        <Icon
+          sf={{ default: 'gearshape', selected: 'gearshape.fill' }}
+          androidSrc={<VectorIcon family={Ionicons} name='settings-outline' />}
+        />
+      </NativeTabs.Trigger>
     </NativeTabs>
   )
 }
