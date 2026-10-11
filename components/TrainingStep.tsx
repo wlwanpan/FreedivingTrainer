@@ -1,7 +1,9 @@
 import { Colors, FontSizes } from '@/design/styles'
 import { TrainPhaseKind } from '@/hooks/useTrainingClock'
 import { useFormatterContext } from '@/providers/formatter'
+import { trainingSpriteFrame } from '@/utils/training_sprite'
 import { useEffect } from 'react'
+import { useWindowDimensions } from 'react-native'
 import Animated, {
   Easing,
   FadeOutUp,
@@ -9,7 +11,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
-import { ImageSourcePropType } from 'react-native'
 import { styled } from 'styled-components/native'
 
 
@@ -28,10 +29,14 @@ const PhaseColor: Record<TrainPhaseKind, string> = {
 }
 
 export const TrainingStepLayout = {
-  cardHeight: 176,
+  inset: 28,
   gap: 28,
   edge: 16,
 } as const
+
+export function trainingCardSize(windowWidth: number): number {
+  return Math.max(0, windowWidth - TrainingStepLayout.inset * 2)
+}
 
 const Place = {
   done: { scale: 0.78, opacity: 0.78 },
@@ -40,23 +45,16 @@ const Place = {
   complete: { scale: 1, opacity: 1 },
 } as const
 
-export function trainingStepY(role: TrainingStepRole, chainHeight: number): number {
-  const current = Math.max(0, (chainHeight - TrainingStepLayout.cardHeight) / 2)
+export function trainingStepY(role: TrainingStepRole, chainHeight: number, cardSize: number): number {
+  const current = Math.max(0, (chainHeight - cardSize) / 2)
   if (role === 'done') {
-    const lifted = current - TrainingStepLayout.gap - TrainingStepLayout.cardHeight * Place.done.scale
+    const lifted = current - TrainingStepLayout.gap - cardSize * Place.done.scale
     return Math.max(TrainingStepLayout.edge, lifted)
   }
   if (role === 'next') {
-    return current + TrainingStepLayout.cardHeight + TrainingStepLayout.gap
+    return current + cardSize + TrainingStepLayout.gap
   }
   return current
-}
-
-const Sprites: Record<TrainPhaseKind | 'meditate', ImageSourcePropType> = {
-  breathe: require('../assets/images/training/breathe.png'),
-  hold: require('../assets/images/training/hold.png'),
-  rest: require('../assets/images/training/rest.png'),
-  meditate: require('../assets/images/training/meditate.png'),
 }
 
 const Motion = {
@@ -86,6 +84,8 @@ export default function TrainingStep({
   note,
 }: Props) {
   const { formatSeconds } = useFormatterContext()
+  const { width } = useWindowDimensions()
+  const cardSize = trainingCardSize(width)
   const place = Place[role]
   const translateY = useSharedValue(y)
   const scale = useSharedValue(place.scale)
@@ -129,6 +129,7 @@ export default function TrainingStep({
     : role === 'complete'
       ? Colors.TealPrimary
       : PhaseColor[kind]
+  const sprite = trainingSpriteFrame(role === 'complete' ? 'meditate' : kind)
 
   return (
     <SExit
@@ -137,12 +138,11 @@ export default function TrainingStep({
       pointerEvents={role === 'current' || role === 'complete' ? 'auto' : 'none'}
     >
       <SCard style={animatedStyle}>
-        <SClip>
+        <SClip style={{ height: cardSize }}>
           <SSpriteFrame>
-            <SSprite
-              source={role === 'complete' ? Sprites.meditate : Sprites[kind]}
-              resizeMode='contain'
-            />
+            <SSpriteWindow>
+              <SSprite source={sprite.source} style={sprite.style} />
+            </SSpriteWindow>
           </SSpriteFrame>
           <STitle style={{ color }}>{role === 'done' ? 'Completed' : title}</STitle>
           {role === 'done' ? (
@@ -172,8 +172,8 @@ export default function TrainingStep({
 const SExit = styled(Animated.View)`
   position: absolute;
   top: 0;
-  left: 28px;
-  right: 28px;
+  left: ${TrainingStepLayout.inset}px;
+  right: ${TrainingStepLayout.inset}px;
 `
 
 const SCard = styled(Animated.View)`
@@ -187,7 +187,6 @@ const SCard = styled(Animated.View)`
 `
 
 const SClip = styled.View`
-  min-height: ${TrainingStepLayout.cardHeight}px;
   justify-content: center;
   padding: 22px 20px 18px;
   border-radius: 22px;
@@ -205,9 +204,13 @@ const SSpriteFrame = styled.View`
   justify-content: center;
 `
 
-const SSprite = styled.Image`
+const SSpriteWindow = styled.View`
   width: 100%;
-  aspect-ratio: 1;
+  height: 100%;
+  overflow: hidden;
+`
+
+const SSprite = styled.Image`
   opacity: 0.22;
 `
 
