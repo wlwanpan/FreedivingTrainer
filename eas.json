@@ -37,7 +37,8 @@
   "submit": {
     "production": {
       "ios": {
-        "bundleIdentifier": "com.wlwanpan.FreedivingTrainer"
+        "bundleIdentifier": "com.wlwanpan.FreedivingTrainer",
+        "ascAppId": "6821739312"
       }
     }
   }
