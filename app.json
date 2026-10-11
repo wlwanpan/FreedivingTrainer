@@ -9,6 +9,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.wlwanpan.FreedivingTrainer",
       "supportsTablet": false,
       "userInterfaceStyle": "light",
       "infoPlist": {
