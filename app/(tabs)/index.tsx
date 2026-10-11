@@ -1,5 +1,4 @@
 import Button from '@/components/Button'
-import FreeSessionsBanner from '@/components/FreeSessionsBanner'
 import ScreenHeader from '@/components/ScreenHeader'
 import SettingsChoice from '@/components/SettingsChoice'
 import TableRoundRow from '@/components/TableRoundRow'
@@ -78,7 +77,6 @@ export default function TablesScreen() {
           </SIconButton>
         )}
       />
-      <FreeSessionsBanner />
       <TableTypeSwitch value={tableType} onChange={setTableType} />
       <SHint>{TableTypeDescription[tableType]}</SHint>
       <SHint>Breathe-up {formatSeconds(settings.breatheUpSeconds)}</SHint>

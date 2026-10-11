@@ -148,6 +148,34 @@ export default function useBaselineTest(finishToHome: boolean) {
     if (plan == null || storedTable == null) return
     setSaving(true)
     const nowDate = new Date()
+    const priorAt = sql.settings.baselineTestedAt?.getTime() ?? null
+    const priorStored = priorAt != null && sql.baselineTests.some((test) => test.testedAt.getTime() === priorAt)
+    if (
+      sql.settings.baselineMaxHoldSeconds != null
+      && sql.settings.baselineTestedAt != null
+      && !priorStored
+    ) {
+      const prior = await sql.insertBaselineTest({
+        maxHoldSeconds: sql.settings.baselineMaxHoldSeconds,
+        contractionSeconds: sql.settings.baselineContractionSeconds,
+        testedAt: sql.settings.baselineTestedAt,
+      })
+      if (prior.error) {
+        setSaving(false)
+        showWarning(ErrorTitles.Sql, prior.error.message)
+        return
+      }
+    }
+    const recorded = await sql.insertBaselineTest({
+      maxHoldSeconds: outcome.maxHoldSeconds,
+      contractionSeconds: outcome.contractionSeconds,
+      testedAt: nowDate,
+    })
+    if (recorded.error) {
+      setSaving(false)
+      showWarning(ErrorTitles.Sql, recorded.error.message)
+      return
+    }
     const res = await sql.updateSettings({
       ...sql.settings,
       ...tableSettingsFromPlan(outcome.plan),

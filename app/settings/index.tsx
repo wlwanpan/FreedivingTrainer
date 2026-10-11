@@ -1,4 +1,5 @@
 import Button from '@/components/Button'
+import FreeSessionsBanner from '@/components/FreeSessionsBanner'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import SettingsChoice from '@/components/SettingsChoice'
 import SettingsStepper from '@/components/SettingsStepper'
@@ -185,6 +186,7 @@ export default function SettingsScreen() {
         </SChoiceRow>
 
         <SSection>Access</SSection>
+        <FreeSessionsBanner />
         <Button
           title={subscription.hasLifetimeAccess ? 'Lifetime access is active' : 'Unlock lifetime access'}
           onPress={() => router.push('/paywall')}

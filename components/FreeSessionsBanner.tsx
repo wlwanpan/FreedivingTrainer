@@ -22,7 +22,8 @@ export default function FreeSessionsBanner() {
 }
 
 const Wrapper = styled.Pressable`
-  margin: 8px 20px 0;
+  margin-top: 8px;
+  margin-bottom: 12px;
   padding: 10px 12px;
   border-radius: 10px;
   background-color: ${Colors.TealBackground};
