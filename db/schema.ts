@@ -6,6 +6,7 @@ export const settings = sqliteTable('settings', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   dateFormat: text('date_format').notNull().default('YYYY-MM-DD'),
   breatheUpSeconds: integer('breathe_up_seconds').notNull().default(120),
+  trainingAnimation: integer('training_animation', { mode: 'boolean' }).notNull().default(true),
   co2HoldSeconds: integer('co2_hold_seconds').notNull().default(90),
   co2RestStartSeconds: integer('co2_rest_start_seconds').notNull().default(120),
   co2RestStepSeconds: integer('co2_rest_step_seconds').notNull().default(15),

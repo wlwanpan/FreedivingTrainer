@@ -7,7 +7,7 @@ import WrapperScreen from '@/components/WrapperScreen'
 import { ErrorTitles } from '@/constants/errors'
 import { TableType, TableTypeDescription } from '@/constants/tables'
 import { Footer } from '@/design/styled'
-import { Colors, FontSizes, Layout } from '@/design/styles'
+import { Colors, FontSizes } from '@/design/styles'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useTablePlan from '@/hooks/useTablePlan'
 import { useFormatterContext } from '@/providers/formatter'
@@ -15,7 +15,6 @@ import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
 import { buildCo2Table } from '@/utils/table'
-import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import { styled } from 'styled-components/native'
@@ -69,14 +68,7 @@ export default function TablesScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <ScreenHeader
-        title='Tables'
-        right={(
-          <SIconButton onPress={() => router.push('/settings')}>
-            <Ionicons name='settings-outline' size={24} color={Colors.TealPrimary} />
-          </SIconButton>
-        )}
-      />
+      <ScreenHeader title='Tables' />
       <TableTypeSwitch value={tableType} onChange={setTableType} />
       <SHint>{TableTypeDescription[tableType]}</SHint>
       <SHint>Breathe-up {formatSeconds(settings.breatheUpSeconds)}</SHint>
@@ -103,11 +95,13 @@ export default function TablesScreen() {
           </SChoices>
         </>
       ) : null}
-      <SRounds>
-        {rounds.map((round) => (
-          <TableRoundRow key={round.index} round={round} />
-        ))}
-      </SRounds>
+      <SCard>
+        <SRounds>
+          {rounds.map((round) => (
+            <TableRoundRow key={round.index} round={round} />
+          ))}
+        </SRounds>
+      </SCard>
       <Footer aboveTabs>
         <Button
           title='Start Training'
@@ -117,13 +111,6 @@ export default function TablesScreen() {
     </WrapperScreen>
   )
 }
-
-const SIconButton = styled.Pressable`
-  width: ${Layout.MinControl}px;
-  height: ${Layout.MinControl}px;
-  align-items: center;
-  justify-content: center;
-`
 
 const SHint = styled.Text`
   margin: 4px 20px 0;
@@ -137,7 +124,16 @@ const SChoices = styled.View`
   margin: 12px 20px 0;
 `
 
+const SCard = styled.View`
+  flex: 1;
+  margin: 12px 20px 0;
+  border-radius: 16px;
+  background-color: ${Colors.White};
+  border-width: 1px;
+  border-color: ${Colors.GreyDivider};
+  overflow: hidden;
+`
+
 const SRounds = styled.ScrollView`
   flex: 1;
-  margin-top: 12px;
 `

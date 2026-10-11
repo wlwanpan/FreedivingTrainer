@@ -5,6 +5,7 @@ import TrainingStep, { trainingCardSize, trainingStepY } from '@/components/Trai
 import { Footer } from '@/design/styled'
 import { Colors } from '@/design/styles'
 import { TrainStep } from '@/hooks/useTrainingClock'
+import { useSQLContext } from '@/providers/sql'
 import { useState } from 'react'
 import { LayoutChangeEvent, useWindowDimensions } from 'react-native'
 import { styled } from 'styled-components/native'
@@ -45,6 +46,8 @@ export default function TrainingClock({
   onRetry,
   onTogglePause,
 }: Props) {
+  const { settings } = useSQLContext()
+  const animated = settings.trainingAnimation
   const { width } = useWindowDimensions()
   const cardSize = trainingCardSize(width)
   const [chainHeight, setChainHeight] = useState(0)
@@ -64,10 +67,7 @@ export default function TrainingClock({
         leftOnClick={done ? undefined : onCancel}
       />
       <SChain onLayout={onChainLayout}>
-        <TrainingBackdrop
-          kind={done ? null : current?.kind ?? null}
-          paused={paused}
-        />
+        {animated ? <TrainingBackdrop paused={paused} /> : null}
         {chainHeight > 0 && previous ? (
           <TrainingStep
             key={previous.index}
@@ -77,6 +77,7 @@ export default function TrainingClock({
             seconds={previous.seconds}
             roundIndex={previous.roundIndex}
             roundCount={roundCount}
+            animated={animated}
           />
         ) : null}
         {chainHeight > 0 && current ? (
@@ -89,6 +90,7 @@ export default function TrainingClock({
             remainingSeconds={remainingSeconds}
             roundIndex={current.roundIndex}
             roundCount={roundCount}
+            animated={animated}
           />
         ) : null}
         {chainHeight > 0 && done ? (
@@ -97,6 +99,7 @@ export default function TrainingClock({
             role='complete'
             y={trainingStepY('complete', chainHeight, cardSize)}
             note={note}
+            animated={animated}
           />
         ) : null}
         {chainHeight > 0 && next ? (
@@ -108,6 +111,7 @@ export default function TrainingClock({
             seconds={next.seconds}
             roundIndex={next.roundIndex}
             roundCount={roundCount}
+            animated={animated}
           />
         ) : null}
       </SChain>

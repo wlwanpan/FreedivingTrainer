@@ -29,6 +29,13 @@
       "when": 1791740461841,
       "tag": "0003_baseline_tests",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791752592190,
+      "tag": "0004_training_animation",
+      "breakpoints": true
     }
   ]
 }

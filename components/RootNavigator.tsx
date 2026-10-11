@@ -14,16 +14,6 @@ export default function RootNavigator() {
     }}>
       <Stack.Screen name='(tabs)' options={{ animation: 'fade' }} />
       <Stack.Screen
-        name='settings'
-        options={{
-          animation: 'slide_from_right',
-          presentation: 'card',
-          gestureEnabled: true,
-          gestureDirection: 'horizontal',
-          fullScreenGestureEnabled: true,
-        }}
-      />
-      <Stack.Screen
         name='onboarding'
         options={{
           animation: 'fade',
