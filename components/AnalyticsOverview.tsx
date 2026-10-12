@@ -2,10 +2,15 @@ import { Colors, FontSizes } from '@/design/styles'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { trainingOverview } from '@/utils/training_overview'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { styled } from 'styled-components/native'
 
 
-export default function AnalyticsOverview() {
+type Props = {
+  onPress?: () => void
+}
+
+export default function AnalyticsOverview({ onPress }: Props) {
   const { settings, sessions, baselineTests } = useSQLContext()
   const { formatSeconds } = useFormatterContext()
   const overview = trainingOverview(sessions, baselineTests, settings)
@@ -16,8 +21,13 @@ export default function AnalyticsOverview() {
     ? '—'
     : formatSeconds(overview.bestContractionSeconds)
 
-  return (
-    <Wrapper>
+  const stats = (
+    <>
+      {onPress ? (
+        <SHeader>
+          <Ionicons name='chevron-forward' size={22} color={Colors.TealPrimary} />
+        </SHeader>
+      ) : null}
       <SGrid>
         <SStat>
           <SValue>{overview.trainedDays}</SValue>
@@ -36,6 +46,14 @@ export default function AnalyticsOverview() {
           <SLabel>Best contraction</SLabel>
         </SStat>
       </SGrid>
+    </>
+  )
+
+  return (
+    <Wrapper>
+      {onPress ? (
+        <SPress onPress={onPress}>{stats}</SPress>
+      ) : stats}
     </Wrapper>
   )
 }
@@ -47,6 +65,14 @@ const Wrapper = styled.View`
   background-color: ${Colors.White};
   border-width: 1px;
   border-color: ${Colors.GreyDivider};
+`
+
+const SPress = styled.Pressable``
+
+const SHeader = styled.View`
+  flex-direction: row;
+  justify-content: flex-end;
+  padding: 4px 8px 0;
 `
 
 const SGrid = styled.View`

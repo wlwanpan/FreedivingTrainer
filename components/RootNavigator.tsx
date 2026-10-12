@@ -28,6 +28,20 @@ export default function RootNavigator() {
         }}
       />
       <Stack.Screen
+        name='analytics'
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name='training'
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
         name='plan'
         options={{
           animation: 'slide_from_right',

@@ -6,13 +6,15 @@ import { styled } from 'styled-components/native'
 
 type Props = {
   round: TableRound
+  inCard?: boolean
+  last?: boolean
 }
 
-export default function TableRoundRow({ round }: Props) {
+export default function TableRoundRow({ round, inCard = false, last = false }: Props) {
   const { formatSeconds } = useFormatterContext()
 
   return (
-    <Wrapper>
+    <Wrapper $inCard={inCard} $last={last}>
       <SIndex>Round {round.index}</SIndex>
       <SDetail>
         <SHold>Hold</SHold>
@@ -26,12 +28,12 @@ export default function TableRoundRow({ round }: Props) {
   )
 }
 
-const Wrapper = styled.View`
+const Wrapper = styled.View<{ $inCard: boolean; $last: boolean }>`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom-width: 1px;
+  padding: 14px ${(props) => props.$inCard ? 16 : 20}px;
+  border-bottom-width: ${(props) => props.$last ? 0 : 1}px;
   border-bottom-color: ${Colors.GreyDivider};
 `
 
