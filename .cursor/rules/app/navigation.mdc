@@ -8,7 +8,9 @@ alwaysApply: false
 
 File-based routing via Expo Router. `app/_layout.tsx` opens SQLite, runs migrations, and mounts providers.
 
-- `app/(tabs)/` — Training and Home
+- `app/(tabs)/` — Home, Table, and Settings
+- `app/training.tsx` — the current plan, week by week. Opened from the Home plan card
+- `app/analytics.tsx` — hold history and sessions by table. Opened from the Home overview card
 - `app/onboarding.tsx` — first launch. The baseline test creates the settings row
 - `app/baseline.tsx` — maximum static hold, then a 4, 8, or 12 week training plan
 - `app/plan.tsx` — the same plan picker, opened from Settings to change the current plan
