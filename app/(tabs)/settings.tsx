@@ -8,14 +8,12 @@ import { DateFormats } from '@/constants/dates'
 import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
 import { Colors, FontSizes } from '@/design/styles'
-import useChangeTrainingPlan from '@/hooks/useChangeTrainingPlan'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
-import { TrainingPlans, trainingPlanById } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { styled } from 'styled-components/native'
@@ -28,9 +26,7 @@ export default function SettingsScreen() {
   const { formatSeconds } = useFormatterContext()
   const { showWarning, showConfirmDeletion } = useWarningModal()
   const updateSetting = useUpdateSetting()
-  const changePlan = useChangeTrainingPlan()
   const planWeek = useCurrentPlanWeek()
-  const selectedPlanId = trainingPlanById(settings.trainingPlan)?.id ?? null
   const paddingBottom = useBottomControlInset(true)
   const [eraseInFlight, setEraseInFlight] = useState(false)
   const [restoreInFlight, setRestoreInFlight] = useState(false)
@@ -123,16 +119,10 @@ export default function SettingsScreen() {
               <SNote>
                 {planWeek?.detail ?? 'Choose a 4, 8, or 12 week plan. Keep CO2 and O2 on different days.'}
               </SNote>
-              <SChoiceRow>
-                {TrainingPlans.map((plan) => (
-                  <SettingsChoice
-                    key={plan.id}
-                    label={`${plan.weeks} weeks`}
-                    selected={selectedPlanId === plan.id}
-                    onPress={() => { void changePlan(plan.id) }}
-                  />
-                ))}
-              </SChoiceRow>
+              <Button
+                title='Change plan'
+                onPress={() => router.push('/plan')}
+              />
             </>
           )}
 

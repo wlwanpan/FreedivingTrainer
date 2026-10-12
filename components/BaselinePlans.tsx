@@ -18,18 +18,32 @@ import { styled } from 'styled-components/native'
 type Props = {
   outcome: BaselineOutcome
   saving: boolean
+  initialPlanId?: TrainingPlanId
   onStart: (planId: TrainingPlanId) => void
   onRetake: () => void
+  onBack?: () => void
 }
 
-export default function BaselinePlans({ outcome, saving, onStart, onRetake }: Props) {
+export default function BaselinePlans({
+  outcome,
+  saving,
+  initialPlanId,
+  onStart,
+  onRetake,
+  onBack,
+}: Props) {
   const { formatSeconds } = useFormatterContext()
-  const [planId, setPlanId] = useState<TrainingPlanId>('beginner')
+  const [planId, setPlanId] = useState<TrainingPlanId>(initialPlanId ?? 'beginner')
   const selected = TrainingPlans.find((plan) => plan.id === planId) ?? TrainingPlans[0]
 
   return (
     <Wrapper>
-      <HeaderWithBtn headerText='Choose a plan' />
+      <HeaderWithBtn
+        headerText='Choose a plan'
+        leftText={onBack ? 'Back' : undefined}
+        leftOnClick={onBack}
+        disabled={saving}
+      />
       <SOptions showsVerticalScrollIndicator={false}>
         <SRule>
           Start with 2–3 sessions a week. Never train CO2 and O2 on the same day.

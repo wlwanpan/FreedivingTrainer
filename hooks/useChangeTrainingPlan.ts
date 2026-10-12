@@ -5,25 +5,28 @@ import { TrainingPlanId, trainingPlanById, weeklySessions } from '@/utils/traini
 import useCurrentPlanWeek from './useCurrentPlanWeek'
 
 
+export type PlanChangeResult = 'saved' | 'unchanged' | 'cancelled' | 'error'
+
 export default function useChangeTrainingPlan() {
   const sql = useSQLContext()
   const { showConfirmation, showWarning } = useWarningModal()
   const planWeek = useCurrentPlanWeek()
 
-  return async (planId: TrainingPlanId) => {
+  return async (planId: TrainingPlanId): Promise<PlanChangeResult> => {
     const next = trainingPlanById(planId)
     const current = trainingPlanById(sql.settings.trainingPlan)
-    if (next == null || next.id === current?.id) return
+    if (next == null) return 'error'
+    if (next.id === current?.id) return 'unchanged'
 
     const baseline = sql.settings.baselineMaxHoldSeconds
-    if (baseline == null) return
+    if (baseline == null) return 'error'
 
     if (planWeek != null && planWeek.week > 1) {
       const confirmed = await showConfirmation(
         'Change plan?',
         `You are on week ${planWeek.week} of the ${planWeek.planName}. That progress will be lost, and the new plan starts at week 1.`,
       )
-      if (!confirmed) return
+      if (!confirmed) return 'cancelled'
     }
 
     const now = new Date()
@@ -35,7 +38,7 @@ export default function useChangeTrainingPlan() {
     })
     const co2 = sessions.find((session) => session.kind === 'co2') ?? sessions[0]
     const o2 = sessions.find((session) => session.kind === 'o2') ?? null
-    if (co2 == null) return
+    if (co2 == null) return 'error'
 
     const res = await sql.updateSettings({
       ...sql.settings,
@@ -55,6 +58,8 @@ export default function useChangeTrainingPlan() {
     })
     if (res.error) {
       showWarning(ErrorTitles.Sql, res.error.message)
+      return 'error'
     }
+    return 'saved'
   }
 }
