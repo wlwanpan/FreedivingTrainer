@@ -7,7 +7,12 @@ import {
   MIN_BASELINE_SECONDS,
   tableSettingsFromPlan,
 } from '@/utils/baseline'
-import { TrainingPlanId, trainingPlanById, weeklyCo2Tables } from '@/utils/training_plan'
+import {
+  currentPlanWeek,
+  TrainingPlanId,
+  trainingPlanById,
+  weeklySessions,
+} from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
@@ -136,18 +141,22 @@ export default function useBaselineTest(finishToHome: boolean) {
   const save = async (planId: TrainingPlanId) => {
     if (saving || outcome?.plan == null) return
     const plan = trainingPlanById(planId)
-    const weekTables = plan == null
-      ? []
-      : weeklyCo2Tables({
-        baselineMaxSeconds: outcome.maxHoldSeconds,
-        contractionSeconds: outcome.contractionSeconds,
-        plan,
-        week: 1,
-      })
-    const storedTable = weekTables.find((table) => table.name === 'Full table') ?? weekTables[0]
-    if (plan == null || storedTable == null) return
-    setSaving(true)
+    if (plan == null) return
     const nowDate = new Date()
+    const currentPlan = trainingPlanById(sql.settings.trainingPlan)
+    const priorStart = sql.settings.trainingPlanStartedAt
+    const continuing = currentPlan?.id === plan.id && priorStart != null
+    const startedAt = continuing ? priorStart : nowDate
+    const sessions = weeklySessions({
+      baselineMaxSeconds: outcome.maxHoldSeconds,
+      contractionSeconds: outcome.contractionSeconds,
+      plan,
+      week: currentPlanWeek(startedAt, nowDate, plan.weeks),
+    })
+    const storedTable = sessions.find((session) => session.kind === 'co2') ?? sessions[0]
+    const o2Table = sessions.find((session) => session.kind === 'o2') ?? null
+    if (storedTable == null) return
+    setSaving(true)
     const priorAt = sql.settings.baselineTestedAt?.getTime() ?? null
     const priorStored = priorAt != null && sql.baselineTests.some((test) => test.testedAt.getTime() === priorAt)
     if (
@@ -183,11 +192,17 @@ export default function useBaselineTest(finishToHome: boolean) {
       co2RestStartSeconds: storedTable.restStartSeconds,
       co2RestStepSeconds: storedTable.restStepSeconds,
       co2Rounds: storedTable.rounds,
+      ...(o2Table == null ? {} : {
+        o2HoldStartSeconds: o2Table.holdSeconds,
+        o2HoldStepSeconds: o2Table.holdStepSeconds,
+        o2RestSeconds: o2Table.restStartSeconds,
+        o2Rounds: o2Table.rounds,
+      }),
       baselineMaxHoldSeconds: outcome.maxHoldSeconds,
       baselineContractionSeconds: outcome.contractionSeconds,
       baselineTestedAt: nowDate,
       trainingPlan: plan.id,
-      trainingPlanStartedAt: nowDate,
+      trainingPlanStartedAt: startedAt,
       createdAt: sql.settings.createdAt ?? nowDate,
       updatedAt: nowDate,
     })

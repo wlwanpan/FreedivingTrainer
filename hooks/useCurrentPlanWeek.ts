@@ -1,10 +1,11 @@
 import { useSQLContext } from '@/providers/sql'
 import {
+  baselineRetestDue,
   currentPlanWeek,
-  projectHold,
+  planDetail,
   trainingPlanById,
-  weeklyCo2Tables,
-  WeekTable,
+  weeklySessions,
+  WeekSession,
 } from '@/utils/training_plan'
 
 
@@ -12,10 +13,11 @@ export type PlanWeek = {
   planName: string
   weeks: number
   week: number
-  tablesPerWeek: number
-  gainSeconds: number
-  projectedSeconds: number
-  tables: WeekTable[]
+  frequency: string
+  setsO2: boolean
+  retestDue: boolean
+  detail: string
+  sessions: WeekSession[]
 }
 
 export default function useCurrentPlanWeek(): PlanWeek | null {
@@ -25,16 +27,23 @@ export default function useCurrentPlanWeek(): PlanWeek | null {
   const baselineMaxSeconds = settings.baselineMaxHoldSeconds
   if (plan == null || startedAt == null || baselineMaxSeconds == null) return null
 
-  const week = currentPlanWeek(startedAt, new Date(), plan.weeks)
-  const projection = projectHold(baselineMaxSeconds, plan)
+  const now = new Date()
+  const week = currentPlanWeek(startedAt, now, plan.weeks)
+  const retestDue = baselineRetestDue(plan, startedAt, settings.baselineTestedAt, now)
   return {
     planName: plan.name,
     weeks: plan.weeks,
     week,
-    tablesPerWeek: plan.tablesPerWeek,
-    gainSeconds: projection.gainSeconds,
-    projectedSeconds: projection.projectedSeconds,
-    tables: weeklyCo2Tables({
+    frequency: plan.frequency,
+    setsO2: plan.setsO2,
+    retestDue,
+    detail: planDetail({
+      plan,
+      week,
+      contractionSeconds: settings.baselineContractionSeconds,
+      retestDue,
+    }),
+    sessions: weeklySessions({
       baselineMaxSeconds,
       contractionSeconds: settings.baselineContractionSeconds,
       plan,

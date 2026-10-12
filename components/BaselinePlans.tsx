@@ -4,7 +4,13 @@ import { Footer } from '@/design/styled'
 import { Colors, FontSizes } from '@/design/styles'
 import { BaselineOutcome } from '@/hooks/useBaselineTest'
 import { useFormatterContext } from '@/providers/formatter'
-import { projectHold, TrainingPlanId, TrainingPlans } from '@/utils/training_plan'
+import {
+  beginnerBaseHold,
+  TrainingPlan,
+  TrainingPlanId,
+  TrainingPlans,
+  usesMarkedContraction,
+} from '@/utils/training_plan'
 import { useState } from 'react'
 import { styled } from 'styled-components/native'
 
@@ -18,15 +24,17 @@ type Props = {
 
 export default function BaselinePlans({ outcome, saving, onStart, onRetake }: Props) {
   const { formatSeconds } = useFormatterContext()
-  const [planId, setPlanId] = useState<TrainingPlanId>('long')
-  const selected = TrainingPlans.find((plan) => plan.id === planId) ?? TrainingPlans[2]
+  const [planId, setPlanId] = useState<TrainingPlanId>('beginner')
+  const selected = TrainingPlans.find((plan) => plan.id === planId) ?? TrainingPlans[0]
 
   return (
     <Wrapper>
       <HeaderWithBtn headerText='Choose a plan' />
-      <SOptions>
+      <SOptions showsVerticalScrollIndicator={false}>
+        <SRule>
+          Start with 2–3 sessions a week. Never train CO2 and O2 on the same day.
+        </SRule>
         {TrainingPlans.map((plan) => {
-          const projection = projectHold(outcome.maxHoldSeconds, plan)
           const selectedPlan = plan.id === planId
           return (
             <SCard
@@ -36,21 +44,20 @@ export default function BaselinePlans({ outcome, saving, onStart, onRetake }: Pr
               onPress={() => setPlanId(plan.id)}
             >
               {plan.recommended ? (
-                <SRecommend>Recommended for max gain</SRecommend>
+                <SRecommend>Start here</SRecommend>
               ) : null}
               <SName>{plan.name}</SName>
-              <SMeta>{`${plan.weeks} weeks · ${plan.tablesPerWeek} CO2 tables each week`}</SMeta>
-              <SGain>{`Breath-hold can increase by ${formatSeconds(projection.gainSeconds)}`}</SGain>
-              <SRange>
-                {`${formatSeconds(outcome.maxHoldSeconds)} → ${formatSeconds(projection.projectedSeconds)}`}
-              </SRange>
+              <SMeta>{plan.level}</SMeta>
+              <SMeta>{plan.frequency}</SMeta>
+              <SFocus>{plan.focus}</SFocus>
+              <SMethod>{methodCopy(plan, outcome, formatSeconds)}</SMethod>
             </SCard>
           )
         })}
       </SOptions>
       <Footer>
         <Button
-          title={`Start ${selected.name} plan`}
+          title={`Start ${selected.name}`}
           onPress={() => onStart(selected.id)}
           loading={saving}
         />
@@ -66,18 +73,38 @@ export default function BaselinePlans({ outcome, saving, onStart, onRetake }: Pr
   )
 }
 
+function methodCopy(
+  plan: TrainingPlan,
+  outcome: BaselineOutcome,
+  formatSeconds: (seconds: number) => string,
+): string {
+  if (plan.id !== 'beginner') return plan.method
+  const hold = beginnerBaseHold(outcome.maxHoldSeconds, outcome.contractionSeconds)
+  const marked = usesMarkedContraction(outcome.contractionSeconds)
+  const source = marked
+    ? 'your first contraction'
+    : 'half your maximum, since no contraction was marked'
+  return `Hold ${formatSeconds(hold)}, ${source}, for 7 rounds. Rest steps from 2:00 to 0:30. After week 2 the hold adds 15–20 seconds.`
+}
+
 const Wrapper = styled.View`
   flex: 1;
 `
 
-const SOptions = styled.View`
+const SOptions = styled.ScrollView`
   flex: 1;
-  justify-content: center;
-  gap: 12px;
   padding: 0 20px;
 `
 
+const SRule = styled.Text`
+  margin-bottom: 12px;
+  font-size: ${FontSizes.Small};
+  line-height: 20px;
+  color: ${Colors.GreyPrimary};
+`
+
 const SCard = styled.Pressable<{ $selected: boolean }>`
+  margin-bottom: 12px;
   padding: 16px;
   border-radius: 16px;
   border-width: 2px;
@@ -106,17 +133,16 @@ const SMeta = styled.Text`
   color: ${Colors.GreyPrimary};
 `
 
-const SGain = styled.Text`
+const SFocus = styled.Text`
   margin-top: 10px;
   font-size: ${FontSizes.Medium};
   font-weight: 800;
   color: ${Colors.DeepPrimary};
 `
 
-const SRange = styled.Text`
-  margin-top: 2px;
+const SMethod = styled.Text`
+  margin-top: 4px;
   font-size: ${FontSizes.Small};
-  font-weight: 700;
-  color: ${Colors.TealPrimary};
+  line-height: 20px;
+  color: ${Colors.GreyPrimary};
 `
-

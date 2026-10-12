@@ -1,4 +1,4 @@
-import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
+import { ManualTableTypes, TableType, TableTypeLabel } from '@/constants/tables'
 import { Colors, FontSizes } from '@/design/styles'
 import { styled } from 'styled-components/native'
 
@@ -11,7 +11,7 @@ type Props = {
 export default function TableTypeSwitch({ value, onChange }: Props) {
   return (
     <Wrapper>
-      {TableTypes.map((type) => (
+      {ManualTableTypes.map((type) => (
         <SOption
           key={type}
           $selected={value === type}

@@ -1,6 +1,5 @@
 import Button from '@/components/Button'
 import ScreenHeader from '@/components/ScreenHeader'
-import SettingsChoice from '@/components/SettingsChoice'
 import TableRoundRow from '@/components/TableRoundRow'
 import TableTypeSwitch from '@/components/TableTypeSwitch'
 import WrapperScreen from '@/components/WrapperScreen'
@@ -14,7 +13,7 @@ import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
-import { buildCo2Table } from '@/utils/table'
+import { sessionRounds } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import { styled } from 'styled-components/native'
@@ -30,18 +29,10 @@ export default function TablesScreen() {
   const [pickedTable, setPickedTable] = useState(0)
   const planWeek = useCurrentPlanWeek()
   const storedRounds = useTablePlan(tableType)
-  const weekTable = planWeek != null && tableType === 'co2'
-    ? planWeek.tables[Math.min(pickedTable, planWeek.tables.length - 1)] ?? null
-    : null
-  const rounds = weekTable == null
-    ? storedRounds
-    : buildCo2Table({
-      ...settings,
-      co2HoldSeconds: weekTable.holdSeconds,
-      co2RestStartSeconds: weekTable.restStartSeconds,
-      co2RestStepSeconds: weekTable.restStepSeconds,
-      co2Rounds: weekTable.rounds,
-    })
+  const session = planWeek == null
+    ? null
+    : planWeek.sessions[Math.min(pickedTable, planWeek.sessions.length - 1)] ?? null
+  const rounds = session == null ? storedRounds : sessionRounds(session)
 
   const startTraining = () => {
     if (subscription.freeLimitReached) {
@@ -54,14 +45,16 @@ export default function TablesScreen() {
     }
     router.push({
       pathname: '/train',
-      params: weekTable == null
+      params: session == null
         ? { type: tableType }
         : {
-          type: 'co2',
-          hold: String(weekTable.holdSeconds),
-          restStart: String(weekTable.restStartSeconds),
-          restStep: String(weekTable.restStepSeconds),
-          rounds: String(weekTable.rounds),
+          type: session.tableType,
+          name: session.name,
+          hold: String(session.holdSeconds),
+          holdStep: String(session.holdStepSeconds),
+          restStart: String(session.restStartSeconds),
+          restStep: String(session.restStepSeconds),
+          rounds: String(session.rounds),
         },
     })
   }
@@ -69,31 +62,43 @@ export default function TablesScreen() {
   return (
     <WrapperScreen skipBottomInset>
       <ScreenHeader title='Tables' />
-      <TableTypeSwitch value={tableType} onChange={setTableType} />
-      <SHint>{TableTypeDescription[tableType]}</SHint>
-      <SHint>Breathe-up {formatSeconds(settings.breatheUpSeconds)}</SHint>
-      {settings.baselineMaxHoldSeconds != null ? (
-        <SHint>Baseline max {formatSeconds(settings.baselineMaxHoldSeconds)}</SHint>
-      ) : null}
-      {planWeek != null && tableType === 'co2' ? (
+      {planWeek == null ? (
+        <>
+          <TableTypeSwitch value={tableType} onChange={setTableType} />
+          <SHint>{TableTypeDescription[tableType]}</SHint>
+        </>
+      ) : (
         <>
           <SHint>
             {`${planWeek.planName} · week ${planWeek.week} of ${planWeek.weeks}`}
           </SHint>
-          <SHint>
-            {`Breath-hold can increase by ${formatSeconds(planWeek.gainSeconds)}, to ${formatSeconds(planWeek.projectedSeconds)}`}
-          </SHint>
-          <SChoices>
-            {planWeek.tables.map((table, index) => (
-              <SettingsChoice
-                key={table.name}
-                label={table.name}
-                selected={index === Math.min(pickedTable, planWeek.tables.length - 1)}
-                onPress={() => setPickedTable(index)}
-              />
-            ))}
-          </SChoices>
+          <SHint>{planWeek.frequency}</SHint>
         </>
+      )}
+      <SHint>Breathe-up {formatSeconds(settings.breatheUpSeconds)}</SHint>
+      {settings.baselineMaxHoldSeconds != null ? (
+        <SHint>Baseline max {formatSeconds(settings.baselineMaxHoldSeconds)}</SHint>
+      ) : null}
+      {planWeek?.retestDue ? (
+        <SLink onPress={() => router.push('/baseline')}>
+          Retake your baseline this week so the intervals can move.
+        </SLink>
+      ) : null}
+      {session != null ? <SHint>{session.note}</SHint> : null}
+      {planWeek != null && planWeek.sessions.length > 1 ? (
+        <SChoices>
+          {planWeek.sessions.map((item, index) => (
+            <SSession
+              key={`${item.kind}-${index}`}
+              $selected={index === Math.min(pickedTable, planWeek.sessions.length - 1)}
+              onPress={() => setPickedTable(index)}
+            >
+              <SSessionLabel $selected={index === Math.min(pickedTable, planWeek.sessions.length - 1)}>
+                {item.name}
+              </SSessionLabel>
+            </SSession>
+          ))}
+        </SChoices>
       ) : null}
       <SCard>
         <SRounds>
@@ -118,10 +123,34 @@ const SHint = styled.Text`
   color: ${Colors.GreyPrimary};
 `
 
+const SLink = styled.Text`
+  margin: 8px 20px 0;
+  font-size: ${FontSizes.Small};
+  font-weight: 700;
+  line-height: 20px;
+  color: ${Colors.TealPrimary};
+`
+
 const SChoices = styled.View`
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 12px 20px 0;
+`
+
+const SSession = styled.Pressable<{ $selected: boolean }>`
+  flex-grow: 1;
+  flex-basis: 46%;
+  padding: 10px 8px;
+  border-radius: 10px;
+  align-items: center;
+  background-color: ${(props) => props.$selected ? Colors.TealPrimary : Colors.GreyBackground};
+`
+
+const SSessionLabel = styled.Text<{ $selected: boolean }>`
+  font-size: ${FontSizes.Small};
+  font-weight: 700;
+  color: ${(props) => props.$selected ? Colors.White : Colors.DeepPrimary};
 `
 
 const SCard = styled.View`

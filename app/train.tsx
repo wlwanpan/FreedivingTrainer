@@ -22,8 +22,15 @@ function parseCount(value: string | string[] | undefined, allowZero: boolean): n
   return parsed
 }
 
+function parseLabel(value: string | string[] | undefined): string | null {
+  const raw = Array.isArray(value) ? value[0] : value
+  const label = raw?.trim() ?? ''
+  return label === '' ? null : label
+}
+
 function parseTrainTable(params: {
   hold?: string | string[]
+  holdStep?: string | string[]
   restStart?: string | string[]
   restStep?: string | string[]
   rounds?: string | string[]
@@ -35,20 +42,29 @@ function parseTrainTable(params: {
   if (holdSeconds == null || restStartSeconds == null || restStepSeconds == null || rounds == null) {
     return null
   }
-  return { holdSeconds, restStartSeconds, restStepSeconds, rounds }
+  return {
+    holdSeconds,
+    holdStepSeconds: parseCount(params.holdStep, true) ?? 0,
+    restStartSeconds,
+    restStepSeconds,
+    rounds,
+  }
 }
 
 export default function TrainScreen() {
   const router = useRouter()
   const params = useLocalSearchParams<{
     type?: string | string[]
+    name?: string | string[]
     hold?: string | string[]
+    holdStep?: string | string[]
     restStart?: string | string[]
     restStep?: string | string[]
     rounds?: string | string[]
   }>()
   const tableType = parseTableType(params.type)
   const training = useTrainingClock(tableType, parseTrainTable(params))
+  const title = parseLabel(params.name) ?? (tableType == null ? '' : TableTypeLabel[tableType])
 
   useEffect(() => {
     if (tableType == null || !training.ready) {
@@ -63,7 +79,7 @@ export default function TrainScreen() {
   return (
     <WrapperScreen skipBottomInset>
       <TrainingClock
-        title={TableTypeLabel[tableType]}
+        title={title}
         previous={training.previous}
         current={training.current}
         next={training.next}
