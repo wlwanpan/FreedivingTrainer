@@ -61,10 +61,10 @@ export default function TabLayout() {
       labelStyle={{ color: Colors.TealPrimary }}
     >
       <NativeTabs.Trigger name='index'>
-        <Label>Tables</Label>
+        <Label>Training</Label>
         <Icon
-          sf={{ default: 'timer', selected: 'timer' }}
-          androidSrc={<VectorIcon family={Ionicons} name='timer-outline' />}
+          sf={{ default: 'list.bullet', selected: 'list.bullet' }}
+          androidSrc={<VectorIcon family={Ionicons} name='list-outline' />}
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name='analytics'>

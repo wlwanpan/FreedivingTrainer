@@ -1,168 +1,322 @@
 import Button from '@/components/Button'
 import ScreenHeader from '@/components/ScreenHeader'
-import TableRoundRow from '@/components/TableRoundRow'
-import TableTypeSwitch from '@/components/TableTypeSwitch'
 import WrapperScreen from '@/components/WrapperScreen'
 import { ErrorTitles } from '@/constants/errors'
-import { TableType, TableTypeDescription } from '@/constants/tables'
+import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
-import { Colors, FontSizes } from '@/design/styles'
-import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
-import useTablePlan from '@/hooks/useTablePlan'
+import { Colors, FontSizes, Layout } from '@/design/styles'
+import useTrainingOutline from '@/hooks/useTrainingOutline'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
-import { sessionRounds } from '@/utils/training_plan'
+import { sessionRounds, WeekSession } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
 import { styled } from 'styled-components/native'
 
 
-export default function TablesScreen() {
+export default function TrainingScreen() {
   const router = useRouter()
   const { settings } = useSQLContext()
   const subscription = useSubscriptionContext()
   const { showWarning } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
-  const [tableType, setTableType] = useState<TableType>('co2')
-  const [pickedTable, setPickedTable] = useState(0)
-  const planWeek = useCurrentPlanWeek()
-  const storedRounds = useTablePlan(tableType)
-  const session = planWeek == null
-    ? null
-    : planWeek.sessions[Math.min(pickedTable, planWeek.sessions.length - 1)] ?? null
-  const rounds = session == null ? storedRounds : sessionRounds(session)
+  const outline = useTrainingOutline()
+  const paddingBottom = useBottomControlInset(true)
 
-  const startTraining = () => {
+  const start = (session: WeekSession, locked: boolean) => {
+    if (locked) return
     if (subscription.freeLimitReached) {
       router.push('/paywall')
       return
     }
-    if (rounds.length === 0) {
+    if (sessionRounds(session).length === 0) {
       showWarning(ErrorTitles.Input, 'Add at least one round before training.')
       return
     }
     router.push({
       pathname: '/train',
-      params: session == null
-        ? { type: tableType }
-        : {
-          type: session.tableType,
-          name: session.name,
-          hold: String(session.holdSeconds),
-          holdStep: String(session.holdStepSeconds),
-          restStart: String(session.restStartSeconds),
-          restStep: String(session.restStepSeconds),
-          rounds: String(session.rounds),
-        },
+      params: {
+        type: session.tableType,
+        name: session.name,
+        hold: String(session.holdSeconds),
+        holdStep: String(session.holdStepSeconds),
+        restStart: String(session.restStartSeconds),
+        restStep: String(session.restStepSeconds),
+        rounds: String(session.rounds),
+      },
     })
   }
 
   return (
     <WrapperScreen skipBottomInset>
-      <ScreenHeader title='Tables' />
-      {planWeek == null ? (
+      <ScreenHeader title='Training' />
+      {outline == null ? (
         <>
-          <TableTypeSwitch value={tableType} onChange={setTableType} />
-          <SHint>{TableTypeDescription[tableType]}</SHint>
+          <SEmpty>
+            <SEmptyTitle>No plan yet</SEmptyTitle>
+            <SEmptyCopy>
+              {settings.baselineMaxHoldSeconds == null
+                ? 'A baseline test sizes the plan you choose.'
+                : 'Choose a plan, or build your own. Keep CO2 and O2 on different days.'}
+            </SEmptyCopy>
+          </SEmpty>
+          <Footer aboveTabs>
+            <Button
+              title={settings.baselineMaxHoldSeconds == null ? 'Take baseline test' : 'Choose a plan'}
+              onPress={() => router.push(settings.baselineMaxHoldSeconds == null ? '/baseline' : '/plan')}
+            />
+          </Footer>
         </>
       ) : (
-        <>
-          <SHint>
-            {`${planWeek.planName} · week ${planWeek.week} of ${planWeek.weeks}`}
-          </SHint>
-          <SHint>{planWeek.frequency}</SHint>
-        </>
+        <SScroll
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom }}
+        >
+          <SProgress>
+            <SPlanName>{outline.planName}</SPlanName>
+            <SLevel>{outline.level}</SLevel>
+            <SWeekLine>
+              {`Week ${outline.week} of ${outline.weeks}`}
+            </SWeekLine>
+            <STrack>
+              <SFill style={{ width: `${Math.round(outline.progress * 100)}%` }} />
+            </STrack>
+            <SPercent>{`${Math.round(outline.progress * 100)}% of the plan`}</SPercent>
+            <SFrequency>{outline.frequency}</SFrequency>
+            {outline.retestDue ? (
+              <SLink onPress={() => router.push('/baseline')}>
+                Retake your baseline this week so the intervals can move.
+              </SLink>
+            ) : null}
+          </SProgress>
+          {outline.schedule.map((entry) => (
+            <SWeek key={entry.week} $current={entry.current}>
+              <SWeekHeader>
+                <SWeekTitle>{`Week ${entry.week}`}</SWeekTitle>
+                {entry.current ? <SBadge>This week</SBadge> : null}
+                {entry.locked ? <SLockedBadge>Locked</SLockedBadge> : null}
+              </SWeekHeader>
+              {entry.locked ? (
+                <SLockNote>{`Finish week ${outline.week} to start these.`}</SLockNote>
+              ) : null}
+              {entry.sessions.map((session) => (
+                <STraining
+                  key={`${entry.week}-${session.kind}-${session.index}`}
+                  disabled={entry.locked}
+                  $locked={entry.locked}
+                  onPress={() => start(session, entry.locked)}
+                >
+                  <STrainingBody>
+                    <SNameRow>
+                      <STrainingName $locked={entry.locked}>{session.name}</STrainingName>
+                      {session.completed ? <SDone>Done</SDone> : null}
+                    </SNameRow>
+                    <STrainingMeta $locked={entry.locked}>{sessionSummary(session, formatSeconds)}</STrainingMeta>
+                    <STrainingNote>{session.note}</STrainingNote>
+                  </STrainingBody>
+                  <SStart $locked={entry.locked}>{entry.locked ? 'Locked' : 'Start'}</SStart>
+                </STraining>
+              ))}
+            </SWeek>
+          ))}
+        </SScroll>
       )}
-      <SHint>Breathe-up {formatSeconds(settings.breatheUpSeconds)}</SHint>
-      {settings.baselineMaxHoldSeconds != null ? (
-        <SHint>Baseline max {formatSeconds(settings.baselineMaxHoldSeconds)}</SHint>
-      ) : null}
-      {planWeek?.retestDue ? (
-        <SLink onPress={() => router.push('/baseline')}>
-          Retake your baseline this week so the intervals can move.
-        </SLink>
-      ) : null}
-      {session != null ? <SHint>{session.note}</SHint> : null}
-      {planWeek != null && planWeek.sessions.length > 1 ? (
-        <SChoices>
-          {planWeek.sessions.map((item, index) => (
-            <SSession
-              key={`${item.kind}-${index}`}
-              $selected={index === Math.min(pickedTable, planWeek.sessions.length - 1)}
-              onPress={() => setPickedTable(index)}
-            >
-              <SSessionLabel $selected={index === Math.min(pickedTable, planWeek.sessions.length - 1)}>
-                {item.name}
-              </SSessionLabel>
-            </SSession>
-          ))}
-        </SChoices>
-      ) : null}
-      <SCard>
-        <SRounds>
-          {rounds.map((round) => (
-            <TableRoundRow key={round.index} round={round} />
-          ))}
-        </SRounds>
-      </SCard>
-      <Footer aboveTabs>
-        <Button
-          title='Start Training'
-          onPress={startTraining}
-        />
-      </Footer>
     </WrapperScreen>
   )
 }
 
-const SHint = styled.Text`
-  margin: 4px 20px 0;
+function sessionSummary(
+  session: WeekSession,
+  formatSeconds: (seconds: number) => string,
+): string {
+  const hold = session.tableType === 'o2'
+    ? `Holds from ${formatSeconds(session.holdSeconds)}`
+    : `Hold ${formatSeconds(session.holdSeconds)}`
+  return `${hold} · ${session.rounds} rounds`
+}
+
+const SScroll = styled.ScrollView`
+  flex: 1;
+`
+
+const SProgress = styled.View`
+  margin: 8px 20px 0;
+  padding: 16px;
+  border-radius: 16px;
+  background-color: ${Colors.TealBackground};
+`
+
+const SPlanName = styled.Text`
+  font-size: ${FontSizes.Large};
+  font-weight: 800;
+  color: ${Colors.DeepPrimary};
+`
+
+const SLevel = styled.Text`
+  margin-top: 2px;
   font-size: ${FontSizes.Small};
   color: ${Colors.GreyPrimary};
 `
 
+const SWeekLine = styled.Text`
+  margin-top: 12px;
+  font-size: ${FontSizes.Medium};
+  font-weight: 800;
+  color: ${Colors.DeepPrimary};
+`
+
+const STrack = styled.View`
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background-color: ${Colors.White};
+  overflow: hidden;
+`
+
+const SFill = styled.View`
+  height: 8px;
+  border-radius: 4px;
+  background-color: ${Colors.TealPrimary};
+`
+
+const SPercent = styled.Text`
+  margin-top: 6px;
+  font-size: ${FontSizes.Small};
+  font-weight: 700;
+  color: ${Colors.TealPrimary};
+`
+
+const SFrequency = styled.Text`
+  margin-top: 8px;
+  font-size: ${FontSizes.Small};
+  line-height: 20px;
+  color: ${Colors.GreyPrimary};
+`
+
 const SLink = styled.Text`
-  margin: 8px 20px 0;
+  margin-top: 8px;
   font-size: ${FontSizes.Small};
   font-weight: 700;
   line-height: 20px;
   color: ${Colors.TealPrimary};
 `
 
-const SChoices = styled.View`
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 12px 20px 0;
-`
-
-const SSession = styled.Pressable<{ $selected: boolean }>`
-  flex-grow: 1;
-  flex-basis: 46%;
-  padding: 10px 8px;
-  border-radius: 10px;
-  align-items: center;
-  background-color: ${(props) => props.$selected ? Colors.TealPrimary : Colors.GreyBackground};
-`
-
-const SSessionLabel = styled.Text<{ $selected: boolean }>`
-  font-size: ${FontSizes.Small};
-  font-weight: 700;
-  color: ${(props) => props.$selected ? Colors.White : Colors.DeepPrimary};
-`
-
-const SCard = styled.View`
-  flex: 1;
+const SWeek = styled.View<{ $current: boolean }>`
   margin: 12px 20px 0;
   border-radius: 16px;
-  background-color: ${Colors.White};
   border-width: 1px;
-  border-color: ${Colors.GreyDivider};
+  border-color: ${(props) => props.$current ? Colors.TealPrimary : Colors.GreyDivider};
+  background-color: ${Colors.White};
   overflow: hidden;
 `
 
-const SRounds = styled.ScrollView`
+const SWeekHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 4px;
+`
+
+const SWeekTitle = styled.Text`
+  font-size: ${FontSizes.Medium};
+  font-weight: 800;
+  color: ${Colors.DeepPrimary};
+`
+
+const SBadge = styled.Text`
+  font-size: ${FontSizes.XSmall};
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: ${Colors.TealPrimary};
+`
+
+const SLockedBadge = styled.Text`
+  font-size: ${FontSizes.XSmall};
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: ${Colors.GreyPrimary};
+`
+
+const SLockNote = styled.Text`
+  padding: 0 16px 8px;
+  font-size: ${FontSizes.Small};
+  line-height: 20px;
+  color: ${Colors.GreyPrimary};
+`
+
+const STraining = styled.Pressable<{ $locked: boolean }>`
+  flex-direction: row;
+  align-items: center;
+  min-height: ${Layout.MinControl}px;
+  padding: 12px 16px;
+  border-top-width: 1px;
+  border-top-color: ${Colors.GreyDivider};
+  opacity: ${(props) => props.$locked ? 0.55 : 1};
+`
+
+const STrainingBody = styled.View`
   flex: 1;
+  padding-right: 12px;
+`
+
+const SNameRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+`
+
+const STrainingName = styled.Text<{ $locked: boolean }>`
+  font-size: ${FontSizes.Medium};
+  font-weight: 700;
+  color: ${(props) => props.$locked ? Colors.GreyPrimary : Colors.DeepPrimary};
+`
+
+const SDone = styled.Text`
+  font-size: ${FontSizes.XSmall};
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: ${Colors.TealPrimary};
+`
+
+const STrainingMeta = styled.Text<{ $locked: boolean }>`
+  margin-top: 2px;
+  font-size: ${FontSizes.Small};
+  font-weight: 700;
+  color: ${(props) => props.$locked ? Colors.GreyPrimary : Colors.TealPrimary};
+`
+
+const STrainingNote = styled.Text`
+  margin-top: 2px;
+  font-size: ${FontSizes.Small};
+  line-height: 20px;
+  color: ${Colors.GreyPrimary};
+`
+
+const SStart = styled.Text<{ $locked: boolean }>`
+  font-size: ${FontSizes.Small};
+  font-weight: 800;
+  color: ${(props) => props.$locked ? Colors.GreyPrimary : Colors.TealPrimary};
+`
+
+const SEmpty = styled.View`
+  flex: 1;
+  justify-content: center;
+  padding: 24px;
+`
+
+const SEmptyTitle = styled.Text`
+  font-size: ${FontSizes.XLarge};
+  font-weight: 800;
+  color: ${Colors.DeepPrimary};
+`
+
+const SEmptyCopy = styled.Text`
+  margin-top: 8px;
+  font-size: ${FontSizes.Medium};
+  line-height: 22px;
+  color: ${Colors.GreyPrimary};
 `

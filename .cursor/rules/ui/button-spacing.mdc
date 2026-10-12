@@ -18,7 +18,7 @@ Pinned actions sit between the top bar and the bottom navigation. They keep a ga
 const bottomInset = useBottomControlInset(true)
 
 <WrapperScreen skipBottomInset>
-  <ScreenHeader title='Tables' right={<SIconButton />} />
+  <ScreenHeader title='Training' right={<SIconButton />} />
   <SList contentContainerStyle={{ paddingBottom: bottomInset }} />
   <Footer aboveTabs>
     <Button title='Log completed table' onPress={log} />

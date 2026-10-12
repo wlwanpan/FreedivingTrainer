@@ -28,7 +28,7 @@ export default function OnboardingScreen() {
         <SEyebrow>FreedivingTrainer</SEyebrow>
         <STitle>Find your baseline</STitle>
         <SCopy>
-          One maximum static hold sizes your tables. Mark the first contraction, then keep holding until you need to breathe. After that, choose a 4, 8, or 12 week plan. Keep CO2 and O2 on different days.
+          One maximum static hold sizes your tables. Mark the first contraction, then keep holding until you need to breathe. After that, choose a plan or build your own. Keep CO2 and O2 on different days.
         </SCopy>
         <SCard>
           <SCardTitle>CO2</SCardTitle>

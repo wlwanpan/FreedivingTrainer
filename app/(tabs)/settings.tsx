@@ -69,7 +69,7 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom }}
       >
         <SCard>
-          <SCardTitle>Training settings</SCardTitle>
+          <SCardTitle>Training</SCardTitle>
           <SGroup>Animation</SGroup>
           <SNote>Bubbles, fish, and card movement during a table.</SNote>
           <SChoiceRow>
@@ -113,11 +113,11 @@ export default function SettingsScreen() {
 
           <SGroup>Plan</SGroup>
           {settings.baselineMaxHoldSeconds == null ? (
-            <SNote>Take a baseline test to choose a 4, 8, or 12 week plan.</SNote>
+            <SNote>Take a baseline test to choose a plan.</SNote>
           ) : (
             <>
               <SNote>
-                {planWeek?.detail ?? 'Choose a 4, 8, or 12 week plan. Keep CO2 and O2 on different days.'}
+                {planWeek?.detail ?? 'Choose a plan, or build your own. Keep CO2 and O2 on different days.'}
               </SNote>
               <Button
                 title='Change plan'
@@ -127,8 +127,10 @@ export default function SettingsScreen() {
           )}
 
           <SGroup>CO2 table</SGroup>
-          {planWeek ? (
+          {planWeek?.sessions.some((session) => session.kind === 'co2') ? (
             <SNote>This plan sets the CO2 table.</SNote>
+          ) : planWeek ? (
+            <SNote>This plan does not include a CO2 table.</SNote>
           ) : (
             <>
               <SettingsStepper
@@ -212,7 +214,25 @@ export default function SettingsScreen() {
         </SCard>
 
         <SCard>
-          <SCardTitle>System settings</SCardTitle>
+          <SCardTitle>Purchases</SCardTitle>
+          <FreeSessionsBanner />
+          <Button
+            title={subscription.hasLifetimeAccess ? 'Lifetime access is active' : 'Unlock lifetime access'}
+            onPress={() => router.push('/paywall')}
+            disabled={subscription.hasLifetimeAccess}
+            style={{ marginTop: subscription.loading || subscription.hasLifetimeAccess ? 12 : 0 }}
+          />
+          <Button
+            title='Restore purchase'
+            onPress={() => { void restore() }}
+            loading={restoreInFlight}
+            defaultBGColor={Colors.GreyPrimary}
+            pressedBGColor={Colors.GreyFaded}
+          />
+        </SCard>
+
+        <SCard>
+          <SCardTitle>System</SCardTitle>
           <SGroup>Date</SGroup>
           <SChoiceRow>
             {DateFormats.map((format) => (
@@ -235,24 +255,6 @@ export default function SettingsScreen() {
             loading={eraseInFlight}
             defaultBGColor={Colors.RedPrimary}
             pressedBGColor={Colors.RedBackground}
-          />
-        </SCard>
-
-        <SCard>
-          <SCardTitle>Purchases</SCardTitle>
-          <FreeSessionsBanner />
-          <Button
-            title={subscription.hasLifetimeAccess ? 'Lifetime access is active' : 'Unlock lifetime access'}
-            onPress={() => router.push('/paywall')}
-            disabled={subscription.hasLifetimeAccess}
-            style={{ marginTop: subscription.loading || subscription.hasLifetimeAccess ? 12 : 0 }}
-          />
-          <Button
-            title='Restore purchase'
-            onPress={() => { void restore() }}
-            loading={restoreInFlight}
-            defaultBGColor={Colors.GreyPrimary}
-            pressedBGColor={Colors.GreyFaded}
           />
         </SCard>
       </SScroll>

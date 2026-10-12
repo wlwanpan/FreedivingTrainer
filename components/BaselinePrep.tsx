@@ -7,14 +7,15 @@ import { styled } from 'styled-components/native'
 
 type Props = {
   onStart: () => void
+  onEnterTimes: () => void
   onBack: () => void
 }
 
-export default function BaselinePrep({ onStart, onBack }: Props) {
+export default function BaselinePrep({ onStart, onEnterTimes, onBack }: Props) {
   return (
     <Wrapper>
       <HeaderWithBtn headerText='Baseline' leftText='Back' leftOnClick={onBack} />
-      <SBody>
+      <SBody showsVerticalScrollIndicator={false}>
         <STitle>One maximum hold</STitle>
         <SCopy>
           Sit or lie down. Breathe calmly, take one full inhale, then start. Leave the screen on. This is a dry static.
@@ -23,7 +24,7 @@ export default function BaselinePrep({ onStart, onBack }: Props) {
         <SCard>
           <SCardTitle>First contraction</SCardTitle>
           <SCardCopy>
-            Tap when the first urge to breathe arrives. That is usually a contraction in the diaphragm.
+            Tap when the first urge to breathe arrives. That is usually a contraction in the diaphragm. Before it, the hold is the relaxation phase: it still feels easy. The contraction starts the struggle phase, when the urge to breathe takes over. Beginner CO2 tables use this time so each hold stays in the relaxation phase.
           </SCardCopy>
         </SCard>
         <SCard>
@@ -35,6 +36,12 @@ export default function BaselinePrep({ onStart, onBack }: Props) {
       </SBody>
       <Footer>
         <Button title='Start hold' onPress={onStart} />
+        <Button
+          title='Enter times'
+          onPress={onEnterTimes}
+          defaultBGColor={Colors.GreyPrimary}
+          pressedBGColor={Colors.GreyFaded}
+        />
       </Footer>
     </Wrapper>
   )
@@ -44,7 +51,7 @@ const Wrapper = styled.View`
   flex: 1;
 `
 
-const SBody = styled.View`
+const SBody = styled.ScrollView`
   flex: 1;
   padding: 8px 24px 0;
 `
