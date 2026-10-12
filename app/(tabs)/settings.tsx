@@ -111,11 +111,24 @@ export default function SettingsScreen() {
             onPress={() => router.push('/baseline')}
           />
 
+          <SGroup>Plan</SGroup>
+          {settings.baselineMaxHoldSeconds == null ? (
+            <SNote>Take a baseline test to choose a 4, 8, or 12 week plan.</SNote>
+          ) : (
+            <>
+              <SNote>
+                {planWeek?.detail ?? 'Choose a 4, 8, or 12 week plan. Keep CO2 and O2 on different days.'}
+              </SNote>
+              <Button
+                title='Change plan'
+                onPress={() => router.push('/plan')}
+              />
+            </>
+          )}
+
           <SGroup>CO2 table</SGroup>
           {planWeek ? (
-            <SNote>
-              {`${planWeek.planName} · week ${planWeek.week} of ${planWeek.weeks}. ${planWeek.tablesPerWeek} CO2 tables this week. Breath-hold can increase by ${formatSeconds(planWeek.gainSeconds)}.`}
-            </SNote>
+            <SNote>This plan sets the CO2 table.</SNote>
           ) : (
             <>
               <SettingsStepper
@@ -156,40 +169,46 @@ export default function SettingsScreen() {
           )}
 
           <SGroup>O2 table</SGroup>
-          <SettingsStepper
-            label='Starting hold'
-            mode='duration'
-            value={settings.o2HoldStartSeconds}
-            step={15}
-            min={15}
-            max={900}
-            onChange={(value) => { void updateSetting({ o2HoldStartSeconds: value }) }}
-          />
-          <SettingsStepper
-            label='Hold step'
-            mode='duration'
-            value={settings.o2HoldStepSeconds}
-            step={5}
-            min={0}
-            max={60}
-            onChange={(value) => { void updateSetting({ o2HoldStepSeconds: value }) }}
-          />
-          <SettingsStepper
-            label='Rest'
-            mode='duration'
-            value={settings.o2RestSeconds}
-            step={15}
-            min={15}
-            max={900}
-            onChange={(value) => { void updateSetting({ o2RestSeconds: value }) }}
-          />
-          <SettingsStepper
-            label='Rounds'
-            value={settings.o2Rounds}
-            min={1}
-            max={20}
-            onChange={(value) => { void updateSetting({ o2Rounds: value }) }}
-          />
+          {planWeek?.setsO2 ? (
+            <SNote>This plan sets the O2 table. Train it on a different day from CO2.</SNote>
+          ) : (
+            <>
+              <SettingsStepper
+                label='Starting hold'
+                mode='duration'
+                value={settings.o2HoldStartSeconds}
+                step={15}
+                min={15}
+                max={900}
+                onChange={(value) => { void updateSetting({ o2HoldStartSeconds: value }) }}
+              />
+              <SettingsStepper
+                label='Hold step'
+                mode='duration'
+                value={settings.o2HoldStepSeconds}
+                step={5}
+                min={0}
+                max={60}
+                onChange={(value) => { void updateSetting({ o2HoldStepSeconds: value }) }}
+              />
+              <SettingsStepper
+                label='Rest'
+                mode='duration'
+                value={settings.o2RestSeconds}
+                step={15}
+                min={15}
+                max={900}
+                onChange={(value) => { void updateSetting({ o2RestSeconds: value }) }}
+              />
+              <SettingsStepper
+                label='Rounds'
+                value={settings.o2Rounds}
+                min={1}
+                max={20}
+                onChange={(value) => { void updateSetting({ o2Rounds: value }) }}
+              />
+            </>
+          )}
         </SCard>
 
         <SCard>

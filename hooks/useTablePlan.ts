@@ -8,6 +8,6 @@ export default function useTablePlan(tableType: TableType): TableRound[] {
   const { settings } = useSQLContext()
 
   return useMemo(() => (
-    tableType === 'co2' ? buildCo2Table(settings) : buildO2Table(settings)
+    tableType === 'o2' ? buildO2Table(settings) : buildCo2Table(settings)
   ), [tableType, settings])
 }

@@ -3,7 +3,7 @@ import { TableType } from '@/constants/tables'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import { todayDate } from '@/utils/date'
-import { buildCo2Table, TableRound } from '@/utils/table'
+import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
 import { useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
 import useTablePlan from './useTablePlan'
@@ -26,6 +26,7 @@ type TrainPhase = {
 
 export type TrainTable = {
   holdSeconds: number
+  holdStepSeconds: number
   restStartSeconds: number
   restStepSeconds: number
   rounds: number
@@ -35,6 +36,31 @@ type Location = {
   index: number
   remaining: number
   done: boolean
+}
+
+function roundsFromTable(tableType: TableType, table: TrainTable): TableRound[] {
+  if (tableType === 'o2') {
+    return buildO2Table({
+      co2Rounds: 1,
+      co2HoldSeconds: 0,
+      co2RestStartSeconds: 0,
+      co2RestStepSeconds: 0,
+      o2Rounds: table.rounds,
+      o2HoldStartSeconds: table.holdSeconds,
+      o2HoldStepSeconds: table.holdStepSeconds,
+      o2RestSeconds: table.restStartSeconds,
+    })
+  }
+  return buildCo2Table({
+    co2Rounds: table.rounds,
+    co2HoldSeconds: table.holdSeconds,
+    co2RestStartSeconds: table.restStartSeconds,
+    co2RestStepSeconds: table.restStepSeconds,
+    o2Rounds: 1,
+    o2HoldStartSeconds: 0,
+    o2HoldStepSeconds: 0,
+    o2RestSeconds: 0,
+  })
 }
 
 function buildPhases(breatheUpSeconds: number, rounds: TableRound[]): TrainPhase[] {
@@ -69,14 +95,8 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
   const sql = useSQLContext()
   const { showWarning } = useWarningModal()
   const plannedRounds = useTablePlan(tableType ?? 'co2')
-  const rounds = tableType === 'co2' && table != null
-    ? buildCo2Table({
-      ...sql.settings,
-      co2HoldSeconds: table.holdSeconds,
-      co2RestStartSeconds: table.restStartSeconds,
-      co2RestStepSeconds: table.restStepSeconds,
-      co2Rounds: table.rounds,
-    })
+  const rounds = table != null && tableType != null
+    ? roundsFromTable(tableType, table)
     : plannedRounds
   const phases = tableType == null
     ? []
@@ -167,9 +187,8 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
       roundsCompleted: rounds.length,
       roundsPlanned: rounds.length,
       holdSeconds: first.holdSeconds,
-      restSeconds: tableType === 'co2'
-        ? table?.restStartSeconds ?? sql.settings.co2RestStartSeconds
-        : sql.settings.o2RestSeconds,
+      restSeconds: table?.restStartSeconds
+        ?? (tableType === 'o2' ? sql.settings.o2RestSeconds : sql.settings.co2RestStartSeconds),
       createdAt,
       updatedAt: createdAt,
     })
