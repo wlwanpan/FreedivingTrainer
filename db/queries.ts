@@ -14,6 +14,13 @@ export function sqlBaselineTests(db: SQLClient) {
     .orderBy(asc(schema.baselineTests.testedAt), asc(schema.baselineTests.id))
 }
 
+export function sqlHeartRateSamples(db: SQLClient) {
+  return db
+    .select()
+    .from(schema.heartRateSamples)
+    .orderBy(asc(schema.heartRateSamples.recordedAt), asc(schema.heartRateSamples.id))
+}
+
 export function sqlAllSessions(db: SQLClient) {
   return db
     .select()

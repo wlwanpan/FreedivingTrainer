@@ -9,7 +9,7 @@ import WrapperScreen from '@/components/WrapperScreen'
 import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
 import { Colors, FontSizes, Layout } from '@/design/styles'
-import useTrainingOutline from '@/hooks/useTrainingOutline'
+import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
@@ -33,10 +33,7 @@ export default function HomeScreen() {
     return a.id - b.id
   })
 
-  const currentWeek = outline?.schedule.find((entry) => entry.current) ?? null
-  const incomplete = currentWeek?.sessions.find((session) => !session.completed) ?? null
-  const nextWeek = outline?.schedule.find((entry) => outline != null && entry.week > outline.week && !entry.locked) ?? null
-  const nextSession = incomplete ?? nextWeek?.sessions[0] ?? currentWeek?.sessions[0] ?? null
+  const nextSession = nextTrainingSession(outline)
 
   const start = (session: WeekSession) => {
     if (subscription.freeLimitReached) {

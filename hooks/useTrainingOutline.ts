@@ -33,6 +33,15 @@ export type TrainingOutline = {
   schedule: TrainingWeek[]
 }
 
+export function nextTrainingSession(outline: TrainingOutline | null): WeekSession | null {
+  const currentWeek = outline?.schedule.find((entry) => entry.current) ?? null
+  const incomplete = currentWeek?.sessions.find((session) => !session.completed) ?? null
+  const nextWeek = outline?.schedule.find((entry) => (
+    outline != null && entry.week > outline.week && !entry.locked
+  )) ?? null
+  return incomplete ?? nextWeek?.sessions[0] ?? currentWeek?.sessions[0] ?? null
+}
+
 export default function useTrainingOutline(): TrainingOutline | null {
   const { settings, sessions } = useSQLContext()
   const plan = trainingPlanFromSettings(settings)

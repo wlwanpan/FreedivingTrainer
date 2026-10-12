@@ -10,6 +10,7 @@ import m0005 from './0005_striped_blazing_skull.sql';
 import m0006 from './0006_pale_nemesis.sql';
 import m0007 from './0007_striped_wendell_vaughn.sql';
 import m0008 from './0008_damp_vivisector.sql';
+import m0009 from './0009_outstanding_gravity.sql';
 
 export default {
   journal,
@@ -23,5 +24,6 @@ export default {
     m0006,
     m0007,
     m0008,
+    m0009,
   }
 }

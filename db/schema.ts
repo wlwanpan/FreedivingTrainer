@@ -47,9 +47,18 @@ export const sessions = sqliteTable('sessions', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
 
+export const heartRateSamples = sqliteTable('heart_rate_samples', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  sessionId: integer('session_id').notNull(),
+  bpm: integer('bpm').notNull(),
+  recordedAt: integer('recorded_at', { mode: 'timestamp' }).notNull(),
+})
+
 export type Setting = typeof settings.$inferSelect
 export type SettingInsert = typeof settings.$inferInsert
 export type BaselineTest = typeof baselineTests.$inferSelect
 export type BaselineTestInsert = typeof baselineTests.$inferInsert
 export type Session = typeof sessions.$inferSelect
 export type SessionInsert = typeof sessions.$inferInsert
+export type HeartRateSample = typeof heartRateSamples.$inferSelect
+export type HeartRateSampleInsert = typeof heartRateSamples.$inferInsert

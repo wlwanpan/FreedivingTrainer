@@ -1,4 +1,5 @@
 import { useSQLContext } from '@/providers/sql'
+import { useSyncExternalStore } from 'react'
 
 
 export type WearableKind = 'apple-watch' | 'garmin' | 'heart-rate'
@@ -9,6 +10,30 @@ export type WearableStatus = {
   heartRateActive: boolean
 }
 
+type WearableLive = {
+  connected: boolean
+  heartRateActive: boolean
+}
+
+const idleLive: WearableLive = { connected: false, heartRateActive: false }
+let wearableLiveState = idleLive
+const wearableLiveListeners = new Set<() => void>()
+
+export function publishWearableLive(next: Partial<WearableLive>) {
+  const merged = { ...wearableLiveState, ...next }
+  if (
+    wearableLiveState.connected === merged.connected
+    && wearableLiveState.heartRateActive === merged.heartRateActive
+  ) return
+  wearableLiveState = merged
+  wearableLiveListeners.forEach((listener) => listener())
+}
+
+function subscribeWearableLive(listener: () => void) {
+  wearableLiveListeners.add(listener)
+  return () => wearableLiveListeners.delete(listener)
+}
+
 function wearableKind(value: string | null | undefined): WearableKind | null {
   if (value === 'apple-watch' || value === 'garmin') return value
   return null
@@ -16,11 +41,13 @@ function wearableKind(value: string | null | undefined): WearableKind | null {
 
 export default function useWearableStatus(): WearableStatus {
   const { settings } = useSQLContext()
-  const kind = wearableKind(settings.wearable)
+  const live = useSyncExternalStore(subscribeWearableLive, () => wearableLiveState, () => idleLive)
+  const preference = wearableKind(settings.wearable)
+  const kind = live.connected || live.heartRateActive ? 'apple-watch' : preference
   return {
     kind,
-    connected: false,
-    heartRateActive: false,
+    connected: live.connected,
+    heartRateActive: live.heartRateActive,
   }
 }
 

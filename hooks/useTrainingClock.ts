@@ -13,6 +13,7 @@ import { todayDate } from '@/utils/date'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
+import useSessionHeartRate from './useSessionHeartRate'
 import useTablePlan from './useTablePlan'
 
 
@@ -124,6 +125,7 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
   const elapsedSeconds = Math.floor((now - startedAtRef.current) / 1000)
   const location = locate(phases, elapsedSeconds)
   const done = phases.length > 0 && location.done
+  const heartRate = useSessionHeartRate(tableType != null && !done)
   const stepAt = (index: number): TrainStep | null => {
     const phase = phases[index]
     if (!phase) return null
@@ -270,6 +272,7 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
       showWarning(ErrorTitles.Sql, res.error.message)
       return
     }
+    if (res.insertionID != null) heartRate.attach(res.insertionID)
     setSaved(true)
   }
 
