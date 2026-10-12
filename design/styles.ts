@@ -3,6 +3,7 @@ export type ColorHex = string
 export const Colors: Record<string, ColorHex> = {
   Black: '#000000',
   White: '#ffffff',
+  GreenPrimary: '#1B7F4E',
   TealPrimary: '#0B6E7A',
   TealFaded: '#0B6E7Aa6',
   TealBackground: '#0B6E7A14',

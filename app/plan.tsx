@@ -4,7 +4,7 @@ import useChangeTrainingPlan from '@/hooks/useChangeTrainingPlan'
 import { BaselineOutcome } from '@/hooks/useBaselineTest'
 import { useSQLContext } from '@/providers/sql'
 import { generateTablesFromBaseline } from '@/utils/baseline'
-import { TrainingPlanId, trainingPlanById } from '@/utils/training_plan'
+import { PlanChoice, trainingPlanById } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 
@@ -33,10 +33,10 @@ export default function PlanScreen() {
   }
   const currentPlanId = trainingPlanById(settings.trainingPlan)?.id
 
-  const apply = async (planId: TrainingPlanId) => {
+  const apply = async (choice: PlanChoice) => {
     if (saving) return
     setSaving(true)
-    const result = await changePlan(planId)
+    const result = await changePlan(choice)
     setSaving(false)
     if (result === 'saved' || result === 'unchanged') router.back()
   }
@@ -47,8 +47,9 @@ export default function PlanScreen() {
         outcome={outcome}
         saving={saving}
         initialPlanId={currentPlanId}
+        initialCustomPlan={settings.customPlan}
         onBack={() => router.back()}
-        onStart={(planId) => { void apply(planId) }}
+        onStart={(choice) => { void apply(choice) }}
         onRetake={() => router.replace('/baseline')}
       />
     </WrapperScreen>

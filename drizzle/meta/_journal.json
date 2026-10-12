@@ -36,6 +36,20 @@
       "when": 1791752592190,
       "tag": "0004_training_animation",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791824524674,
+      "tag": "0005_striped_blazing_skull",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791825798569,
+      "tag": "0006_pale_nemesis",
+      "breakpoints": true
     }
   ]
 }

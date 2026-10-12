@@ -25,7 +25,7 @@ function handleException(e: unknown): BaseResults {
 export const DefaultSettings: Setting = {
   id: 0,
   dateFormat: DefaultDateFormat,
-  breatheUpSeconds: 120,
+  breatheUpSeconds: 60,
   trainingAnimation: true,
   co2HoldSeconds: 90,
   co2RestStartSeconds: 120,
@@ -40,6 +40,7 @@ export const DefaultSettings: Setting = {
   baselineTestedAt: null,
   trainingPlan: null,
   trainingPlanStartedAt: null,
+  customPlan: null,
   createdAt: null,
   updatedAt: null,
 }

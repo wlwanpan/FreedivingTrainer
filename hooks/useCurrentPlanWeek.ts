@@ -3,7 +3,7 @@ import {
   baselineRetestDue,
   currentPlanWeek,
   planDetail,
-  trainingPlanById,
+  trainingPlanFromSettings,
   weeklySessions,
   WeekSession,
 } from '@/utils/training_plan'
@@ -22,7 +22,7 @@ export type PlanWeek = {
 
 export default function useCurrentPlanWeek(): PlanWeek | null {
   const { settings } = useSQLContext()
-  const plan = trainingPlanById(settings.trainingPlan)
+  const plan = trainingPlanFromSettings(settings)
   const startedAt = settings.trainingPlanStartedAt
   const baselineMaxSeconds = settings.baselineMaxHoldSeconds
   if (plan == null || startedAt == null || baselineMaxSeconds == null) return null

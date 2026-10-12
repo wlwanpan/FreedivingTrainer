@@ -5,7 +5,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 export const settings = sqliteTable('settings', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   dateFormat: text('date_format').notNull().default('YYYY-MM-DD'),
-  breatheUpSeconds: integer('breathe_up_seconds').notNull().default(120),
+  breatheUpSeconds: integer('breathe_up_seconds').notNull().default(60),
   trainingAnimation: integer('training_animation', { mode: 'boolean' }).notNull().default(true),
   co2HoldSeconds: integer('co2_hold_seconds').notNull().default(90),
   co2RestStartSeconds: integer('co2_rest_start_seconds').notNull().default(120),
@@ -20,6 +20,7 @@ export const settings = sqliteTable('settings', {
   baselineTestedAt: integer('baseline_tested_at', { mode: 'timestamp' }),
   trainingPlan: text('training_plan'),
   trainingPlanStartedAt: integer('training_plan_started_at', { mode: 'timestamp' }),
+  customPlan: text('custom_plan'),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }),
 })

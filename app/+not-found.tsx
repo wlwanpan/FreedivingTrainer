@@ -7,7 +7,7 @@ export default function NotFoundScreen() {
   return (
     <Wrapper>
       <Stack.Screen options={{ title: 'Not found' }} />
-      <SLink href='/'>Go back to Tables</SLink>
+      <SLink href='/'>Go back to Training</SLink>
     </Wrapper>
   )
 }

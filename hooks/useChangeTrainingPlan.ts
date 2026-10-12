@@ -1,7 +1,13 @@
 import { ErrorTitles } from '@/constants/errors'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
-import { TrainingPlanId, trainingPlanById, weeklySessions } from '@/utils/training_plan'
+import {
+  PlanChoice,
+  planFromChoice,
+  serializeCustomPlan,
+  trainingPlanFromSettings,
+  weeklySessions,
+} from '@/utils/training_plan'
 import useCurrentPlanWeek from './useCurrentPlanWeek'
 
 
@@ -12,11 +18,11 @@ export default function useChangeTrainingPlan() {
   const { showConfirmation, showWarning } = useWarningModal()
   const planWeek = useCurrentPlanWeek()
 
-  return async (planId: TrainingPlanId): Promise<PlanChangeResult> => {
-    const next = trainingPlanById(planId)
-    const current = trainingPlanById(sql.settings.trainingPlan)
+  return async (choice: PlanChoice): Promise<PlanChangeResult> => {
+    const next = planFromChoice(choice)
+    const current = trainingPlanFromSettings(sql.settings)
     if (next == null) return 'error'
-    if (next.id === current?.id) return 'unchanged'
+    if (current?.id === next.id && samePlan(sql.settings.customPlan, choice)) return 'unchanged'
 
     const baseline = sql.settings.baselineMaxHoldSeconds
     if (baseline == null) return 'error'
@@ -36,16 +42,18 @@ export default function useChangeTrainingPlan() {
       plan: next,
       week: 1,
     })
-    const co2 = sessions.find((session) => session.kind === 'co2') ?? sessions[0]
+    const co2 = sessions.find((session) => session.kind === 'co2') ?? null
     const o2 = sessions.find((session) => session.kind === 'o2') ?? null
-    if (co2 == null) return 'error'
+    if (sessions.length === 0) return 'error'
 
     const res = await sql.updateSettings({
       ...sql.settings,
-      co2HoldSeconds: co2.holdSeconds,
-      co2RestStartSeconds: co2.restStartSeconds,
-      co2RestStepSeconds: co2.restStepSeconds,
-      co2Rounds: co2.rounds,
+      ...(co2 == null ? {} : {
+        co2HoldSeconds: co2.holdSeconds,
+        co2RestStartSeconds: co2.restStartSeconds,
+        co2RestStepSeconds: co2.restStepSeconds,
+        co2Rounds: co2.rounds,
+      }),
       ...(o2 == null ? {} : {
         o2HoldStartSeconds: o2.holdSeconds,
         o2HoldStepSeconds: o2.holdStepSeconds,
@@ -53,6 +61,7 @@ export default function useChangeTrainingPlan() {
         o2Rounds: o2.rounds,
       }),
       trainingPlan: next.id,
+      customPlan: choice.custom == null ? sql.settings.customPlan : serializeCustomPlan(choice.custom),
       trainingPlanStartedAt: now,
       updatedAt: now,
     })
@@ -62,4 +71,9 @@ export default function useChangeTrainingPlan() {
     }
     return 'saved'
   }
+}
+
+function samePlan(storedCustom: string | null, choice: PlanChoice): boolean {
+  if (choice.planId !== 'custom') return true
+  return serializeCustomPlan(choice.custom ?? { weeks: 0, sessions: [] }) === (storedCustom ?? '')
 }

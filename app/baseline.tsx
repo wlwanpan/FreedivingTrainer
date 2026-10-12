@@ -1,3 +1,4 @@
+import BaselineManual from '@/components/BaselineManual'
 import BaselinePlans from '@/components/BaselinePlans'
 import BaselinePrep from '@/components/BaselinePrep'
 import BaselineResult from '@/components/BaselineResult'
@@ -16,7 +17,19 @@ export default function BaselineScreen() {
   return (
     <WrapperScreen skipBottomInset>
       {test.stage === 'prep' ? (
-        <BaselinePrep onStart={test.start} onBack={() => router.back()} />
+        <BaselinePrep
+          onStart={test.start}
+          onEnterTimes={test.openManual}
+          onBack={() => router.back()}
+        />
+      ) : null}
+      {test.stage === 'manual' ? (
+        <BaselineManual
+          initialMaxHoldSeconds={test.manualDefaults.maxHoldSeconds}
+          initialContractionSeconds={test.manualDefaults.contractionSeconds}
+          onBack={test.cancel}
+          onSubmit={test.submitManual}
+        />
       ) : null}
       {test.stage === 'hold' ? (
         <BaselineTimer
@@ -32,7 +45,7 @@ export default function BaselineScreen() {
         <BaselinePlans
           outcome={test.outcome}
           saving={test.saving}
-          onStart={(planId) => { void test.save(planId) }}
+          onStart={(choice) => { void test.save(choice) }}
           onRetake={test.retake}
         />
       ) : null}

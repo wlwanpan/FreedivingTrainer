@@ -9,7 +9,9 @@ import {
 } from '@/utils/baseline'
 import {
   currentPlanWeek,
-  TrainingPlanId,
+  PlanChoice,
+  planFromChoice,
+  serializeCustomPlan,
   trainingPlanById,
   weeklySessions,
 } from '@/utils/training_plan'
@@ -18,7 +20,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
 
 
-export type BaselineStage = 'prep' | 'hold' | 'result' | 'plan'
+export type BaselineStage = 'prep' | 'hold' | 'manual' | 'result' | 'plan'
 
 export type BaselineOutcome = {
   maxHoldSeconds: number
@@ -98,6 +100,24 @@ export default function useBaselineTest(finishToHome: boolean) {
     Vibration.vibrate(20)
   }
 
+  const complete = (maxHoldSeconds: number, contractionSeconds: number | null) => {
+    const hold = Math.max(1, Math.floor(maxHoldSeconds))
+    const marked = contractionSeconds == null
+      ? null
+      : Math.min(hold, Math.max(0, Math.floor(contractionSeconds)))
+    const tooShort = hold < MIN_BASELINE_SECONDS
+    setOutcome({
+      maxHoldSeconds: hold,
+      contractionSeconds: marked,
+      tooShort,
+      plan: tooShort ? null : generateTablesFromBaseline({
+        maxHoldSeconds: hold,
+        contractionSeconds: marked,
+      }),
+    })
+    setStage(tooShort ? 'result' : 'plan')
+  }
+
   const finish = () => {
     const started = startedAtRef.current
     if (started == null || finishedRef.current) return
@@ -108,19 +128,14 @@ export default function useBaselineTest(finishToHome: boolean) {
     const marked = contractionAtRef.current == null
       ? null
       : Math.min(maxHoldSeconds, Math.max(0, Math.floor((contractionAtRef.current - started) / 1000)))
-    const tooShort = maxHoldSeconds < MIN_BASELINE_SECONDS
     setNow(ended)
-    setOutcome({
-      maxHoldSeconds,
-      contractionSeconds: marked,
-      tooShort,
-      plan: tooShort ? null : generateTablesFromBaseline({
-        maxHoldSeconds,
-        contractionSeconds: marked,
-      }),
-    })
-    setStage(tooShort ? 'result' : 'plan')
+    complete(maxHoldSeconds, marked)
     Vibration.vibrate(40)
+  }
+
+  const submitManual = (input: { maxHoldSeconds: number; contractionSeconds: number | null }) => {
+    finishedRef.current = true
+    complete(input.maxHoldSeconds, input.contractionSeconds)
   }
 
   const reset = () => {
@@ -138,9 +153,9 @@ export default function useBaselineTest(finishToHome: boolean) {
     setStage('plan')
   }
 
-  const save = async (planId: TrainingPlanId) => {
+  const save = async (choice: PlanChoice) => {
     if (saving || outcome?.plan == null) return
-    const plan = trainingPlanById(planId)
+    const plan = planFromChoice(choice)
     if (plan == null) return
     const nowDate = new Date()
     const currentPlan = trainingPlanById(sql.settings.trainingPlan)
@@ -153,9 +168,9 @@ export default function useBaselineTest(finishToHome: boolean) {
       plan,
       week: currentPlanWeek(startedAt, nowDate, plan.weeks),
     })
-    const storedTable = sessions.find((session) => session.kind === 'co2') ?? sessions[0]
+    const storedTable = sessions.find((session) => session.kind === 'co2') ?? null
     const o2Table = sessions.find((session) => session.kind === 'o2') ?? null
-    if (storedTable == null) return
+    if (sessions.length === 0) return
     setSaving(true)
     const priorAt = sql.settings.baselineTestedAt?.getTime() ?? null
     const priorStored = priorAt != null && sql.baselineTests.some((test) => test.testedAt.getTime() === priorAt)
@@ -188,10 +203,12 @@ export default function useBaselineTest(finishToHome: boolean) {
     const res = await sql.updateSettings({
       ...sql.settings,
       ...tableSettingsFromPlan(outcome.plan),
-      co2HoldSeconds: storedTable.holdSeconds,
-      co2RestStartSeconds: storedTable.restStartSeconds,
-      co2RestStepSeconds: storedTable.restStepSeconds,
-      co2Rounds: storedTable.rounds,
+      ...(storedTable == null ? {} : {
+        co2HoldSeconds: storedTable.holdSeconds,
+        co2RestStartSeconds: storedTable.restStartSeconds,
+        co2RestStepSeconds: storedTable.restStepSeconds,
+        co2Rounds: storedTable.rounds,
+      }),
       ...(o2Table == null ? {} : {
         o2HoldStartSeconds: o2Table.holdSeconds,
         o2HoldStepSeconds: o2Table.holdStepSeconds,
@@ -202,6 +219,7 @@ export default function useBaselineTest(finishToHome: boolean) {
       baselineContractionSeconds: outcome.contractionSeconds,
       baselineTestedAt: nowDate,
       trainingPlan: plan.id,
+      customPlan: choice.custom == null ? sql.settings.customPlan : serializeCustomPlan(choice.custom),
       trainingPlanStartedAt: startedAt,
       createdAt: sql.settings.createdAt ?? nowDate,
       updatedAt: nowDate,
@@ -225,7 +243,13 @@ export default function useBaselineTest(finishToHome: boolean) {
     controlsReady,
     outcome,
     saving,
+    manualDefaults: {
+      maxHoldSeconds: Math.max(MIN_BASELINE_SECONDS, sql.settings.baselineMaxHoldSeconds ?? 120),
+      contractionSeconds: sql.settings.baselineContractionSeconds,
+    },
     start,
+    openManual: () => setStage('manual'),
+    submitManual,
     markContraction,
     finish,
     cancel: reset,

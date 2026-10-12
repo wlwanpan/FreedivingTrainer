@@ -1,11 +1,22 @@
 import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
+import SettingsChoice from '@/components/SettingsChoice'
+import SettingsStepper from '@/components/SettingsStepper'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes } from '@/design/styles'
 import { BaselineOutcome } from '@/hooks/useBaselineTest'
 import { useFormatterContext } from '@/providers/formatter'
 import {
   beginnerBaseHold,
+  CustomPlan,
+  CustomSessionChoices,
+  customPlanFrequency,
+  estimatedApneaTimes,
+  MAX_CUSTOM_WEEKS,
+  MIN_CUSTOM_WEEKS,
+  parseCustomPlan,
+  PlanChoice,
+  SessionKind,
   TrainingPlan,
   TrainingPlanId,
   TrainingPlans,
@@ -19,7 +30,8 @@ type Props = {
   outcome: BaselineOutcome
   saving: boolean
   initialPlanId?: TrainingPlanId
-  onStart: (planId: TrainingPlanId) => void
+  initialCustomPlan?: string | null
+  onStart: (choice: PlanChoice) => void
   onRetake: () => void
   onBack?: () => void
 }
@@ -28,13 +40,31 @@ export default function BaselinePlans({
   outcome,
   saving,
   initialPlanId,
+  initialCustomPlan,
   onStart,
   onRetake,
   onBack,
 }: Props) {
   const { formatSeconds } = useFormatterContext()
+  const storedCustom = parseCustomPlan(initialCustomPlan)
   const [planId, setPlanId] = useState<TrainingPlanId>(initialPlanId ?? 'beginner')
+  const [customWeeks, setCustomWeeks] = useState(storedCustom?.weeks ?? 4)
+  const [customSessions, setCustomSessions] = useState<SessionKind[]>(storedCustom?.sessions ?? ['co2'])
   const selected = TrainingPlans.find((plan) => plan.id === planId) ?? TrainingPlans[0]
+  const customPlan: CustomPlan = { weeks: customWeeks, sessions: customSessions }
+
+  const toggleSession = (kind: SessionKind) => {
+    setPlanId('custom')
+    setCustomSessions((current) => {
+      if (current.includes(kind)) {
+        if (current.length === 1) return current
+        return current.filter((item) => item !== kind)
+      }
+      return CustomSessionChoices
+        .map((choice) => choice.kind)
+        .filter((item) => item === kind || current.includes(item))
+    })
+  }
 
   return (
     <Wrapper>
@@ -51,28 +81,69 @@ export default function BaselinePlans({
         {TrainingPlans.map((plan) => {
           const selectedPlan = plan.id === planId
           return (
-            <SCard
-              key={plan.id}
-              $selected={selectedPlan}
-              disabled={saving}
-              onPress={() => setPlanId(plan.id)}
-            >
-              {plan.recommended ? (
-                <SRecommend>Start here</SRecommend>
-              ) : null}
-              <SName>{plan.name}</SName>
+            <SCard key={plan.id} $selected={selectedPlan}>
+              <SCardPress
+                disabled={saving}
+                onPress={() => setPlanId(plan.id)}
+              >
+              <STop>
+                <STopText>
+                  {plan.recommended ? (
+                    <SRecommend>Start here</SRecommend>
+                  ) : null}
+                  <SName>{plan.name}</SName>
+                </STopText>
+                {plan.id === 'custom' ? null : (
+                  <SGain>
+                    {gainCopy(plan.weeks, outcome.maxHoldSeconds, formatSeconds)}
+                  </SGain>
+                )}
+              </STop>
               <SMeta>{plan.level}</SMeta>
-              <SMeta>{plan.frequency}</SMeta>
+              <SMeta>
+                {plan.id === 'custom' && selectedPlan
+                  ? `${customWeeks} weeks · ${customPlanFrequency(customSessions)}`
+                  : plan.frequency}
+              </SMeta>
               <SFocus>{plan.focus}</SFocus>
-              <SMethod>{methodCopy(plan, outcome, formatSeconds)}</SMethod>
+              {plan.id === 'custom' && selectedPlan ? null : (
+                <SMethod>{methodCopy(plan, outcome, formatSeconds)}</SMethod>
+              )}
+              </SCardPress>
+              {plan.id === 'custom' && selectedPlan ? (
+                <SBuilder>
+                  <SettingsStepper
+                    label='Weeks'
+                    value={customWeeks}
+                    min={MIN_CUSTOM_WEEKS}
+                    max={MAX_CUSTOM_WEEKS}
+                    onChange={setCustomWeeks}
+                  />
+                  <SSessionLabel>Each week</SSessionLabel>
+                  <SSessionRow>
+                    {CustomSessionChoices.map((choice) => (
+                      <SSessionChoice key={choice.kind}>
+                        <SettingsChoice
+                          label={choice.label}
+                          selected={customSessions.includes(choice.kind)}
+                          onPress={() => toggleSession(choice.kind)}
+                        />
+                      </SSessionChoice>
+                    ))}
+                  </SSessionRow>
+                </SBuilder>
+              ) : null}
             </SCard>
           )
         })}
       </SOptions>
       <Footer>
         <Button
-          title={`Start ${selected.name}`}
-          onPress={() => onStart(selected.id)}
+          title={selected.id === 'custom' ? 'Start your plan' : `Start ${selected.name}`}
+          onPress={() => onStart({
+            planId: selected.id,
+            custom: selected.id === 'custom' ? customPlan : null,
+          })}
           loading={saving}
         />
         <Button
@@ -85,6 +156,15 @@ export default function BaselinePlans({
       </Footer>
     </Wrapper>
   )
+}
+
+function gainCopy(
+  weeks: number,
+  baselineSeconds: number,
+  formatSeconds: (seconds: number) => string,
+): string {
+  const estimate = estimatedApneaTimes(weeks, baselineSeconds)
+  return `${formatSeconds(estimate.previous)} → ~${formatSeconds(estimate.next)}`
 }
 
 function methodCopy(
@@ -117,13 +197,36 @@ const SRule = styled.Text`
   color: ${Colors.GreyPrimary};
 `
 
-const SCard = styled.Pressable<{ $selected: boolean }>`
+const SCard = styled.View<{ $selected: boolean }>`
   margin-bottom: 12px;
   padding: 16px;
   border-radius: 16px;
   border-width: 2px;
   border-color: ${(props) => props.$selected ? Colors.TealPrimary : Colors.GreyDivider};
   background-color: ${(props) => props.$selected ? Colors.TealBackground : Colors.White};
+`
+
+const SCardPress = styled.Pressable``
+
+const STop = styled.View`
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+`
+
+const STopText = styled.View`
+  flex: 1;
+`
+
+const SGain = styled.Text`
+  flex-shrink: 0;
+  max-width: 48%;
+  font-size: ${FontSizes.Small};
+  font-weight: 800;
+  line-height: 20px;
+  text-align: right;
+  color: ${Colors.GreenPrimary};
 `
 
 const SRecommend = styled.Text`
@@ -159,4 +262,27 @@ const SMethod = styled.Text`
   font-size: ${FontSizes.Small};
   line-height: 20px;
   color: ${Colors.GreyPrimary};
+`
+
+const SBuilder = styled.View`
+  margin-top: 8px;
+`
+
+const SSessionLabel = styled.Text`
+  margin-top: 8px;
+  font-size: ${FontSizes.Small};
+  font-weight: 700;
+  color: ${Colors.GreyPrimary};
+`
+
+const SSessionRow = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+`
+
+const SSessionChoice = styled.View`
+  flex-grow: 1;
+  flex-basis: 46%;
 `

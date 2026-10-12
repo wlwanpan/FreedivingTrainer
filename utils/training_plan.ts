@@ -2,7 +2,7 @@ import { TableType } from '@/constants/tables'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
 
 
-export type TrainingPlanId = 'beginner' | 'intermediate' | 'advanced'
+export type TrainingPlanId = 'beginner' | 'intermediate' | 'advanced' | 'custom'
 
 export type TrainingPlan = {
   id: TrainingPlanId
@@ -15,6 +15,7 @@ export type TrainingPlan = {
   setsO2: boolean
   retestAtWeek: number | null
   recommended: boolean
+  sessionKinds: readonly SessionKind[] | null
 }
 
 export const TrainingPlans: readonly TrainingPlan[] = [
@@ -29,6 +30,7 @@ export const TrainingPlans: readonly TrainingPlan[] = [
     setsO2: false,
     retestAtWeek: null,
     recommended: true,
+    sessionKinds: null,
   },
   {
     id: 'intermediate',
@@ -41,6 +43,7 @@ export const TrainingPlans: readonly TrainingPlan[] = [
     setsO2: true,
     retestAtWeek: 4,
     recommended: false,
+    sessionKinds: null,
   },
   {
     id: 'advanced',
@@ -53,6 +56,20 @@ export const TrainingPlans: readonly TrainingPlan[] = [
     setsO2: true,
     retestAtWeek: null,
     recommended: false,
+    sessionKinds: null,
+  },
+  {
+    id: 'custom',
+    name: 'Your plan',
+    level: 'Custom',
+    weeks: 4,
+    frequency: 'Sessions you choose, each week',
+    focus: 'Build the length and the sessions yourself.',
+    method: 'Pick how many weeks, and which of CO2, O2, one-breath, and dry walks repeat every week.',
+    setsO2: false,
+    retestAtWeek: null,
+    recommended: false,
+    sessionKinds: null,
   },
 ]
 
@@ -65,6 +82,35 @@ const BEGINNER_REST_STEP_SECONDS = 15
 const ONE_BREATH_REST_SECONDS = 5
 const WALK_REST_SECONDS = 90
 
+export function estimatedApneaTimes(weeks: number, baselineSeconds: number): {
+  previous: number
+  next: number
+} {
+  const previous = Math.max(1, Math.round(baselineSeconds))
+  const rates = apneaGainRates(weeks)
+  let nextLow = Math.max(previous + 1, Math.round(previous * (1 + rates.low)))
+  let nextHigh = Math.max(nextLow, Math.round(previous * (1 + rates.high)))
+  if (weeks >= 8 && weeks < 12) {
+    nextHigh = Math.max(nextHigh, previous + 35)
+  }
+  if (weeks >= 12) {
+    nextLow = Math.max(nextLow, previous + 35)
+    nextHigh = Math.max(nextHigh, Math.round(nextLow * 1.1))
+  }
+  return { previous, next: Math.max(previous + 1, Math.round((nextLow + nextHigh) / 2)) }
+}
+
+function apneaGainRates(weeks: number): { low: number; high: number } {
+  // 4–6 weeks: 20–30% on a comfortable hold.
+  // 8 weeks: 10.5–21.5% on maximum duration, and about +35s at the peak.
+  // 12 weeks: past that plateau, from the top of the early range plus a further gain.
+  if (weeks >= 12) return { low: 0.3, high: 0.405 }
+  if (weeks >= 8) return { low: 0.105, high: 0.215 }
+  if (weeks >= 4) return { low: 0.2, high: 0.3 }
+  const scale = Math.max(1, weeks) / 4
+  return { low: 0.2 * scale, high: 0.3 * scale }
+}
+
 const LegacyPlanIds: Record<string, TrainingPlanId> = {
   short: 'beginner',
   medium: 'intermediate',
@@ -72,6 +118,26 @@ const LegacyPlanIds: Record<string, TrainingPlanId> = {
 }
 
 export type SessionKind = 'co2' | 'o2' | 'one-breath' | 'walk'
+
+export const CustomSessionChoices: readonly { kind: SessionKind; label: string }[] = [
+  { kind: 'co2', label: 'CO2' },
+  { kind: 'o2', label: 'O2' },
+  { kind: 'one-breath', label: 'One breath' },
+  { kind: 'walk', label: 'Dry walk' },
+]
+
+export const MIN_CUSTOM_WEEKS = 1
+export const MAX_CUSTOM_WEEKS = 24
+
+export type CustomPlan = {
+  weeks: number
+  sessions: SessionKind[]
+}
+
+export type PlanChoice = {
+  planId: TrainingPlanId
+  custom: CustomPlan | null
+}
 
 export type WeekSession = {
   index: number
@@ -92,9 +158,155 @@ export function trainingPlanById(id: string | null | undefined): TrainingPlan | 
   return TrainingPlans.find((plan) => plan.id === resolved) ?? null
 }
 
+export function normalizeCustomPlan(input: CustomPlan | null | undefined): CustomPlan | null {
+  if (input == null) return null
+  const weeks = Math.round(input.weeks)
+  if (weeks < MIN_CUSTOM_WEEKS || weeks > MAX_CUSTOM_WEEKS) return null
+  const sessions = CustomSessionChoices
+    .map((choice) => choice.kind)
+    .filter((kind) => input.sessions.includes(kind))
+  if (sessions.length === 0) return null
+  return { weeks, sessions }
+}
+
+export function parseCustomPlan(raw: string | null | undefined): CustomPlan | null {
+  if (raw == null || raw === '') return null
+  try {
+    const parsed = JSON.parse(raw) as { weeks?: unknown; sessions?: unknown }
+    const weeks = typeof parsed.weeks === 'number' ? parsed.weeks : 0
+    const sessions = Array.isArray(parsed.sessions)
+      ? parsed.sessions.filter((kind): kind is SessionKind => (
+        typeof kind === 'string' && CustomSessionChoices.some((choice) => choice.kind === kind)
+      ))
+      : []
+    return normalizeCustomPlan({ weeks, sessions })
+  } catch {
+    return null
+  }
+}
+
+export function serializeCustomPlan(plan: CustomPlan): string {
+  const normalized = normalizeCustomPlan(plan)
+  if (normalized == null) return ''
+  return JSON.stringify(normalized)
+}
+
+export function customPlanFrequency(sessions: readonly SessionKind[]): string {
+  const count = `${sessions.length} ${sessions.length === 1 ? 'session' : 'sessions'} a week`
+  if (sessions.includes('co2') && sessions.includes('o2')) {
+    return `${count}, on separate days`
+  }
+  return count
+}
+
+export function withCustomPlan(plan: TrainingPlan, custom: CustomPlan): TrainingPlan {
+  return {
+    ...plan,
+    weeks: custom.weeks,
+    frequency: customPlanFrequency(custom.sessions),
+    setsO2: custom.sessions.includes('o2'),
+    sessionKinds: custom.sessions,
+  }
+}
+
+export function planFromChoice(choice: PlanChoice): TrainingPlan | null {
+  const plan = trainingPlanById(choice.planId)
+  if (plan == null) return null
+  if (plan.id !== 'custom') return plan
+  const custom = normalizeCustomPlan(choice.custom)
+  if (custom == null) return null
+  return withCustomPlan(plan, custom)
+}
+
+export function trainingPlanFromSettings(input: {
+  trainingPlan: string | null | undefined
+  customPlan: string | null | undefined
+}): TrainingPlan | null {
+  const plan = trainingPlanById(input.trainingPlan)
+  if (plan?.id !== 'custom') return plan
+  const custom = parseCustomPlan(input.customPlan)
+  if (custom == null) return null
+  return withCustomPlan(plan, custom)
+}
+
 export function currentPlanWeek(startedAt: Date, now: Date, weeks: number): number {
   const elapsed = Math.floor((now.getTime() - startedAt.getTime()) / WEEK_MS)
   return Math.min(weeks, Math.max(1, elapsed + 1))
+}
+
+export function planElapsedFraction(startedAt: Date, now: Date, weeks: number): number {
+  const total = Math.max(1, weeks) * WEEK_MS
+  const elapsed = now.getTime() - startedAt.getTime()
+  return Math.min(1, Math.max(0, elapsed / total))
+}
+
+export function planSchedule(input: {
+  baselineMaxSeconds: number
+  contractionSeconds: number | null
+  plan: TrainingPlan
+}): { week: number; sessions: WeekSession[] }[] {
+  return Array.from({ length: input.plan.weeks }, (_, index) => {
+    const week = index + 1
+    return {
+      week,
+      sessions: weeklySessions({ ...input, week }),
+    }
+  })
+}
+
+export type LoggedTraining = {
+  tableType: string
+  holdSeconds: number
+  restSeconds: number
+  roundsCompleted: number
+  roundsPlanned: number
+  createdAt: Date
+}
+
+export function planWeekRange(startedAt: Date, week: number): { start: Date; end: Date } {
+  const startMs = startedAt.getTime() + (Math.max(1, week) - 1) * WEEK_MS
+  return { start: new Date(startMs), end: new Date(startMs + WEEK_MS) }
+}
+
+export function completedSessionIndexes(
+  logged: readonly LoggedTraining[],
+  planned: readonly WeekSession[],
+  range: { start: Date; end: Date },
+): Set<number> {
+  const counts = new Map<string, number>()
+  const start = range.start.getTime()
+  const end = range.end.getTime()
+  for (const session of logged) {
+    const at = session.createdAt.getTime()
+    if (at < start || at >= end) continue
+    if (session.roundsCompleted < session.roundsPlanned) continue
+    const key = trainingSignature(session)
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+
+  const done = new Set<number>()
+  for (const session of planned) {
+    const key = trainingSignature({
+      tableType: session.tableType,
+      holdSeconds: session.holdSeconds,
+      restSeconds: session.restStartSeconds,
+      roundsPlanned: session.rounds,
+    })
+    const count = counts.get(key) ?? 0
+    if (count === 0) continue
+    counts.set(key, count - 1)
+    done.add(session.index)
+  }
+  return done
+}
+
+function trainingSignature(session: {
+  tableType: string
+  holdSeconds: number
+  restSeconds: number
+  roundsPlanned: number
+}): string {
+  return `${session.tableType}:${session.holdSeconds}:${session.restSeconds}:${session.roundsPlanned}`
 }
 
 export function baselineRetestDue(
@@ -126,7 +338,9 @@ export function weeklySessions(input: {
     ? [beginnerSession(baseline, contraction, week)]
     : input.plan.id === 'intermediate'
       ? intermediateSessions(baseline)
-      : advancedSessions(baseline)
+      : input.plan.id === 'advanced'
+        ? advancedSessions(baseline)
+        : customSessions(baseline, input.plan.sessionKinds ?? ['co2'])
 
   return sessions.map((session, index) => ({ ...session, index: index + 1 }))
 }
@@ -140,6 +354,9 @@ export function planDetail(input: {
   const head = `${input.plan.name} · week ${input.week} of ${input.plan.weeks}. ${input.plan.frequency}.`
   if (input.plan.id === 'beginner') {
     return `${head} ${beginnerProgress(input.week, input.contractionSeconds)}`
+  }
+  if (input.plan.id === 'custom') {
+    return `${head} The same sessions repeat each week.`
   }
   if (input.plan.id === 'intermediate') {
     const retest = input.retestDue
@@ -232,6 +449,15 @@ function intermediateSessions(baseline: number): WeekSession[] {
     o2Session(baseline, 'O2'),
     standardCo2(baseline, 'CO2 2'),
   ]
+}
+
+function customSessions(baseline: number, kinds: readonly SessionKind[]): WeekSession[] {
+  const sessions: WeekSession[] = []
+  if (kinds.includes('co2')) sessions.push(standardCo2(baseline, 'CO2'))
+  if (kinds.includes('one-breath')) sessions.push(oneBreathSession(baseline))
+  if (kinds.includes('o2')) sessions.push(o2Session(baseline, 'O2'))
+  if (kinds.includes('walk')) sessions.push(walkSession(baseline))
+  return sessions
 }
 
 function advancedSessions(baseline: number): WeekSession[] {
