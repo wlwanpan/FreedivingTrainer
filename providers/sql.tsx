@@ -42,6 +42,7 @@ export const DefaultSettings: Setting = {
   trainingPlan: null,
   trainingPlanStartedAt: null,
   customPlan: null,
+  wearable: null,
   createdAt: null,
   updatedAt: null,
 }

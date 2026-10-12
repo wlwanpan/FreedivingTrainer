@@ -57,6 +57,13 @@
       "when": 1791827955945,
       "tag": "0007_striped_wendell_vaughn",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1791830842079,
+      "tag": "0008_damp_vivisector",
+      "breakpoints": true
     }
   ]
 }

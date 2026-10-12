@@ -4,6 +4,7 @@ import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
 import PlanProgress from '@/components/PlanProgress'
 import ScreenHeader from '@/components/ScreenHeader'
 import SessionListItem from '@/components/SessionListItem'
+import WearableStatus from '@/components/WearableStatus'
 import WrapperScreen from '@/components/WrapperScreen'
 import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
@@ -63,6 +64,10 @@ export default function HomeScreen() {
   return (
     <WrapperScreen skipBottomInset>
       <ScreenHeader title='Home' />
+      <SMode>
+        <SModeText>Dry Training Mode Active</SModeText>
+      </SMode>
+      <WearableStatus />
       <SScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom }}
@@ -118,6 +123,20 @@ function sessionSummary(
     : `Hold ${formatSeconds(session.holdSeconds)}`
   return `${session.name} · ${hold} · ${session.rounds} rounds`
 }
+
+const SMode = styled.View`
+  align-self: center;
+  margin: 0 20px 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background-color: ${Colors.CoralBackground};
+`
+
+const SModeText = styled.Text`
+  font-size: ${FontSizes.Small};
+  font-weight: 800;
+  color: ${Colors.CoralPrimary};
+`
 
 const SScroll = styled.ScrollView`
   flex: 1;
