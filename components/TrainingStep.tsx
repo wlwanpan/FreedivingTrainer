@@ -71,6 +71,7 @@ type Props = {
   roundIndex?: number | null
   roundCount?: number
   note?: string
+  aside?: string
   animated?: boolean
 }
 
@@ -83,6 +84,7 @@ export default function TrainingStep({
   roundIndex = null,
   roundCount = 0,
   note,
+  aside,
   animated = true,
 }: Props) {
   const { formatSeconds } = useFormatterContext()
@@ -125,11 +127,14 @@ export default function TrainingStep({
   const zIndex = role === 'current' || role === 'complete' ? 3 : role === 'done' ? 2 : 1
 
   const shownSeconds = role === 'current' ? remainingSeconds : seconds
+  const roundLine = roundIndex == null
+    ? 'Settle in before the first hold.'
+    : `Round ${roundIndex} of ${roundCount}`
   const detail = role === 'complete'
     ? note ?? ''
-    : roundIndex == null
-      ? 'Settle in before the first hold.'
-      : `Round ${roundIndex} of ${roundCount}`
+    : aside
+      ? `${roundLine} · ${aside}`
+      : roundLine
   const title = role === 'complete'
     ? 'Table complete'
     : role === 'done'
@@ -173,6 +178,7 @@ export default function TrainingStep({
           ) : (
             <SDetail>{detail}</SDetail>
           )}
+          {role === 'done' && aside ? <SDetail>{aside}</SDetail> : null}
           <SVeil style={[veilStyle, { borderRadius: corner }]} />
         </SClip>
       </SCard>

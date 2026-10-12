@@ -7,6 +7,7 @@ export const settings = sqliteTable('settings', {
   dateFormat: text('date_format').notNull().default('YYYY-MM-DD'),
   breatheUpSeconds: integer('breathe_up_seconds').notNull().default(60),
   trainingAnimation: integer('training_animation', { mode: 'boolean' }).notNull().default(true),
+  trainingGesturesSeen: integer('training_gestures_seen', { mode: 'boolean' }).notNull().default(false),
   co2HoldSeconds: integer('co2_hold_seconds').notNull().default(90),
   co2RestStartSeconds: integer('co2_rest_start_seconds').notNull().default(120),
   co2RestStepSeconds: integer('co2_rest_step_seconds').notNull().default(15),
@@ -40,6 +41,7 @@ export const sessions = sqliteTable('sessions', {
   roundsPlanned: integer('rounds_planned').notNull(),
   holdSeconds: integer('hold_seconds').notNull(),
   restSeconds: integer('rest_seconds').notNull(),
+  contractions: text('contractions'),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })

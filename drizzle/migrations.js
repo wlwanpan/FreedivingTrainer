@@ -8,6 +8,7 @@ import m0003 from './0003_baseline_tests.sql';
 import m0004 from './0004_training_animation.sql';
 import m0005 from './0005_striped_blazing_skull.sql';
 import m0006 from './0006_pale_nemesis.sql';
+import m0007 from './0007_striped_wendell_vaughn.sql';
 
 export default {
   journal,
@@ -19,5 +20,6 @@ export default {
     m0004,
     m0005,
     m0006,
+    m0007,
   }
 }

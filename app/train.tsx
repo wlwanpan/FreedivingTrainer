@@ -90,10 +90,13 @@ export default function TrainScreen() {
         saving={training.saving}
         saved={training.saved}
         saveFailed={training.saveFailed}
+        contractions={training.contractions}
         onCancel={() => router.back()}
         onClose={() => router.back()}
         onRetry={training.retry}
         onTogglePause={training.togglePause}
+        onRememberTap={training.rememberTap}
+        onLogContraction={training.logContraction}
       />
     </WrapperScreen>
   )

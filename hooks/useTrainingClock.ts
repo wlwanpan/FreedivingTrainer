@@ -2,9 +2,16 @@ import { ErrorTitles } from '@/constants/errors'
 import { TableType } from '@/constants/tables'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
+import {
+  canLogContraction,
+  contractionOffset,
+  ContractionTap,
+  LoggedContraction,
+  serializeContractions,
+} from '@/utils/contractions'
 import { todayDate } from '@/utils/date'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
 import useTablePlan from './useTablePlan'
 
@@ -103,11 +110,13 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
     : buildPhases(sql.settings.breatheUpSeconds, rounds)
 
   const startedAtRef = useRef(Date.now())
-  const pausedAtRef = useRef<number | null>(null)
+  const intro = sql.updatedAt != null && !sql.settings.trainingGesturesSeen
+  const pausedAtRef = useRef<number | null>(intro ? startedAtRef.current : null)
   const announcedIndex = useRef(0)
   const saveStarted = useRef(false)
   const [now, setNow] = useState(startedAtRef.current)
-  const [paused, setPaused] = useState(false)
+  const [paused, setPaused] = useState(intro)
+  const [contractions, setContractions] = useState<LoggedContraction[]>([])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveFailed, setSaveFailed] = useState(false)
@@ -146,10 +155,35 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
     }
   }, [done, paused, phases.length])
 
+  const doneRef = useRef(done)
+  const pausedRef = useRef(paused)
+  const kindRef = useRef(current?.kind ?? null)
+  const roundRef = useRef(current?.roundIndex ?? null)
+  const phaseSecondsRef = useRef(current?.seconds ?? 0)
+  const remainingRef = useRef(location.remaining)
+  const contractionsRef = useRef(contractions)
+  const touchRef = useRef<{
+    at: number
+    kind: TrainPhaseKind | null
+    roundIndex: number | null
+    phaseSeconds: number
+    remaining: number
+    paused: boolean
+    done: boolean
+  } | null>(null)
+  doneRef.current = done
+  pausedRef.current = paused
+  kindRef.current = current?.kind ?? null
+  roundRef.current = current?.roundIndex ?? null
+  phaseSecondsRef.current = current?.seconds ?? 0
+  remainingRef.current = location.remaining
+  contractionsRef.current = contractions
+
   const togglePause = () => {
-    if (done) return
-    if (!paused) {
+    if (doneRef.current) return
+    if (!pausedRef.current) {
       pausedAtRef.current = Date.now()
+      pausedRef.current = true
       setPaused(true)
       return
     }
@@ -158,9 +192,46 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
       startedAtRef.current += Date.now() - pausedAt
     }
     pausedAtRef.current = null
+    pausedRef.current = false
     setNow(Date.now())
     setPaused(false)
   }
+
+  const rememberTap = useCallback(() => {
+    touchRef.current = {
+      at: Date.now(),
+      kind: kindRef.current,
+      roundIndex: roundRef.current,
+      phaseSeconds: phaseSecondsRef.current,
+      remaining: remainingRef.current,
+      paused: pausedRef.current,
+      done: doneRef.current,
+    }
+  }, [])
+
+  const logContraction = useCallback((): ContractionTap => {
+    const touch = touchRef.current
+    const sample = touch != null && Date.now() - touch.at < 700 ? touch : {
+      kind: kindRef.current,
+      roundIndex: roundRef.current,
+      phaseSeconds: phaseSecondsRef.current,
+      remaining: remainingRef.current,
+      paused: pausedRef.current,
+      done: doneRef.current,
+    }
+    const decision = canLogContraction({
+      done: sample.done,
+      paused: sample.paused,
+      kind: sample.kind,
+    })
+    if (decision !== 'log') return { kind: decision }
+    const roundIndex = sample.roundIndex
+    if (roundIndex == null) return { kind: 'ignore' }
+    const offsetSeconds = contractionOffset(sample.phaseSeconds, sample.remaining)
+    setContractions((currentItems) => [...currentItems, { roundIndex, offsetSeconds }])
+    Vibration.vibrate(20)
+    return { kind: 'logged', offsetSeconds }
+  }, [])
 
   useEffect(() => {
     if (location.index === announcedIndex.current) return
@@ -189,6 +260,7 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
       holdSeconds: first.holdSeconds,
       restSeconds: table?.restStartSeconds
         ?? (tableType === 'o2' ? sql.settings.o2RestSeconds : sql.settings.co2RestStartSeconds),
+      contractions: serializeContractions(contractionsRef.current),
       createdAt,
       updatedAt: createdAt,
     })
@@ -227,7 +299,10 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
     previous,
     current,
     next,
+    contractions,
     retry,
     togglePause,
+    rememberTap,
+    logContraction,
   }
 }
