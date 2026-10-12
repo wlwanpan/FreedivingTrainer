@@ -7,7 +7,7 @@ import { styled } from 'styled-components/native'
 
 type Props = {
   session: Session
-  onDelete: () => void
+  onDelete?: () => void
 }
 
 export default function SessionListItem({ session, onDelete }: Props) {
@@ -21,9 +21,11 @@ export default function SessionListItem({ session, onDelete }: Props) {
           {session.roundsCompleted} rounds · hold {formatSeconds(session.holdSeconds)} · rest {formatSeconds(session.restSeconds)}
         </SMeta>
       </SBody>
-      <SDelete onPress={onDelete}>
-        <SDeleteText>Delete</SDeleteText>
-      </SDelete>
+      {onDelete ? (
+        <SDelete onPress={onDelete}>
+          <SDeleteText>Delete</SDeleteText>
+        </SDelete>
+      ) : null}
     </Wrapper>
   )
 }

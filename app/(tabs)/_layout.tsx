@@ -60,18 +60,18 @@ export default function TabLayout() {
       tintColor={Colors.TealPrimary}
       labelStyle={{ color: Colors.TealPrimary }}
     >
+      <NativeTabs.Trigger name='home'>
+        <Label>Home</Label>
+        <Icon
+          sf={{ default: 'house', selected: 'house.fill' }}
+          androidSrc={<VectorIcon family={Ionicons} name='home-outline' />}
+        />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name='index'>
         <Label>Training</Label>
         <Icon
           sf={{ default: 'list.bullet', selected: 'list.bullet' }}
           androidSrc={<VectorIcon family={Ionicons} name='list-outline' />}
-        />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name='analytics'>
-        <Label>Analytics</Label>
-        <Icon
-          sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }}
-          androidSrc={<VectorIcon family={Ionicons} name='stats-chart-outline' />}
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name='settings'>
