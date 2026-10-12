@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import WrapperScreen from '@/components/WrapperScreen'
 import { Colors, FontSizes } from '@/design/styles'
+import { usePaywallPackages } from '@/hooks/paywallPackages'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -31,7 +32,10 @@ export default function PaywallScreen() {
   const [restoreInFlight, setRestoreInFlight] = useState(false)
 
   const dismissable = subscription.hasLifetimeAccess || !subscription.freeLimitReached
-  const packages = subscription.offerings?.current?.availablePackages ?? []
+  const paywallPackages = usePaywallPackages(
+    subscription.offerings,
+    subscription.introEligibilityByProductId,
+  )
 
   useEffect(() => {
     if (subscription.hasLifetimeAccess) {
@@ -78,13 +82,13 @@ export default function PaywallScreen() {
         {!subscription.configured && (
           <SNote>Add REVENUECAT_IOS_API_KEY to enable App Store purchases.</SNote>
         )}
-        {subscription.configured && packages.length === 0 && (
+        {subscription.configured && paywallPackages.length === 0 && (
           <SNote>No packages are available yet. Check the RevenueCat offering.</SNote>
         )}
-        {packages.map((pkg) => (
+        {paywallPackages.map(({ pkg, buttonTitle }) => (
           <Button
             key={pkg.identifier}
-            title={`${pkg.product.title} · ${pkg.product.priceString}`}
+            title={buttonTitle}
             onPress={() => { void handlePurchase(pkg) }}
             loading={purchaseInFlight}
           />

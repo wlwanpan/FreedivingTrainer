@@ -7,6 +7,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useState 
 import { Platform } from 'react-native'
 import Purchases, {
   CustomerInfo,
+  IntroEligibility,
   PurchasesError,
   PurchasesOfferings,
   PurchasesPackage,
@@ -48,6 +49,7 @@ export interface ISubscriptionContext {
   sessionsRemaining: number
   freeLimitReached: boolean
   offerings: PurchasesOfferings | null
+  introEligibilityByProductId: Record<string, IntroEligibility>
   purchase: (pkg: PurchasesPackage) => Promise<{ success: boolean; cancelled: boolean }>
   restorePurchase: () => Promise<{ success: boolean; restored: boolean }>
 }
@@ -71,6 +73,9 @@ export default function SubscriptionProvider({ children }: Props) {
   const [configured, setConfigured] = useState(false)
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null)
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null)
+  const [introEligibilityByProductId, setIntroEligibilityByProductId] = useState<
+    Record<string, IntroEligibility>
+  >({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -90,7 +95,23 @@ export default function SubscriptionProvider({ children }: Props) {
       .finally(() => setLoading(false))
 
     Purchases.getOfferings()
-      .then(setOfferings)
+      .then(async (nextOfferings) => {
+        setOfferings(nextOfferings)
+        const productIds = [
+          ...new Set(
+            nextOfferings.current?.availablePackages.map((pkg) => pkg.product.identifier) ?? [],
+          ),
+        ]
+        if (productIds.length === 0) {
+          return
+        }
+        try {
+          const eligibility = await Purchases.checkTrialOrIntroductoryPriceEligibility(productIds)
+          setIntroEligibilityByProductId(eligibility)
+        } catch (e) {
+          console.error('checkTrialOrIntroductoryPriceEligibility error:', e)
+        }
+      })
       .catch((e) => console.error('getOfferings error:', e))
 
     return () => {
@@ -148,6 +169,7 @@ export default function SubscriptionProvider({ children }: Props) {
       sessionsRemaining,
       freeLimitReached,
       offerings,
+      introEligibilityByProductId,
       purchase,
       restorePurchase,
     }}>
