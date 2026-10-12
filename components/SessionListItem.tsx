@@ -2,6 +2,7 @@ import { TableTypeLabel } from '@/constants/tables'
 import { Colors, FontSizes, Layout } from '@/design/styles'
 import { Session } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
+import { contractionLabel, parseContractions } from '@/utils/contractions'
 import { styled } from 'styled-components/native'
 
 
@@ -12,6 +13,7 @@ type Props = {
 
 export default function SessionListItem({ session, onDelete }: Props) {
   const { formatDay, formatSeconds } = useFormatterContext()
+  const logged = parseContractions(session.contractions).length
 
   return (
     <Wrapper>
@@ -19,6 +21,7 @@ export default function SessionListItem({ session, onDelete }: Props) {
         <STitle>{TableTypeLabel[session.tableType]} · {formatDay(session.day)}</STitle>
         <SMeta>
           {session.roundsCompleted} rounds · hold {formatSeconds(session.holdSeconds)} · rest {formatSeconds(session.restSeconds)}
+          {logged > 0 ? ` · ${contractionLabel(logged)}` : ''}
         </SMeta>
       </SBody>
       <SDelete onPress={onDelete}>

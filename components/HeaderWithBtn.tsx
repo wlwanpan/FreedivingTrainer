@@ -12,6 +12,7 @@ type Props = {
   rightText?: string
   leftOnClick?: () => void
   rightOnClick?: () => void
+  right?: ReactNode
   disabled?: boolean
   disabledRight?: boolean
   children?: ReactNode
@@ -23,6 +24,7 @@ export default function HeaderWithBtn({
   rightText,
   leftOnClick,
   rightOnClick,
+  right,
   disabled,
   disabledRight,
   children,
@@ -40,13 +42,13 @@ export default function HeaderWithBtn({
       </SSide>
       <STitle>{headerText}</STitle>
       <SRight>
-        {rightText ? (
+        {right ?? (rightText ? (
           <HeaderTextBtn
             text={rightText}
             onClick={rightOnClick}
             disabled={disabled || disabledRight}
           />
-        ) : null}
+        ) : null)}
       </SRight>
     </Wrapper>
   )
