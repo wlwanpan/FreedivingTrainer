@@ -14,7 +14,7 @@ import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
-import { sessionRounds, WeekSession } from '@/utils/training_plan'
+import { baselineFollowsPlan, sessionRounds, WeekSession } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
 import { styled } from 'styled-components/native'
 
@@ -34,6 +34,12 @@ export default function HomeScreen() {
   })
 
   const nextSession = nextTrainingSession(outline)
+  const planStartedAt = settings.trainingPlanStartedAt
+  const offerBaseline = outline != null
+    && outline.progress === 1
+    && nextSession == null
+    && planStartedAt != null
+    && !baselineFollowsPlan(settings.baselineTestedAt, sessions, planStartedAt)
   const openingSession = outline?.schedule.find((entry) => entry.week === 1)?.sessions[0] ?? null
   const sessionTitle = nextSession != null
     && nextSession.week === 1
@@ -70,9 +76,6 @@ export default function HomeScreen() {
   return (
     <WrapperScreen skipBottomInset>
       <ScreenHeader title='Home' />
-      <SMode>
-        <SModeText>Dry Training Mode Active</SModeText>
-      </SMode>
       <WearableStatus />
       <SScroll
         showsVerticalScrollIndicator={false}
@@ -98,7 +101,15 @@ export default function HomeScreen() {
             onPress={() => router.push('/training')}
             onRetest={() => router.push('/baseline')}
           >
-            {nextSession == null ? (
+            {offerBaseline ? (
+              <SNext onPress={() => router.push('/baseline')}>
+                <SNextBody>
+                  <SNextTitle>Retake baseline</SNextTitle>
+                  <SNextMeta>A new maximum hold readjusts the tables.</SNextMeta>
+                </SNextBody>
+                <SStart>Start</SStart>
+              </SNext>
+            ) : nextSession == null ? (
               <SDoneRow>
                 <SNextBody>
                   <SNextTitle>Week complete</SNextTitle>
@@ -149,20 +160,6 @@ function sessionSummary(
     : `Hold ${formatSeconds(session.holdSeconds)}`
   return `${session.name} · ${hold} · ${session.rounds} rounds`
 }
-
-const SMode = styled.View`
-  align-self: center;
-  margin: 0 20px 4px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background-color: ${Colors.CoralBackground};
-`
-
-const SModeText = styled.Text`
-  font-size: ${FontSizes.Small};
-  font-weight: 800;
-  color: ${Colors.CoralPrimary};
-`
 
 const SScroll = styled.ScrollView`
   flex: 1;

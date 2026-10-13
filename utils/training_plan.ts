@@ -256,6 +256,15 @@ export function planElapsedFraction(startedAt: Date, now: Date, weeks: number): 
   return Math.min(1, Math.max(0, elapsed / total))
 }
 
+export function planSessionFraction(
+  schedule: readonly { sessions: readonly unknown[]; completed: ReadonlySet<number> }[],
+): number {
+  const total = schedule.reduce((sum, entry) => sum + entry.sessions.length, 0)
+  if (total === 0) return 0
+  const done = schedule.reduce((sum, entry) => sum + entry.completed.size, 0)
+  return Math.min(1, done / total)
+}
+
 export function planSchedule(input: {
   baselineMaxSeconds: number
   contractionSeconds: number | null
@@ -370,6 +379,20 @@ export function baselineRetestDue(
   if (week < plan.retestAtWeek) return false
   const dueAt = startedAt.getTime() + (plan.retestAtWeek - 1) * WEEK_MS
   return testedAt.getTime() < dueAt
+}
+
+export function baselineFollowsPlan(
+  testedAt: Date | null,
+  sessions: readonly { createdAt: Date }[],
+  startedAt: Date,
+): boolean {
+  if (testedAt == null) return false
+  const start = startedAt.getTime()
+  const latest = sessions.reduce((max, session) => {
+    const at = session.createdAt.getTime()
+    return at >= start && at > max ? at : max
+  }, 0)
+  return latest > 0 && testedAt.getTime() > latest
 }
 
 export function weeklySessions(input: {

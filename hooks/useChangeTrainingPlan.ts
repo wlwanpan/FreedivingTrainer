@@ -12,6 +12,7 @@ import {
   weeklySessions,
 } from '@/utils/training_plan'
 import useCurrentPlanWeek from './useCurrentPlanWeek'
+import useTrainingOutline from './useTrainingOutline'
 
 
 export type PlanChangeResult = 'saved' | 'unchanged' | 'cancelled' | 'error'
@@ -20,6 +21,7 @@ export default function useChangeTrainingPlan() {
   const sql = useSQLContext()
   const { showConfirmation, showWarning } = useWarningModal()
   const planWeek = useCurrentPlanWeek()
+  const outline = useTrainingOutline()
 
   return async (choice: PlanChoice): Promise<PlanChangeResult> => {
     const next = planFromChoice(choice)
@@ -30,7 +32,7 @@ export default function useChangeTrainingPlan() {
     const baseline = sql.settings.baselineMaxHoldSeconds
     if (baseline == null) return 'error'
 
-    if (current != null) {
+    if (current != null && outline?.progress !== 1) {
       const confirmed = await showConfirmation(
         'Change plan?',
         withWatchTrainingLoss(planSwitchWarning(current.name, planWeek?.week ?? null)),
