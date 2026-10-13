@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var session: WatchSession
     @State private var confirmExit = false
+    @State private var showSchedule = false
 
     private var lostNoticePresented: Binding<Bool> {
         Binding(
@@ -17,7 +18,12 @@ struct ContentView: View {
                 TrainingSpriteBackground(sprite: sprite)
                     .ignoresSafeArea()
             }
-            sessionBody
+            if showSchedule, let plan = session.plan, !plan.schedule.isEmpty,
+               !session.running, !session.finished, !session.planComplete, !session.locked {
+                PlanScheduleList(plan: plan) { showSchedule = false }
+            } else {
+                sessionBody
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
             .alert("Exit training?", isPresented: $confirmExit) {
@@ -73,7 +79,7 @@ struct ContentView: View {
                     .font(.headline)
                     .foregroundStyle(.white)
                     .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
-                Text("Sent to your iPhone")
+                Text(session.pendingSync ? "Waiting for your iPhone" : "Sent to your iPhone")
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.92))
                     .multilineTextAlignment(.center)
@@ -86,34 +92,19 @@ struct ContentView: View {
                     .multilineTextAlignment(.center)
             } else if let plan = session.plan {
                 VStack(spacing: 12) {
-                    VStack(spacing: 6) {
-                        Text(plan.name)
-                            .font(.headline)
-                            .multilineTextAlignment(.center)
-                        Text("Week \(plan.planWeek) of \(plan.planWeeks)")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        ProgressView(value: Double(plan.progress), total: 100)
-                            .progressViewStyle(.linear)
-                            .tint(.accentColor)
-                        Text(session.readyDetail)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                    if plan.schedule.isEmpty {
+                        planCard(plan)
+                    } else {
+                        Button { showSchedule = true } label: {
+                            planCard(plan)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 10)
-                    .background {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .fill(Color.primary.opacity(0.08))
+                    Button("Start") {
+                        showSchedule = false
+                        session.startPlan()
                     }
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .strokeBorder(Color.accentColor.opacity(0.55), lineWidth: 1)
-                    }
-                    Button("Start", action: session.startPlan)
-                        .buttonStyle(.borderedProminent)
+                    .buttonStyle(.borderedProminent)
                 }
             } else {
                 Text("Choose a plan on your iPhone")
@@ -122,5 +113,146 @@ struct ContentView: View {
             }
         }
         .padding()
+    }
+
+    private func planCard(_ plan: WatchPlan) -> some View {
+        VStack(spacing: 6) {
+            Text(plan.name)
+                .font(.headline)
+                .multilineTextAlignment(.center)
+            HStack(spacing: 4) {
+                Text("Week \(plan.planWeek) of \(plan.planWeeks)")
+                if !plan.schedule.isEmpty {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                }
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            ProgressView(value: Double(plan.progress), total: 100)
+                .progressViewStyle(.linear)
+                .tint(.accentColor)
+            Text(session.readyDetail)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 10)
+        .background {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.primary.opacity(0.08))
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.accentColor.opacity(0.55), lineWidth: 1)
+        }
+    }
+}
+
+private struct PlanScheduleList: View {
+    let plan: WatchPlan
+    let onBack: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 8) {
+                Button(action: onBack) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("Plan")
+                    }
+                    .font(.caption2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                if !plan.planName.isEmpty {
+                    Text(plan.planName)
+                        .font(.headline)
+                }
+                ForEach(plan.schedule) { week in
+                    weekCard(week)
+                }
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+
+    private func weekCard(_ week: WatchListedWeek) -> some View {
+        let complete = !week.sessions.isEmpty && week.sessions.allSatisfy(\.completed)
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("Week \(week.week)")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                Spacer(minLength: 4)
+                if complete {
+                    Text("Complete")
+                        .foregroundStyle(Color.accentColor)
+                } else if week.current {
+                    Text("This week")
+                        .foregroundStyle(Color.accentColor)
+                }
+                if week.locked {
+                    Text("Locked")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .font(.caption2)
+            if week.locked {
+                Text("Finish week \(plan.planWeek) to start these.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(week.sessions) { session in
+                VStack(alignment: .leading, spacing: 2) {
+                    if session.index != week.sessions.first?.index {
+                        Divider()
+                    }
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(session.name)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                        Spacer(minLength: 4)
+                        if session.completed {
+                            Text("Done")
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                    Text(sessionDetail(session))
+                        .font(.caption2)
+                        .foregroundStyle(week.locked ? .secondary : Color.accentColor)
+                    if !session.note.isEmpty {
+                        Text(session.note)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .opacity(week.locked ? 0.55 : 1)
+            }
+        }
+        .padding(8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.primary.opacity(0.08))
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(
+                    week.current ? Color.accentColor.opacity(0.9) : Color.primary.opacity(0.15),
+                    lineWidth: 1
+                )
+        }
+    }
+
+    private func sessionDetail(_ session: WatchListedSession) -> String {
+        let hold = clock(session.holdSeconds)
+        let prefix = session.tableType == "o2" ? "Holds from \(hold)" : "Hold \(hold)"
+        return "\(prefix) · \(session.rounds) rounds"
     }
 }
