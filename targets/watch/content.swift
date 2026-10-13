@@ -18,11 +18,12 @@ struct ContentView: View {
                 TrainingSpriteBackground(sprite: sprite)
                     .ignoresSafeArea()
             }
-            if showSchedule, let plan = session.plan, !plan.schedule.isEmpty,
-               !session.running, !session.finished, !session.planComplete, !session.locked {
+            if session.running || session.finished {
+                sessionBody
+            } else if showSchedule, let plan = session.plan, !plan.schedule.isEmpty {
                 PlanScheduleList(plan: plan) { showSchedule = false }
             } else {
-                sessionBody
+                pagedHome
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -39,34 +40,27 @@ struct ContentView: View {
             }
     }
 
-    private var sessionBody: some View {
+    @ViewBuilder
+    private var pagedHome: some View {
+        if #available(watchOS 10.0, *) {
+            TabView {
+                homePage
+                tableStartPage(session.co2Table, title: "CO2")
+                tableStartPage(session.o2Table, title: "O2")
+            }
+            .tabViewStyle(.verticalPage)
+        } else {
+            TabView {
+                homePage
+                tableStartPage(session.co2Table, title: "CO2")
+                tableStartPage(session.o2Table, title: "O2")
+            }
+        }
+    }
+
+    private var homePage: some View {
         VStack(spacing: 8) {
-            if session.running {
-                Text(session.paused ? "Paused" : session.phaseTitle)
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.92))
-                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
-                Text(session.clockText)
-                    .font(.system(size: 40, weight: .bold, design: .rounded))
-                    .minimumScaleFactor(0.6)
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.45), radius: 3, y: 1)
-                if !session.sessionDetail.isEmpty {
-                    Text(session.sessionDetail)
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.92))
-                        .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
-                }
-                if session.paused {
-                    Button("Resume", action: session.togglePause)
-                        .buttonStyle(.borderedProminent)
-                    Button("Exit", role: .destructive) { confirmExit = true }
-                        .buttonStyle(.bordered)
-                } else {
-                    Button("Pause", action: session.togglePause)
-                        .buttonStyle(.bordered)
-                }
-            } else if session.planComplete {
+            if session.planComplete {
                 Text("Week complete")
                     .font(.headline)
                     .multilineTextAlignment(.center)
@@ -74,18 +68,6 @@ struct ContentView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-            } else if session.finished {
-                Text("Saved")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
-                Text(session.pendingSync ? "Waiting for your iPhone" : "Sent to your iPhone")
-                    .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.92))
-                    .multilineTextAlignment(.center)
-                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
-                Button("Okay", action: session.dismissSaved)
-                    .buttonStyle(.borderedProminent)
             } else if session.locked {
                 Text("Unlock lifetime access on your iPhone")
                     .font(.caption)
@@ -115,24 +97,124 @@ struct ContentView: View {
         .padding()
     }
 
+    private var sessionBody: some View {
+        VStack(spacing: 8) {
+            if session.running {
+                Text(session.paused ? "Paused" : session.phaseTitle)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.92))
+                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+                Text(session.clockText)
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .minimumScaleFactor(0.6)
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.45), radius: 3, y: 1)
+                if !session.sessionDetail.isEmpty {
+                    Text(session.sessionDetail)
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.92))
+                        .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+                }
+                if session.paused {
+                    Button("Resume", action: session.togglePause)
+                        .buttonStyle(.borderedProminent)
+                    Button("Exit", role: .destructive) { confirmExit = true }
+                        .buttonStyle(.bordered)
+                } else {
+                    Button("Pause", action: session.togglePause)
+                        .buttonStyle(.bordered)
+                }
+            } else {
+                Text("Saved")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+                Text(session.pendingSync ? "Waiting for your iPhone" : "Sent to your iPhone")
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.92))
+                    .multilineTextAlignment(.center)
+                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+                Button("Okay", action: session.dismissSaved)
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding()
+    }
+
+    private func tableStartPage(_ table: WatchTable?, title: String) -> some View {
+        VStack(spacing: 12) {
+            if let table {
+                tableCard(table)
+                if session.locked {
+                    Text("Unlock lifetime access on your iPhone")
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                } else {
+                    Button("Start") {
+                        session.startTable(table)
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            } else {
+                Text(title)
+                    .font(.headline)
+                Text("Open the iPhone app to sync this table")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding()
+    }
+
     private func planCard(_ plan: WatchPlan) -> some View {
+        startCard(
+            title: plan.name,
+            detail: session.readyDetail,
+            meta: "Week \(plan.planWeek) of \(plan.planWeeks)",
+            showChevron: !plan.schedule.isEmpty,
+            progress: plan.schedule.isEmpty ? nil : Double(plan.progress)
+        )
+    }
+
+    private func tableCard(_ table: WatchTable) -> some View {
+        startCard(
+            title: table.name,
+            detail: tableDetail(table),
+            meta: nil,
+            showChevron: false,
+            progress: nil
+        )
+    }
+
+    private func startCard(
+        title: String,
+        detail: String,
+        meta: String?,
+        showChevron: Bool,
+        progress: Double?
+    ) -> some View {
         VStack(spacing: 6) {
-            Text(plan.name)
+            Text(title)
                 .font(.headline)
                 .multilineTextAlignment(.center)
-            HStack(spacing: 4) {
-                Text("Week \(plan.planWeek) of \(plan.planWeeks)")
-                if !plan.schedule.isEmpty {
-                    Image(systemName: "chevron.right")
-                        .font(.caption2)
+            if let meta {
+                HStack(spacing: 4) {
+                    Text(meta)
+                    if showChevron {
+                        Image(systemName: "chevron.right")
+                            .font(.caption2)
+                    }
                 }
+                .font(.caption2)
+                .foregroundStyle(.secondary)
             }
-            .font(.caption2)
-            .foregroundStyle(.secondary)
-            ProgressView(value: Double(plan.progress), total: 100)
-                .progressViewStyle(.linear)
-                .tint(.accentColor)
-            Text(session.readyDetail)
+            if let progress {
+                ProgressView(value: progress, total: 100)
+                    .progressViewStyle(.linear)
+                    .tint(.accentColor)
+            }
+            Text(detail)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -148,6 +230,14 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(Color.accentColor.opacity(0.55), lineWidth: 1)
         }
+    }
+
+    private func tableDetail(_ table: WatchTable) -> String {
+        let hold = clock(table.holdSeconds)
+        let prefix = table.tableType == "o2" ? "Holds from \(hold)" : "Hold \(hold)"
+        let count = table.rounds.count
+        let rounds = count == 1 ? "round" : "rounds"
+        return "\(prefix) · \(count) \(rounds)"
     }
 }
 

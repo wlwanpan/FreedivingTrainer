@@ -41,6 +41,15 @@ struct WatchPlan {
     let schedule: [WatchListedWeek]
 }
 
+struct WatchTable {
+    let name: String
+    let tableType: String
+    let breatheUpSeconds: Int
+    let holdSeconds: Int
+    let restSeconds: Int
+    let rounds: [(hold: Int, rest: Int)]
+}
+
 private struct WatchPhase {
     let title: String
     let seconds: Int
@@ -58,6 +67,8 @@ final class WatchSession: NSObject, ObservableObject {
     @Published var paused = false
     @Published var finished = false
     @Published var plan: WatchPlan?
+    @Published var co2Table: WatchTable?
+    @Published var o2Table: WatchTable?
     @Published var phaseTitle = ""
     @Published var roundText = ""
     @Published var remaining = 0
@@ -130,7 +141,31 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     func startPlan() {
-        guard let plan, !running else { return }
+        guard let plan else { return }
+        start(plan)
+    }
+
+    func startTable(_ table: WatchTable) {
+        start(WatchPlan(
+            name: table.name,
+            tableType: table.tableType,
+            breatheUpSeconds: table.breatheUpSeconds,
+            holdSeconds: table.holdSeconds,
+            restSeconds: table.restSeconds,
+            rounds: table.rounds,
+            week: 0,
+            sessionIndex: 0,
+            planKey: "",
+            planWeek: 1,
+            planWeeks: 1,
+            progress: 0,
+            planName: "",
+            schedule: []
+        ))
+    }
+
+    private func start(_ plan: WatchPlan) {
+        guard !running, !locked else { return }
         let built = makePhases(plan)
         guard !built.isEmpty else { return }
         activePlan = plan
@@ -237,6 +272,7 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     private func applyPlan(_ message: [String: Any]) {
+        installTables(message)
         let key = textValue(message["planKey"]) ?? ""
         let changed = key != planKey
         let count = intValue(message["loggedCount"]) ?? loggedCount
@@ -244,13 +280,19 @@ final class WatchSession: NSObject, ObservableObject {
         if logged { loggedCount = count }
         if running {
             if changed {
-                planKey = key
-                queuedPlan = nil
-                stopTraining()
-                installPlan(message)
-                lostNotice = textValue(message["sync"]) == "erase"
-                    ? "All data was erased on your iPhone. This training is lost."
-                    : "Your plan changed on your iPhone. This training is lost."
+                let tableSession = (activePlan?.week ?? 0) == 0
+                let erased = textValue(message["sync"]) == "erase"
+                if erased || !tableSession {
+                    planKey = key
+                    queuedPlan = nil
+                    stopTraining()
+                    installPlan(message)
+                    lostNotice = erased
+                        ? "All data was erased on your iPhone. This training is lost."
+                        : "Your plan changed on your iPhone. This training is lost."
+                } else {
+                    planKey = key
+                }
             }
             return
         }
@@ -313,6 +355,13 @@ final class WatchSession: NSObject, ObservableObject {
             planName: textValue(message["planName"]) ?? "",
             schedule: listedWeeks(message["schedule"])
         )
+    }
+
+    private func installTables(_ message: [String: Any]) {
+        guard let tables = recordValue(message["tables"]) else { return }
+        let breatheUp = intValue(tables["breatheUpSeconds"]) ?? 0
+        co2Table = readTable(tables["co2"], breatheUp: breatheUp)
+        o2Table = readTable(tables["o2"], breatheUp: breatheUp)
     }
 
     private func makePhases(_ plan: WatchPlan) -> [WatchPhase] {
@@ -637,6 +686,24 @@ private func arrayValue(_ value: Any?) -> [Any] {
 
 private func recordValue(_ value: Any?) -> [String: Any]? {
     value as? [String: Any] ?? (value as? NSDictionary) as? [String: Any]
+}
+
+private func readTable(_ value: Any?, breatheUp: Int) -> WatchTable? {
+    guard let record = recordValue(value),
+          let name = textValue(record["name"]), !name.isEmpty,
+          let tableType = textValue(record["tableType"]),
+          let hold = intValue(record["holdSeconds"]),
+          let rest = intValue(record["restSeconds"]) else { return nil }
+    let rounds = roundsValue(record["rounds"])
+    guard !rounds.isEmpty else { return nil }
+    return WatchTable(
+        name: name,
+        tableType: tableType,
+        breatheUpSeconds: breatheUp,
+        holdSeconds: hold,
+        restSeconds: rest,
+        rounds: rounds
+    )
 }
 
 private func listedWeeks(_ value: Any?) -> [WatchListedWeek] {
