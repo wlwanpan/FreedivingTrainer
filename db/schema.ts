@@ -1,3 +1,4 @@
+import { SessionSource, SessionSources, WatchDetail, WatchDetails } from '@/constants/sessions'
 import { TableType, TableTypes } from '@/constants/tables'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
@@ -46,6 +47,8 @@ export const sessions = sqliteTable('sessions', {
   planWeek: integer('plan_week'),
   planSession: integer('plan_session'),
   startedAt: integer('started_at', { mode: 'timestamp' }),
+  source: text('source', { enum: SessionSources }).$type<SessionSource>().notNull().default('phone'),
+  watchDetail: text('watch_detail', { enum: WatchDetails }).$type<WatchDetail>(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
