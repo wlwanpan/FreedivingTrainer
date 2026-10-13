@@ -12,6 +12,9 @@ struct WatchPlan {
     let week: Int
     let sessionIndex: Int
     let planKey: String
+    let planWeek: Int
+    let planWeeks: Int
+    let progress: Int
 }
 
 private struct WatchPhase {
@@ -55,6 +58,8 @@ final class WatchSession: NSObject, ObservableObject {
     private var loggedCount = -1
     private var planKey = ""
     private var queuedPlan: [String: Any]?
+    private var pendingPlan: [String: Any]?
+    private var dismissSavedTask: Task<Void, Never>?
 
     var readyDetail: String {
         guard let plan else { return "" }
@@ -160,8 +165,32 @@ final class WatchSession: NSObject, ObservableObject {
         activePlan = nil
         phases = []
         queuedPlan = nil
+        pendingPlan = nil
+        dismissSavedTask?.cancel()
+        dismissSavedTask = nil
         stopHeartRate(save: false)
         publishTraining(false)
+    }
+
+    func dismissSaved() {
+        dismissSavedTask?.cancel()
+        dismissSavedTask = nil
+        guard finished else { return }
+        finished = false
+        let message = pendingPlan
+        pendingPlan = nil
+        if let message {
+            installPlan(message)
+        }
+    }
+
+    private func scheduleSavedDismissal() {
+        guard dismissSavedTask == nil else { return }
+        dismissSavedTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(2))
+            guard let self, !Task.isCancelled else { return }
+            self.dismissSaved()
+        }
     }
 
     func handle(_ message: [String: Any]) {
@@ -192,6 +221,13 @@ final class WatchSession: NSObject, ObservableObject {
                 lostNotice = textValue(message["sync"]) == "erase"
                     ? "All data was erased on your iPhone. This training is lost."
                     : "Your plan changed on your iPhone. This training is lost."
+            }
+            return
+        }
+        if finished {
+            pendingPlan = message
+            if logged {
+                scheduleSavedDismissal()
             }
             return
         }
@@ -240,7 +276,10 @@ final class WatchSession: NSObject, ObservableObject {
             rounds: rounds,
             week: intValue(message["week"]) ?? 0,
             sessionIndex: intValue(message["sessionIndex"]) ?? 0,
-            planKey: textValue(message["planKey"]) ?? ""
+            planKey: textValue(message["planKey"]) ?? "",
+            planWeek: intValue(message["planWeek"]) ?? intValue(message["week"]) ?? 1,
+            planWeeks: max(1, intValue(message["planWeeks"]) ?? 1),
+            progress: min(100, max(0, intValue(message["progress"]) ?? 0))
         )
     }
 
