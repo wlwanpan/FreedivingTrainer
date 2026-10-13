@@ -43,6 +43,9 @@ export const sessions = sqliteTable('sessions', {
   holdSeconds: integer('hold_seconds').notNull(),
   restSeconds: integer('rest_seconds').notNull(),
   contractions: text('contractions'),
+  planWeek: integer('plan_week'),
+  planSession: integer('plan_session'),
+  startedAt: integer('started_at', { mode: 'timestamp' }),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })

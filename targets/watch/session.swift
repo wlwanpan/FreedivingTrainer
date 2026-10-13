@@ -9,6 +9,9 @@ struct WatchPlan {
     let holdSeconds: Int
     let restSeconds: Int
     let rounds: [(hold: Int, rest: Int)]
+    let week: Int
+    let sessionIndex: Int
+    let planKey: String
 }
 
 private struct WatchPhase {
@@ -23,13 +26,16 @@ final class WatchSession: NSObject, ObservableObject {
 
     @Published var reachable = false
     @Published var locked = false
+    @Published var planComplete = false
     @Published var running = false
+    @Published var paused = false
     @Published var finished = false
     @Published var plan: WatchPlan?
     @Published var phaseTitle = ""
     @Published var roundText = ""
     @Published var remaining = 0
     @Published var bpm = 0
+    @Published var lostNotice: String?
 
     private var connectivity: WCSession?
     private let healthStore = HKHealthStore()
@@ -39,12 +45,16 @@ final class WatchSession: NSObject, ObservableObject {
     private var lastSentAt = Date.distantPast
     private var ticker: Timer?
     private var startedAt = Date()
+    private var wallStartedAt = Date()
+    private var pausedAt: Date?
     private var phases: [WatchPhase] = []
     private var activePlan: WatchPlan?
     private var samples: [[String: Any]] = []
     private var captureSamples = false
     private var finishing = false
     private var loggedCount = -1
+    private var planKey = ""
+    private var queuedPlan: [String: Any]?
 
     var readyDetail: String {
         guard let plan else { return "" }
@@ -57,6 +67,23 @@ final class WatchSession: NSObject, ObservableObject {
 
     var clockText: String {
         clock(remaining)
+    }
+
+    var sessionDetail: String {
+        var parts: [String] = []
+        if !roundText.isEmpty { parts.append(roundText) }
+        if bpm > 0 { parts.append("\(bpm) bpm") }
+        return parts.joined(separator: " · ")
+    }
+
+    var backdrop: TrainingSprite? {
+        if finished { return .meditate }
+        guard running else { return nil }
+        switch phaseTitle {
+        case "Hold": return .hold
+        case "Rest": return .rest
+        default: return .breathe
+        }
     }
 
     override init() {
@@ -74,15 +101,67 @@ final class WatchSession: NSObject, ObservableObject {
         guard !built.isEmpty else { return }
         activePlan = plan
         phases = built
-        startedAt = Date()
+        wallStartedAt = Date()
+        startedAt = wallStartedAt
         samples = []
         captureSamples = true
         finishing = false
         finished = false
+        paused = false
+        pausedAt = nil
         running = true
+        lostNotice = nil
         startHeartRate()
         startClock()
         advance()
+        publishTraining(true)
+    }
+
+    func togglePause() {
+        guard running, !finishing else { return }
+        if paused {
+            if let pausedAt {
+                startedAt = startedAt.addingTimeInterval(Date().timeIntervalSince(pausedAt))
+            }
+            self.pausedAt = nil
+            paused = false
+            startClock()
+            advance()
+            return
+        }
+        pausedAt = Date()
+        paused = true
+        ticker?.invalidate()
+        ticker = nil
+    }
+
+    func exitPlan() {
+        guard running, paused, !finishing else { return }
+        let queued = queuedPlan
+        stopTraining()
+        if let queued {
+            installPlan(queued)
+        }
+    }
+
+    private func stopTraining() {
+        ticker?.invalidate()
+        ticker = nil
+        paused = false
+        pausedAt = nil
+        running = false
+        finished = false
+        finishing = false
+        phaseTitle = ""
+        roundText = ""
+        remaining = 0
+        samples = []
+        captureSamples = false
+        activePlan = nil
+        phases = []
+        queuedPlan = nil
+        stopHeartRate(save: false)
+        publishTraining(false)
     }
 
     func handle(_ message: [String: Any]) {
@@ -99,18 +178,47 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     private func applyPlan(_ message: [String: Any]) {
+        let key = textValue(message["planKey"]) ?? ""
+        let changed = key != planKey
         let count = intValue(message["loggedCount"]) ?? loggedCount
-        if count != loggedCount {
-            loggedCount = count
-            if !running { finished = false }
+        let logged = count != loggedCount
+        if logged { loggedCount = count }
+        if running {
+            if changed {
+                planKey = key
+                queuedPlan = nil
+                stopTraining()
+                installPlan(message)
+                lostNotice = textValue(message["sync"]) == "erase"
+                    ? "All data was erased on your iPhone. This training is lost."
+                    : "Your plan changed on your iPhone. This training is lost."
+            }
+            return
         }
-        if running { return }
+        if changed {
+            planKey = key
+            finished = false
+        }
+        if logged { finished = false }
+        installPlan(message)
+    }
+
+    private func installPlan(_ message: [String: Any]) {
         if flag(message["locked"]) {
             locked = true
+            planComplete = false
+            plan = nil
+            return
+        }
+        if flag(message["complete"]) {
+            locked = false
+            planComplete = true
+            finished = false
             plan = nil
             return
         }
         locked = false
+        planComplete = false
         guard let name = textValue(message["name"]), !name.isEmpty,
               let tableType = textValue(message["tableType"]),
               let hold = intValue(message["holdSeconds"]),
@@ -129,7 +237,10 @@ final class WatchSession: NSObject, ObservableObject {
             breatheUpSeconds: intValue(message["breatheUpSeconds"]) ?? 0,
             holdSeconds: hold,
             restSeconds: rest,
-            rounds: rounds
+            rounds: rounds,
+            week: intValue(message["week"]) ?? 0,
+            sessionIndex: intValue(message["sessionIndex"]) ?? 0,
+            planKey: textValue(message["planKey"]) ?? ""
         )
     }
 
@@ -162,7 +273,7 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     private func advance() {
-        guard running, !finishing else { return }
+        guard running, !paused, !finishing else { return }
         let elapsed = Int(Date().timeIntervalSince(startedAt))
         var cursor = elapsed
         for phase in phases {
@@ -187,6 +298,8 @@ final class WatchSession: NSObject, ObservableObject {
         finishing = true
         ticker?.invalidate()
         ticker = nil
+        paused = false
+        pausedAt = nil
         running = false
         finished = true
         phaseTitle = ""
@@ -195,20 +308,36 @@ final class WatchSession: NSObject, ObservableObject {
         sendCompletion()
         captureSamples = false
         stopHeartRate()
+        publishTraining(false)
+        if let queued = queuedPlan {
+            queuedPlan = nil
+            finished = false
+            installPlan(queued)
+        }
+    }
+
+    private func publishTraining(_ active: Bool) {
+        send(["type": "watchTraining", "running": active])
     }
 
     private func sendCompletion() {
         guard let plan = activePlan else { return }
-        let payload: [String: Any] = [
+        var payload: [String: Any] = [
             "type": "sessionComplete",
             "tableType": plan.tableType,
             "holdSeconds": plan.holdSeconds,
             "restSeconds": plan.restSeconds,
             "roundsCompleted": plan.rounds.count,
             "roundsPlanned": plan.rounds.count,
+            "startedAt": wallStartedAt.timeIntervalSince1970 * 1000,
             "completedAt": Date().timeIntervalSince1970 * 1000,
             "heartRates": samples,
         ]
+        if plan.week > 0 && plan.sessionIndex > 0 {
+            payload["week"] = plan.week
+            payload["sessionIndex"] = plan.sessionIndex
+            payload["planKey"] = plan.planKey
+        }
         send(payload)
     }
 
@@ -247,7 +376,7 @@ final class WatchSession: NSObject, ObservableObject {
         }
     }
 
-    private func stopHeartRate() {
+    private func stopHeartRate(save: Bool = true) {
         guard let session = workout, let liveBuilder = builder else {
             bpm = 0
             return
@@ -256,9 +385,13 @@ final class WatchSession: NSObject, ObservableObject {
         builder = nil
         bpm = 0
         session.end()
-        liveBuilder.endCollection(withEnd: Date()) { _, _ in
-            liveBuilder.finishWorkout { _, _ in }
+        if save {
+            liveBuilder.endCollection(withEnd: Date()) { _, _ in
+                liveBuilder.finishWorkout { _, _ in }
+            }
+            return
         }
+        liveBuilder.discardWorkout()
     }
 
     private func sendHeartRate(_ value: Int) {

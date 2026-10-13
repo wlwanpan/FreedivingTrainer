@@ -25,7 +25,9 @@ export default function PlanProgress({ outline, onRetest, onPress, children }: P
         ) : null}
       </SHeader>
       <SWeekLine>
-        {`Week ${outline.week} of ${outline.weeks}`}
+        {outline.weekComplete
+          ? `Week ${outline.week} of ${outline.weeks} · Complete`
+          : `Week ${outline.week} of ${outline.weeks}`}
       </SWeekLine>
       <STrack>
         <SFill style={{ width: `${Math.round(outline.progress * 100)}%` }} />

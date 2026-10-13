@@ -19,7 +19,7 @@ export default function WarningScreen() {
   const isConfirmDeletion = mode === 'confirm_deletion'
   const isConfirm = mode === 'confirm'
   const hasConfirmActions = isConfirmDeletion || isConfirm
-  const confirmButtonTitle = isConfirmDeletion ? 'Delete' : 'Continue'
+  const confirmButtonTitle = isConfirmDeletion ? 'Delete' : 'Confirm'
 
   useEffect(() => {
     return markWarningClosed

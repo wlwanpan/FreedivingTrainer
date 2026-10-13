@@ -71,6 +71,13 @@
       "when": 1791832705692,
       "tag": "0009_outstanding_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1791917422722,
+      "tag": "0010_plan_session",
+      "breakpoints": true
     }
   ]
 }

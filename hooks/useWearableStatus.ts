@@ -19,6 +19,17 @@ const idleLive: WearableLive = { connected: false, heartRateActive: false }
 let wearableLiveState = idleLive
 const wearableLiveListeners = new Set<() => void>()
 
+let watchTraining = false
+
+export function publishWatchTraining(running: boolean) {
+  watchTraining = running
+}
+
+export function withWatchTrainingLoss(message: string): string {
+  if (!watchTraining) return message
+  return `${message} The training on your Apple Watch will be lost.`
+}
+
 export function publishWearableLive(next: Partial<WearableLive>) {
   const merged = { ...wearableLiveState, ...next }
   if (

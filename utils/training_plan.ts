@@ -209,6 +209,22 @@ export function withCustomPlan(plan: TrainingPlan, custom: CustomPlan): Training
   }
 }
 
+export function isCurrentPlanChoice(
+  settings: { trainingPlan: string | null | undefined; customPlan: string | null | undefined },
+  choice: PlanChoice,
+): boolean {
+  const current = trainingPlanById(settings.trainingPlan)
+  const next = planFromChoice(choice)
+  if (current == null || next == null || current.id !== next.id) return false
+  if (next.id !== 'custom') return true
+  return serializeCustomPlan(choice.custom ?? { weeks: 0, sessions: [] }) === (settings.customPlan ?? '')
+}
+
+export function planSwitchWarning(planName: string, week: number | null): string {
+  if (week == null) return 'Previous plan progress will be lost.'
+  return `Previous plan progress will be lost. You are on week ${week} of ${planName}, and the new plan starts at week 1.`
+}
+
 export function planFromChoice(choice: PlanChoice): TrainingPlan | null {
   const plan = trainingPlanById(choice.planId)
   if (plan == null) return null
@@ -261,6 +277,22 @@ export type LoggedTraining = {
   roundsCompleted: number
   roundsPlanned: number
   createdAt: Date
+  planWeek?: number | null
+  planSession?: number | null
+}
+
+export type PlanSlot = {
+  week: number
+  index: number
+}
+
+export function completionDecision(
+  existing: readonly { id: number; createdAt: Date }[],
+  completedAt: number,
+): { insert: boolean; removeIds: number[] } {
+  const kept = existing.some((session) => completedAt <= session.createdAt.getTime() + 999)
+  if (kept) return { insert: false, removeIds: [] }
+  return { insert: true, removeIds: existing.map((session) => session.id) }
 }
 
 export function planWeekRange(startedAt: Date, week: number): { start: Date; end: Date } {
@@ -272,20 +304,38 @@ export function completedSessionIndexes(
   logged: readonly LoggedTraining[],
   planned: readonly WeekSession[],
   range: { start: Date; end: Date },
+  week: number,
+  planStartedAt: number,
 ): Set<number> {
-  const counts = new Map<string, number>()
   const start = range.start.getTime()
   const end = range.end.getTime()
-  for (const session of logged) {
+  const finished = logged.filter((session) => session.roundsCompleted >= session.roundsPlanned)
+  const done = new Set<number>()
+  const claimed = new Set<LoggedTraining>()
+
+  for (const session of planned) {
+    const tagged = finished.filter((item) => (
+      item.planWeek === week
+      && item.planSession === session.index
+      && item.createdAt.getTime() >= planStartedAt
+    ))
+    if (tagged.length === 0) continue
+    tagged.forEach((item) => claimed.add(item))
+    done.add(session.index)
+  }
+
+  const counts = new Map<string, number>()
+  for (const session of finished) {
+    if (claimed.has(session)) continue
+    if (session.planWeek != null && session.planSession != null) continue
     const at = session.createdAt.getTime()
     if (at < start || at >= end) continue
-    if (session.roundsCompleted < session.roundsPlanned) continue
     const key = trainingSignature(session)
     counts.set(key, (counts.get(key) ?? 0) + 1)
   }
 
-  const done = new Set<number>()
   for (const session of planned) {
+    if (done.has(session.index)) continue
     const key = trainingSignature({
       tableType: session.tableType,
       holdSeconds: session.holdSeconds,

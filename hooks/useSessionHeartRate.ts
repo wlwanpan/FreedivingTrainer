@@ -1,7 +1,7 @@
 import { HeartRateSampleInsert } from '@/db/schema'
 import { publishWearableLive } from '@/hooks/useWearableStatus'
+import { ensureWatchSession, WatchConnectivity } from '@/hooks/watchConnectivity'
 import { useSQLContext } from '@/providers/sql'
-import { WatchConnectivity } from '@/hooks/watchConnectivity'
 import { useCallback, useEffect, useRef } from 'react'
 
 
@@ -19,41 +19,9 @@ function readSample(payload: Record<string, unknown>): Sample | null {
   return { bpm, recordedAt: new Date(at) }
 }
 
-function activationState(): string {
-  return WatchConnectivity.sessionState.activationState
-}
-
-async function waitUntilActivated(): Promise<boolean> {
-  if (!WatchConnectivity.isSupported) return false
-  if (activationState() === 'activated') return true
-  await WatchConnectivity.activate()
-  if (activationState() === 'activated') return true
-  return new Promise((resolve) => {
-    let settled = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-    let subscription: { remove: () => void } | undefined
-    const finish = (activated: boolean) => {
-      if (settled) return
-      settled = true
-      if (timer != null) clearTimeout(timer)
-      subscription?.remove()
-      resolve(activated)
-    }
-    subscription = WatchConnectivity.addActivationListener((event) => {
-      if (event.activationState !== 'activated' && event.error == null) return
-      finish(event.activationState === 'activated')
-    })
-    if (!settled) {
-      timer = setTimeout(() => {
-        finish(activationState() === 'activated')
-      }, 4000)
-    }
-  })
-}
-
 function tellWatch(action: 'startSession' | 'stopSession') {
   if (!WatchConnectivity.isSupported) return
-  if (activationState() !== 'activated') return
+  if (WatchConnectivity.sessionState.activationState !== 'activated') return
   if (!WatchConnectivity.sessionState.isReachable) return
   WatchConnectivity.sendMessage({ action, at: Date.now() }).catch(() => undefined)
 }
@@ -121,7 +89,7 @@ export default function useSessionHeartRate(enabled: boolean) {
       WatchConnectivity.addReachabilityListener(() => publish()),
     ]
     void (async () => {
-      const activated = await waitUntilActivated()
+      const activated = await ensureWatchSession()
       if (cancelled || !activated) return
       publish(false)
       tellWatch('startSession')

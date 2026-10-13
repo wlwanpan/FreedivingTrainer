@@ -28,18 +28,29 @@ export type TrainingOutline = {
   frequency: string
   weeks: number
   week: number
+  weekComplete: boolean
   progress: number
   retestDue: boolean
   schedule: TrainingWeek[]
 }
 
-export function nextTrainingSession(outline: TrainingOutline | null): WeekSession | null {
-  const currentWeek = outline?.schedule.find((entry) => entry.current) ?? null
+export type NextTrainingSession = TrainingSession & {
+  week: number
+}
+
+export function nextTrainingSession(outline: TrainingOutline | null): NextTrainingSession | null {
+  if (outline == null) return null
+  const currentWeek = outline.schedule.find((entry) => entry.current) ?? null
   const incomplete = currentWeek?.sessions.find((session) => !session.completed) ?? null
-  const nextWeek = outline?.schedule.find((entry) => (
-    outline != null && entry.week > outline.week && !entry.locked
-  )) ?? null
-  return incomplete ?? nextWeek?.sessions[0] ?? currentWeek?.sessions[0] ?? null
+  if (currentWeek != null && incomplete != null) {
+    return { ...incomplete, week: currentWeek.week }
+  }
+  const nextWeek = outline.schedule.find((entry) => entry.week > outline.week && !entry.locked) ?? null
+  const nextIncomplete = nextWeek?.sessions.find((session) => !session.completed) ?? null
+  if (nextWeek != null && nextIncomplete != null) {
+    return { ...nextIncomplete, week: nextWeek.week }
+  }
+  return null
 }
 
 export default function useTrainingOutline(): TrainingOutline | null {
@@ -51,15 +62,25 @@ export default function useTrainingOutline(): TrainingOutline | null {
 
   const now = new Date()
   const week = currentPlanWeek(startedAt, now, plan.weeks)
+  const planStartedAt = startedAt.getTime()
   const schedule = planSchedule({
     baselineMaxSeconds,
     contractionSeconds: settings.baselineContractionSeconds,
     plan,
-  })
+  }).map((entry) => ({
+    ...entry,
+    completed: completedSessionIndexes(
+      sessions,
+      entry.sessions,
+      planWeekRange(startedAt, entry.week),
+      entry.week,
+      planStartedAt,
+    ),
+  }))
   const currentSessions = schedule.find((entry) => entry.week === week)?.sessions ?? []
-  const completed = completedSessionIndexes(sessions, currentSessions, planWeekRange(startedAt, week))
+  const currentCompleted = schedule.find((entry) => entry.week === week)?.completed ?? new Set<number>()
   const currentWeekComplete = currentSessions.length > 0
-    && currentSessions.every((session) => completed.has(session.index))
+    && currentSessions.every((session) => currentCompleted.has(session.index))
 
   return {
     planName: plan.name,
@@ -67,6 +88,7 @@ export default function useTrainingOutline(): TrainingOutline | null {
     frequency: plan.frequency,
     weeks: plan.weeks,
     week,
+    weekComplete: currentWeekComplete,
     progress: planElapsedFraction(startedAt, now, plan.weeks),
     retestDue: baselineRetestDue(plan, startedAt, settings.baselineTestedAt, now),
     schedule: schedule.map((entry) => ({
@@ -75,7 +97,7 @@ export default function useTrainingOutline(): TrainingOutline | null {
       locked: entry.week > week && !currentWeekComplete,
       sessions: entry.sessions.map((session) => ({
         ...session,
-        completed: entry.week === week && completed.has(session.index),
+        completed: entry.completed.has(session.index),
       })),
     })),
   }

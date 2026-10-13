@@ -1,11 +1,12 @@
 import { TableType, TableTypes } from '@/constants/tables'
 import { ErrorTitles } from '@/constants/errors'
-import { publishWearableLive } from '@/hooks/useWearableStatus'
-import { WatchConnectivity } from '@/hooks/watchConnectivity'
+import { publishWatchTraining, publishWearableLive } from '@/hooks/useWearableStatus'
+import { ensureWatchSession, WatchConnectivity } from '@/hooks/watchConnectivity'
 import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
+import { recordCompletedSession } from '@/hooks/recordCompletedSession'
 import { sessionRounds } from '@/utils/training_plan'
 import { useEffect, useRef } from 'react'
 
@@ -16,7 +17,10 @@ type CompletedSession = {
   restSeconds: number
   roundsCompleted: number
   roundsPlanned: number
+  startedAt: number | null
   completedAt: number
+  planWeek: number | null
+  planSession: number | null
   heartRates: { bpm: number; recordedAt: Date }[]
 }
 
@@ -51,7 +55,10 @@ function readRates(value: unknown): { bpm: number; recordedAt: Date }[] {
   })
 }
 
-function readCompleted(payload: Record<string, unknown>): CompletedSession | null {
+function readCompleted(
+  payload: Record<string, unknown>,
+  planKey: string,
+): CompletedSession | null {
   if (payload.type !== 'sessionComplete') return null
   const kind = tableType(payload.tableType)
   const holdSeconds = wholeNumber(payload.holdSeconds, 1, 3600)
@@ -59,6 +66,7 @@ function readCompleted(payload: Record<string, unknown>): CompletedSession | nul
   const roundsCompleted = wholeNumber(payload.roundsCompleted, 1, 40)
   const roundsPlanned = wholeNumber(payload.roundsPlanned, 1, 40)
   const completedAt = wholeNumber(payload.completedAt, 1, Number.MAX_SAFE_INTEGER)
+  const startedAt = wholeNumber(payload.startedAt, 1, Number.MAX_SAFE_INTEGER)
   if (
     kind == null
     || holdSeconds == null
@@ -67,13 +75,21 @@ function readCompleted(payload: Record<string, unknown>): CompletedSession | nul
     || roundsPlanned == null
     || completedAt == null
   ) return null
+  const week = wholeNumber(payload.week, 1, 52)
+  const sessionIndex = wholeNumber(payload.sessionIndex, 1, 40)
+  const key = typeof payload.planKey === 'string' ? payload.planKey : ''
+  const samePlan = key === '' || key === planKey
+  const slotted = samePlan && week != null && sessionIndex != null
   return {
     tableType: kind,
     holdSeconds,
     restSeconds,
     roundsCompleted,
     roundsPlanned,
+    startedAt,
     completedAt,
+    planWeek: slotted ? week : null,
+    planSession: slotted ? sessionIndex : null,
     heartRates: readRates(payload.heartRates),
   }
 }
@@ -86,78 +102,119 @@ function publishConnection() {
 }
 
 export default function useWatchBridge() {
-  const { settings, sessions, insertSession, insertHeartRates } = useSQLContext()
+  const {
+    settings,
+    sessions,
+    updatedAt,
+    insertHeartRates,
+  } = useSQLContext()
   const subscription = useSubscriptionContext()
   const { showWarning } = useWarningModal()
   const outline = useTrainingOutline()
   const savedRef = useRef(new Set<number>())
   const sessionsRef = useRef(sessions)
-  const insertSessionRef = useRef(insertSession)
   const insertHeartRatesRef = useRef(insertHeartRates)
   const warnRef = useRef(showWarning)
   sessionsRef.current = sessions
-  insertSessionRef.current = insertSession
   insertHeartRatesRef.current = insertHeartRates
   warnRef.current = showWarning
 
   const next = nextTrainingSession(outline)
   const rounds = next == null ? [] : sessionRounds(next)
+  const planKey = settings.trainingPlan == null || settings.trainingPlanStartedAt == null
+    ? ''
+    : `${settings.trainingPlan}:${settings.trainingPlanStartedAt.getTime()}:${settings.customPlan ?? ''}`
+  const planKeyRef = useRef<string | null>(null)
+  const syncRef = useRef('')
+  const ready = updatedAt != null
+  if (ready && planKeyRef.current !== planKey) {
+    syncRef.current = planKeyRef.current == null
+      ? ''
+      : planKey === ''
+        ? 'erase'
+        : 'plan'
+    planKeyRef.current = planKey
+  }
+  const sync = syncRef.current
   const context = subscription.freeLimitReached
-    ? { type: 'nextSession', locked: true, loggedCount: sessions.length }
-    : next == null || rounds.length === 0
-      ? { type: 'nextSession', loggedCount: sessions.length }
-      : {
-        type: 'nextSession',
-        loggedCount: sessions.length,
-        name: next.name,
-        tableType: next.tableType,
-        breatheUpSeconds: settings.breatheUpSeconds,
-        holdSeconds: next.holdSeconds,
-        restSeconds: next.restStartSeconds,
-        rounds: rounds.map((round) => ({
-          hold: round.holdSeconds,
-          rest: round.restSeconds,
-        })),
-      }
+    ? { type: 'nextSession', locked: true, loggedCount: sessions.length, planKey, sync }
+    : outline != null && next == null
+      ? { type: 'nextSession', complete: true, loggedCount: sessions.length, planKey, sync }
+      : next == null || rounds.length === 0
+        ? { type: 'nextSession', loggedCount: sessions.length, planKey, sync }
+        : {
+          type: 'nextSession',
+          loggedCount: sessions.length,
+          planKey,
+          sync,
+          name: next.name,
+          week: next.week,
+          sessionIndex: next.index,
+          tableType: next.tableType,
+          breatheUpSeconds: settings.breatheUpSeconds,
+          holdSeconds: next.holdSeconds,
+          restSeconds: next.restStartSeconds,
+          rounds: rounds.map((round) => ({
+            hold: round.holdSeconds,
+            rest: round.restSeconds,
+          })),
+        }
   const contextKey = JSON.stringify(context)
   const contextRef = useRef(context)
+  const activePlanKeyRef = useRef(planKey)
+  const planStartedRef = useRef(settings.trainingPlanStartedAt)
   contextRef.current = context
+  activePlanKeyRef.current = planKey
+  planStartedRef.current = settings.trainingPlanStartedAt
 
   useEffect(() => {
     if (!WatchConnectivity.isSupported) return
     let cancelled = false
-    const save = async (payload: Record<string, unknown>) => {
-      const completed = readCompleted(payload)
+    let queue = Promise.resolve()
+    const save = (payload: Record<string, unknown>) => {
+      queue = queue.then(() => saveCompletion(payload)).catch(() => undefined)
+    }
+    const saveCompletion = async (payload: Record<string, unknown>) => {
+      if (payload.type === 'watchTraining') {
+        publishWatchTraining(payload.running === true || payload.running === 1)
+        return
+      }
+      const completed = readCompleted(payload, activePlanKeyRef.current)
       if (completed == null) return
       const duplicate = savedRef.current.has(completed.completedAt)
-        || sessionsRef.current.some((session) => (
+        || (completed.planWeek == null && sessionsRef.current.some((session) => (
           session.tableType === completed.tableType
           && session.holdSeconds === completed.holdSeconds
           && session.roundsCompleted === completed.roundsCompleted
           && Math.abs(session.createdAt.getTime() - completed.completedAt) < 2000
-        ))
+        )))
       if (duplicate) {
         savedRef.current.add(completed.completedAt)
         return
       }
       savedRef.current.add(completed.completedAt)
       const createdAt = new Date(completed.completedAt)
-      const result = await insertSessionRef.current({
+      const result = await recordCompletedSession({
         tableType: completed.tableType,
         day: dayStamp(createdAt),
         roundsCompleted: completed.roundsCompleted,
         roundsPlanned: completed.roundsPlanned,
         holdSeconds: completed.holdSeconds,
         restSeconds: completed.restSeconds,
+        planWeek: completed.planWeek,
+        planSession: completed.planSession,
+        startedAt: completed.startedAt == null ? null : new Date(completed.startedAt),
         createdAt,
         updatedAt: createdAt,
-      })
+      }, planStartedRef.current)
       const sessionId = result.insertionID
-      if (result.error || sessionId == null) {
+      if (result.skipped) return
+      if (sessionId == null) {
         savedRef.current.delete(completed.completedAt)
         if (result.error) warnRef.current(ErrorTitles.Sql, result.error.message)
         return
       }
+      if (result.error) warnRef.current(ErrorTitles.Sql, result.error.message)
       if (completed.heartRates.length === 0) return
       const rates = await insertHeartRatesRef.current(completed.heartRates.map((sample) => ({
         ...sample,
@@ -166,8 +223,8 @@ export default function useWatchBridge() {
       if (rates.error) warnRef.current(ErrorTitles.Sql, rates.error.message)
     }
     const subscriptions = [
-      WatchConnectivity.addMessageListener((event) => { void save(event.message) }),
-      WatchConnectivity.addUserInfoListener((event) => { void save(event.userInfo) }),
+      WatchConnectivity.addMessageListener((event) => { save(event.message) }),
+      WatchConnectivity.addUserInfoListener((event) => { save(event.userInfo) }),
       WatchConnectivity.addReachabilityListener(() => publishConnection()),
     ]
     void (async () => {
@@ -184,17 +241,25 @@ export default function useWatchBridge() {
   }, [])
 
   useEffect(() => {
-    if (!WatchConnectivity.isSupported) return
+    if (!ready || !WatchConnectivity.isSupported) return
     let cancelled = false
-    void (async () => {
-      if (WatchConnectivity.sessionState.activationState !== 'activated') {
-        await WatchConnectivity.activate()
-      }
-      if (cancelled) return
-      await WatchConnectivity.updateApplicationContext(contextRef.current).catch(() => undefined)
-    })()
+    const publish = () => {
+      void (async () => {
+        const activated = await ensureWatchSession()
+        if (cancelled || !activated) return
+        await WatchConnectivity.updateApplicationContext(contextRef.current).catch(() => undefined)
+      })()
+    }
+    const subscriptions = [
+      WatchConnectivity.addActivationListener((event) => {
+        if (event.activationState === 'activated') publish()
+      }),
+      WatchConnectivity.addReachabilityListener(() => publish()),
+    ]
+    publish()
     return () => {
       cancelled = true
+      subscriptions.forEach((item) => item.remove())
     }
-  }, [contextKey])
+  }, [contextKey, ready])
 }

@@ -1,4 +1,5 @@
 import { ErrorTitles } from '@/constants/errors'
+import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import {
@@ -9,10 +10,12 @@ import {
 } from '@/utils/baseline'
 import {
   currentPlanWeek,
+  isCurrentPlanChoice,
   PlanChoice,
   planFromChoice,
+  planSwitchWarning,
   serializeCustomPlan,
-  trainingPlanById,
+  trainingPlanFromSettings,
   weeklySessions,
 } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
@@ -34,7 +37,7 @@ const CONTROL_DELAY_MS = 400
 export default function useBaselineTest(finishToHome: boolean) {
   const sql = useSQLContext()
   const router = useRouter()
-  const { showWarning } = useWarningModal()
+  const { showConfirmation, showWarning } = useWarningModal()
   const [stage, setStage] = useState<BaselineStage>('prep')
   const [now, setNow] = useState(() => Date.now())
   const [startedAt, setStartedAt] = useState<number | null>(null)
@@ -158,9 +161,19 @@ export default function useBaselineTest(finishToHome: boolean) {
     const plan = planFromChoice(choice)
     if (plan == null) return
     const nowDate = new Date()
-    const currentPlan = trainingPlanById(sql.settings.trainingPlan)
+    const currentPlan = trainingPlanFromSettings(sql.settings)
     const priorStart = sql.settings.trainingPlanStartedAt
-    const continuing = currentPlan?.id === plan.id && priorStart != null
+    const continuing = isCurrentPlanChoice(sql.settings, choice) && priorStart != null
+    if (currentPlan != null && !continuing) {
+      const week = priorStart == null
+        ? null
+        : currentPlanWeek(priorStart, nowDate, currentPlan.weeks)
+      const confirmed = await showConfirmation(
+        'Change plan?',
+        withWatchTrainingLoss(planSwitchWarning(currentPlan.name, week)),
+      )
+      if (!confirmed) return
+    }
     const startedAt = continuing ? priorStart : nowDate
     const sessions = weeklySessions({
       baselineMaxSeconds: outcome.maxHoldSeconds,

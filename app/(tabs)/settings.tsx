@@ -10,7 +10,7 @@ import { useBottomControlInset } from '@/design/chrome'
 import { Colors, FontSizes } from '@/design/styles'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
-import useWearableStatus, { wearableLabel, wearableLive } from '@/hooks/useWearableStatus'
+import useWearableStatus, { wearableLabel, wearableLive, withWatchTrainingLoss } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
@@ -45,7 +45,7 @@ export default function SettingsScreen() {
   const erase = async () => {
     const confirmed = await showConfirmDeletion(
       'Erase all data?',
-      'This removes your tables, logged sessions, and baseline from this device. The app will open as a new install. A lifetime purchase stays with your Apple ID.',
+      withWatchTrainingLoss('This removes your tables, logged sessions, and baseline from this device. The app will open as a new install. A lifetime purchase stays with your Apple ID.'),
     )
     if (!confirmed) return
 

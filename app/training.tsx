@@ -25,7 +25,7 @@ export default function TrainingScreen() {
   const outline = useTrainingOutline()
   const paddingBottom = useBottomControlInset(false)
 
-  const start = (session: WeekSession, locked: boolean) => {
+  const start = (session: WeekSession, week: number, locked: boolean) => {
     if (locked) return
     if (subscription.freeLimitReached) {
       router.push('/paywall')
@@ -45,6 +45,8 @@ export default function TrainingScreen() {
         restStart: String(session.restStartSeconds),
         restStep: String(session.restStepSeconds),
         rounds: String(session.rounds),
+        week: String(week),
+        session: String(session.index),
       },
     })
   }
@@ -82,7 +84,9 @@ export default function TrainingScreen() {
             <SWeek key={entry.week} $current={entry.current}>
               <SWeekHeader>
                 <SWeekTitle>{`Week ${entry.week}`}</SWeekTitle>
-                {entry.current ? <SBadge>This week</SBadge> : null}
+                {entry.sessions.length > 0 && entry.sessions.every((session) => session.completed) ? (
+                  <SBadge>Complete</SBadge>
+                ) : entry.current ? <SBadge>This week</SBadge> : null}
                 {entry.locked ? <SLockedBadge>Locked</SLockedBadge> : null}
               </SWeekHeader>
               {entry.locked ? (
@@ -93,7 +97,7 @@ export default function TrainingScreen() {
                   key={`${entry.week}-${session.kind}-${session.index}`}
                   disabled={entry.locked}
                   $locked={entry.locked}
-                  onPress={() => start(session, entry.locked)}
+                  onPress={() => start(session, entry.week, entry.locked)}
                 >
                   <STrainingBody>
                     <SNameRow>

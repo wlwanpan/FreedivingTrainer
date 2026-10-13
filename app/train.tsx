@@ -1,7 +1,7 @@
 import TrainingClock from '@/components/TrainingClock'
 import WrapperScreen from '@/components/WrapperScreen'
 import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
-import useTrainingClock, { TrainTable } from '@/hooks/useTrainingClock'
+import useTrainingClock, { TrainPlanSlot, TrainTable } from '@/hooks/useTrainingClock'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect } from 'react'
 
@@ -26,6 +26,16 @@ function parseLabel(value: string | string[] | undefined): string | null {
   const raw = Array.isArray(value) ? value[0] : value
   const label = raw?.trim() ?? ''
   return label === '' ? null : label
+}
+
+function parseSlot(params: {
+  week?: string | string[]
+  session?: string | string[]
+}): TrainPlanSlot | null {
+  const week = parseCount(params.week, false)
+  const index = parseCount(params.session, false)
+  if (week == null || index == null) return null
+  return { week, index }
 }
 
 function parseTrainTable(params: {
@@ -61,9 +71,11 @@ export default function TrainScreen() {
     restStart?: string | string[]
     restStep?: string | string[]
     rounds?: string | string[]
+    week?: string | string[]
+    session?: string | string[]
   }>()
   const tableType = parseTableType(params.type)
-  const training = useTrainingClock(tableType, parseTrainTable(params))
+  const training = useTrainingClock(tableType, parseTrainTable(params), parseSlot(params))
   const title = parseLabel(params.name) ?? (tableType == null ? '' : TableTypeLabel[tableType])
 
   useEffect(() => {

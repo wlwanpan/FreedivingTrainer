@@ -1,0 +1,15 @@
+{
+  "images": [
+    {
+      "filename": "training_sprite.png",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "version": 1,
+    "author": "expo"
+  },
+  "properties": {
+    "template-rendering-intent": "original"
+  }
+}

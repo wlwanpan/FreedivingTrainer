@@ -14,6 +14,7 @@ import {
   estimatedApneaTimes,
   MAX_CUSTOM_WEEKS,
   MIN_CUSTOM_WEEKS,
+  isCurrentPlanChoice,
   parseCustomPlan,
   PlanChoice,
   SessionKind,
@@ -52,6 +53,10 @@ export default function BaselinePlans({
   const [customSessions, setCustomSessions] = useState<SessionKind[]>(storedCustom?.sessions ?? ['co2'])
   const selected = TrainingPlans.find((plan) => plan.id === planId) ?? TrainingPlans[0]
   const customPlan: CustomPlan = { weeks: customWeeks, sessions: customSessions }
+  const continuing = initialPlanId != null && isCurrentPlanChoice(
+    { trainingPlan: initialPlanId, customPlan: initialCustomPlan },
+    { planId, custom: planId === 'custom' ? customPlan : null },
+  )
 
   const toggleSession = (kind: SessionKind) => {
     setPlanId('custom')
@@ -139,7 +144,9 @@ export default function BaselinePlans({
       </SOptions>
       <Footer>
         <Button
-          title={selected.id === 'custom' ? 'Start your plan' : `Start ${selected.name}`}
+          title={continuing
+            ? 'Continue with plan'
+            : selected.id === 'custom' ? 'Start your plan' : `Start ${selected.name}`}
           onPress={() => onStart({
             planId: selected.id,
             custom: selected.id === 'custom' ? customPlan : null,
