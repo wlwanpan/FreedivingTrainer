@@ -3,8 +3,8 @@ import {
   baselineRetestDue,
   completedSessionIndexes,
   currentPlanWeek,
-  planElapsedFraction,
   planSchedule,
+  planSessionFraction,
   planWeekRange,
   trainingPlanFromSettings,
   WeekSession,
@@ -89,7 +89,7 @@ export default function useTrainingOutline(): TrainingOutline | null {
     weeks: plan.weeks,
     week,
     weekComplete: currentWeekComplete,
-    progress: planElapsedFraction(startedAt, now, plan.weeks),
+    progress: planSessionFraction(schedule),
     retestDue: baselineRetestDue(plan, startedAt, settings.baselineTestedAt, now),
     schedule: schedule.map((entry) => ({
       week: entry.week,

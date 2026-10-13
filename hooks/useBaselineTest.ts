@@ -18,6 +18,7 @@ import {
   trainingPlanFromSettings,
   weeklySessions,
 } from '@/utils/training_plan'
+import useTrainingOutline from '@/hooks/useTrainingOutline'
 import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
@@ -38,6 +39,7 @@ export default function useBaselineTest(finishToHome: boolean) {
   const sql = useSQLContext()
   const router = useRouter()
   const { showConfirmation, showWarning } = useWarningModal()
+  const outline = useTrainingOutline()
   const [stage, setStage] = useState<BaselineStage>('prep')
   const [now, setNow] = useState(() => Date.now())
   const [startedAt, setStartedAt] = useState<number | null>(null)
@@ -164,7 +166,7 @@ export default function useBaselineTest(finishToHome: boolean) {
     const currentPlan = trainingPlanFromSettings(sql.settings)
     const priorStart = sql.settings.trainingPlanStartedAt
     const continuing = isCurrentPlanChoice(sql.settings, choice) && priorStart != null
-    if (currentPlan != null && !continuing) {
+    if (currentPlan != null && !continuing && outline?.progress !== 1) {
       const week = priorStart == null
         ? null
         : currentPlanWeek(priorStart, nowDate, currentPlan.weeks)

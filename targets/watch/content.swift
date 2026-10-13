@@ -35,15 +35,6 @@ struct ContentView: View {
 
     private var sessionBody: some View {
         VStack(spacing: 8) {
-            if !session.running {
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(session.reachable ? Color.green : Color.gray)
-                        .frame(width: 8, height: 8)
-                    Text(session.reachable ? "Phone connected" : "Phone not connected")
-                        .font(.caption2)
-                }
-            }
             if session.running {
                 Text(session.paused ? "Paused" : session.phaseTitle)
                     .font(.caption)
@@ -87,16 +78,24 @@ struct ContentView: View {
                     .foregroundStyle(.white.opacity(0.92))
                     .multilineTextAlignment(.center)
                     .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+                Button("Okay", action: session.dismissSaved)
+                    .buttonStyle(.borderedProminent)
             } else if session.locked {
                 Text("Unlock lifetime access on your iPhone")
                     .font(.caption)
                     .multilineTextAlignment(.center)
             } else if let plan = session.plan {
                 VStack(spacing: 12) {
-                    VStack(spacing: 4) {
+                    VStack(spacing: 6) {
                         Text(plan.name)
                             .font(.headline)
                             .multilineTextAlignment(.center)
+                        Text("Week \(plan.planWeek) of \(plan.planWeeks)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                        ProgressView(value: Double(plan.progress), total: 100)
+                            .progressViewStyle(.linear)
+                            .tint(.accentColor)
                         Text(session.readyDetail)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
