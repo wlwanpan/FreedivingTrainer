@@ -4,11 +4,12 @@ import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
 import PlanProgress from '@/components/PlanProgress'
 import ScreenHeader from '@/components/ScreenHeader'
 import SessionListItem from '@/components/SessionListItem'
+import WearableStatus from '@/components/WearableStatus'
 import WrapperScreen from '@/components/WrapperScreen'
 import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
 import { Colors, FontSizes, Layout } from '@/design/styles'
-import useTrainingOutline from '@/hooks/useTrainingOutline'
+import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
@@ -32,12 +33,16 @@ export default function HomeScreen() {
     return a.id - b.id
   })
 
-  const currentWeek = outline?.schedule.find((entry) => entry.current) ?? null
-  const incomplete = currentWeek?.sessions.find((session) => !session.completed) ?? null
-  const nextWeek = outline?.schedule.find((entry) => outline != null && entry.week > outline.week && !entry.locked) ?? null
-  const nextSession = incomplete ?? nextWeek?.sessions[0] ?? currentWeek?.sessions[0] ?? null
+  const nextSession = nextTrainingSession(outline)
+  const openingSession = outline?.schedule.find((entry) => entry.week === 1)?.sessions[0] ?? null
+  const sessionTitle = nextSession != null
+    && nextSession.week === 1
+    && nextSession.index === openingSession?.index
+    && !nextSession.completed
+    ? 'Start session'
+    : 'Next session'
 
-  const start = (session: WeekSession) => {
+  const start = (session: WeekSession & { week: number }) => {
     if (subscription.freeLimitReached) {
       router.push('/paywall')
       return
@@ -56,6 +61,8 @@ export default function HomeScreen() {
         restStart: String(session.restStartSeconds),
         restStep: String(session.restStepSeconds),
         rounds: String(session.rounds),
+        week: String(session.week),
+        session: String(session.index),
       },
     })
   }
@@ -63,12 +70,16 @@ export default function HomeScreen() {
   return (
     <WrapperScreen skipBottomInset>
       <ScreenHeader title='Home' />
+      <SMode>
+        <SModeText>Dry Training Mode Active</SModeText>
+      </SMode>
+      <WearableStatus />
       <SScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom }}
       >
         <AnalyticsOverview onPress={() => router.push('/analytics')} />
-        {outline == null || nextSession == null ? (
+        {outline == null ? (
           <SPlan>
             <SPlanName>No plan yet</SPlanName>
             <SMeta>
@@ -87,13 +98,23 @@ export default function HomeScreen() {
             onPress={() => router.push('/training')}
             onRetest={() => router.push('/baseline')}
           >
-            <SNext onPress={() => start(nextSession)}>
-              <SNextBody>
-                <SNextTitle>Next session</SNextTitle>
-                <SNextMeta>{sessionSummary(nextSession, formatSeconds)}</SNextMeta>
-              </SNextBody>
-              <SStart>Start</SStart>
-            </SNext>
+            {nextSession == null ? (
+              <SDoneRow>
+                <SNextBody>
+                  <SNextTitle>Week complete</SNextTitle>
+                  <SNextMeta>{finishedSummary(outline, formatSeconds)}</SNextMeta>
+                </SNextBody>
+                <SDone>Done</SDone>
+              </SDoneRow>
+            ) : (
+              <SNext onPress={() => start(nextSession)}>
+                <SNextBody>
+                  <SNextTitle>{sessionTitle}</SNextTitle>
+                  <SNextMeta>{sessionSummary(nextSession, formatSeconds)}</SNextMeta>
+                </SNextBody>
+                <SStart>Start</SStart>
+              </SNext>
+            )}
           </PlanProgress>
         )}
         <SSection>Latest sessions</SSection>
@@ -109,6 +130,16 @@ export default function HomeScreen() {
   )
 }
 
+function finishedSummary(
+  outline: NonNullable<ReturnType<typeof useTrainingOutline>>,
+  formatSeconds: (seconds: number) => string,
+): string {
+  const current = outline.schedule.find((entry) => entry.current)
+  const finished = current?.sessions.filter((session) => session.completed) ?? []
+  if (finished.length === 1) return sessionSummary(finished[0], formatSeconds)
+  return 'Every session this week is done.'
+}
+
 function sessionSummary(
   session: WeekSession,
   formatSeconds: (seconds: number) => string,
@@ -118,6 +149,20 @@ function sessionSummary(
     : `Hold ${formatSeconds(session.holdSeconds)}`
   return `${session.name} · ${hold} · ${session.rounds} rounds`
 }
+
+const SMode = styled.View`
+  align-self: center;
+  margin: 0 20px 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background-color: ${Colors.CoralBackground};
+`
+
+const SModeText = styled.Text`
+  font-size: ${FontSizes.Small};
+  font-weight: 800;
+  color: ${Colors.CoralPrimary};
+`
 
 const SScroll = styled.ScrollView`
   flex: 1;
@@ -175,6 +220,24 @@ const SNextMeta = styled.Text`
 const SStart = styled.Text`
   font-size: ${FontSizes.Small};
   font-weight: 800;
+  color: ${Colors.TealPrimary};
+`
+
+const SDoneRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin: 12px -16px -16px;
+  padding: 12px 16px;
+  min-height: ${Layout.MinControl}px;
+  border-top-width: 1px;
+  border-top-color: ${Colors.GreyDivider};
+`
+
+const SDone = styled.Text`
+  font-size: ${FontSizes.XSmall};
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
   color: ${Colors.TealPrimary};
 `
 

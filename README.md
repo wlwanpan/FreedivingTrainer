@@ -30,6 +30,12 @@ npx expo run:ios
 npm run dev
 ```
 
+## IOS Watch
+
+```bash
+xed ios
+```
+
 ## Stack
 
 - Expo 54, React Native 0.81, React 19, new architecture

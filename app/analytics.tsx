@@ -1,5 +1,6 @@
 import AnalyticsOverview from '@/components/AnalyticsOverview'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
+import HeartRateChart from '@/components/HeartRateChart'
 import HoldHistoryChart from '@/components/HoldHistoryChart'
 import WrapperScreen from '@/components/WrapperScreen'
 import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
@@ -28,6 +29,7 @@ export default function AnalyticsScreen() {
       >
         <AnalyticsOverview />
         <HoldHistoryChart />
+        <HeartRateChart />
         <SSection>Sessions</SSection>
         {totals.length === 0 ? (
           <SEmpty>Finish a table to see it here.</SEmpty>

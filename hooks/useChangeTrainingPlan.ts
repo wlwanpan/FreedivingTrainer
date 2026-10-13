@@ -1,9 +1,12 @@
 import { ErrorTitles } from '@/constants/errors'
+import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import {
+  isCurrentPlanChoice,
   PlanChoice,
   planFromChoice,
+  planSwitchWarning,
   serializeCustomPlan,
   trainingPlanFromSettings,
   weeklySessions,
@@ -22,15 +25,15 @@ export default function useChangeTrainingPlan() {
     const next = planFromChoice(choice)
     const current = trainingPlanFromSettings(sql.settings)
     if (next == null) return 'error'
-    if (current?.id === next.id && samePlan(sql.settings.customPlan, choice)) return 'unchanged'
+    if (isCurrentPlanChoice(sql.settings, choice)) return 'unchanged'
 
     const baseline = sql.settings.baselineMaxHoldSeconds
     if (baseline == null) return 'error'
 
-    if (planWeek != null && planWeek.week > 1) {
+    if (current != null) {
       const confirmed = await showConfirmation(
         'Change plan?',
-        `You are on week ${planWeek.week} of the ${planWeek.planName}. That progress will be lost, and the new plan starts at week 1.`,
+        withWatchTrainingLoss(planSwitchWarning(current.name, planWeek?.week ?? null)),
       )
       if (!confirmed) return 'cancelled'
     }
@@ -71,9 +74,4 @@ export default function useChangeTrainingPlan() {
     }
     return 'saved'
   }
-}
-
-function samePlan(storedCustom: string | null, choice: PlanChoice): boolean {
-  if (choice.planId !== 'custom') return true
-  return serializeCustomPlan(choice.custom ?? { weeks: 0, sessions: [] }) === (storedCustom ?? '')
 }

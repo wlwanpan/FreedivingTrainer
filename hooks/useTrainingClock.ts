@@ -13,6 +13,8 @@ import { todayDate } from '@/utils/date'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
+import { recordCompletedSession } from './recordCompletedSession'
+import useSessionHeartRate from './useSessionHeartRate'
 import useTablePlan from './useTablePlan'
 
 
@@ -37,6 +39,11 @@ export type TrainTable = {
   restStartSeconds: number
   restStepSeconds: number
   rounds: number
+}
+
+export type TrainPlanSlot = {
+  week: number
+  index: number
 }
 
 type Location = {
@@ -98,7 +105,11 @@ function locate(phases: TrainPhase[], elapsedSeconds: number): Location {
   return { index: Math.max(0, phases.length - 1), remaining: 0, done: true }
 }
 
-export default function useTrainingClock(tableType: TableType | null, table: TrainTable | null = null) {
+export default function useTrainingClock(
+  tableType: TableType | null,
+  table: TrainTable | null = null,
+  slot: TrainPlanSlot | null = null,
+) {
   const sql = useSQLContext()
   const { showWarning } = useWarningModal()
   const plannedRounds = useTablePlan(tableType ?? 'co2')
@@ -109,7 +120,8 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
     ? []
     : buildPhases(sql.settings.breatheUpSeconds, rounds)
 
-  const startedAtRef = useRef(Date.now())
+  const wallStartedAtRef = useRef(Date.now())
+  const startedAtRef = useRef(wallStartedAtRef.current)
   const intro = sql.updatedAt != null && !sql.settings.trainingGesturesSeen
   const pausedAtRef = useRef<number | null>(intro ? startedAtRef.current : null)
   const announcedIndex = useRef(0)
@@ -124,6 +136,7 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
   const elapsedSeconds = Math.floor((now - startedAtRef.current) / 1000)
   const location = locate(phases, elapsedSeconds)
   const done = phases.length > 0 && location.done
+  const heartRate = useSessionHeartRate(tableType != null && !done)
   const stepAt = (index: number): TrainStep | null => {
     const phase = phases[index]
     if (!phase) return null
@@ -252,7 +265,7 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
     setSaving(true)
     setSaveFailed(false)
     const createdAt = new Date()
-    const res = await sql.insertSession({
+    const res = await recordCompletedSession({
       tableType,
       day: todayDate(),
       roundsCompleted: rounds.length,
@@ -261,15 +274,19 @@ export default function useTrainingClock(tableType: TableType | null, table: Tra
       restSeconds: table?.restStartSeconds
         ?? (tableType === 'o2' ? sql.settings.o2RestSeconds : sql.settings.co2RestStartSeconds),
       contractions: serializeContractions(contractionsRef.current),
+      planWeek: slot?.week ?? null,
+      planSession: slot?.index ?? null,
+      startedAt: new Date(wallStartedAtRef.current),
       createdAt,
       updatedAt: createdAt,
-    })
+    }, sql.settings.trainingPlanStartedAt)
     setSaving(false)
     if (res.error) {
       setSaveFailed(true)
       showWarning(ErrorTitles.Sql, res.error.message)
       return
     }
+    if (res.insertionID != null) heartRate.attach(res.insertionID)
     setSaved(true)
   }
 

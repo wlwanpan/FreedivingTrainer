@@ -22,6 +22,7 @@ export const settings = sqliteTable('settings', {
   trainingPlan: text('training_plan'),
   trainingPlanStartedAt: integer('training_plan_started_at', { mode: 'timestamp' }),
   customPlan: text('custom_plan'),
+  wearable: text('wearable'),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }),
 })
@@ -42,8 +43,18 @@ export const sessions = sqliteTable('sessions', {
   holdSeconds: integer('hold_seconds').notNull(),
   restSeconds: integer('rest_seconds').notNull(),
   contractions: text('contractions'),
+  planWeek: integer('plan_week'),
+  planSession: integer('plan_session'),
+  startedAt: integer('started_at', { mode: 'timestamp' }),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+})
+
+export const heartRateSamples = sqliteTable('heart_rate_samples', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  sessionId: integer('session_id').notNull(),
+  bpm: integer('bpm').notNull(),
+  recordedAt: integer('recorded_at', { mode: 'timestamp' }).notNull(),
 })
 
 export type Setting = typeof settings.$inferSelect
@@ -52,3 +63,5 @@ export type BaselineTest = typeof baselineTests.$inferSelect
 export type BaselineTestInsert = typeof baselineTests.$inferInsert
 export type Session = typeof sessions.$inferSelect
 export type SessionInsert = typeof sessions.$inferInsert
+export type HeartRateSample = typeof heartRateSamples.$inferSelect
+export type HeartRateSampleInsert = typeof heartRateSamples.$inferInsert

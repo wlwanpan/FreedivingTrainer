@@ -10,6 +10,7 @@ import { useBottomControlInset } from '@/design/chrome'
 import { Colors, FontSizes } from '@/design/styles'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
+import useWearableStatus, { wearableLabel, wearableLive, withWatchTrainingLoss } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
@@ -26,6 +27,11 @@ export default function SettingsScreen() {
   const { formatSeconds } = useFormatterContext()
   const { showWarning, showConfirmDeletion } = useWarningModal()
   const updateSetting = useUpdateSetting()
+  const wearable = useWearableStatus()
+  const watchSelected = wearable.kind === 'apple-watch'
+  const deviceStatus = watchSelected && !wearable.connected
+    ? 'Waiting for Apple Watch'
+    : wearableLabel(wearable)
   const planWeek = useCurrentPlanWeek()
   const paddingBottom = useBottomControlInset(true)
   const [eraseInFlight, setEraseInFlight] = useState(false)
@@ -39,7 +45,7 @@ export default function SettingsScreen() {
   const erase = async () => {
     const confirmed = await showConfirmDeletion(
       'Erase all data?',
-      'This removes your tables, logged sessions, and baseline from this device. The app will open as a new install. A lifetime purchase stays with your Apple ID.',
+      withWatchTrainingLoss('This removes your tables, logged sessions, and baseline from this device. The app will open as a new install. A lifetime purchase stays with your Apple ID.'),
     )
     if (!confirmed) return
 
@@ -232,6 +238,30 @@ export default function SettingsScreen() {
         </SCard>
 
         <SCard>
+          <SCardTitle>Device</SCardTitle>
+          <SGroup>Apple Watch</SGroup>
+          <SNote>
+            {watchSelected
+              ? 'Open Freediving on your Apple Watch. Home shows Connected when the watch session is reachable.'
+              : 'Heart rate from your watch during a table. Garmin can be connected later.'}
+          </SNote>
+          <SDeviceStatus $live={wearableLive(wearable)}>{deviceStatus}</SDeviceStatus>
+          {watchSelected ? (
+            <Button
+              title='Disconnect'
+              onPress={() => { void updateSetting({ wearable: null }) }}
+              defaultBGColor={Colors.GreyPrimary}
+              pressedBGColor={Colors.GreyFaded}
+            />
+          ) : (
+            <Button
+              title='Connect Apple Watch'
+              onPress={() => { void updateSetting({ wearable: 'apple-watch' }) }}
+            />
+          )}
+        </SCard>
+
+        <SCard>
           <SCardTitle>System</SCardTitle>
           <SGroup>Date</SGroup>
           <SChoiceRow>
@@ -297,6 +327,13 @@ const SNote = styled.Text`
   font-size: ${FontSizes.Medium};
   line-height: 22px;
   color: ${Colors.DeepPrimary};
+`
+
+const SDeviceStatus = styled.Text<{ $live: boolean }>`
+  margin-bottom: 12px;
+  font-size: ${FontSizes.Small};
+  font-weight: 700;
+  color: ${(props) => props.$live ? Colors.GreenPrimary : Colors.GreyPrimary};
 `
 
 const SChoiceRow = styled.View`

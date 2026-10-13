@@ -49,7 +49,12 @@
       ],
       "expo-sqlite",
       "expo-font",
-      "@bacons/apple-targets"
+      [
+        "@bacons/apple-targets",
+        {
+          "appleTeamId": "WD73B9M86L"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

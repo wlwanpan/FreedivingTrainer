@@ -1,4 +1,5 @@
 import RootNavigator from '@/components/RootNavigator'
+import WatchBridge from '@/components/WatchBridge'
 import { DATABASE_NAME, drizzleDb } from '@/db/client'
 import FormatterContextProvider from '@/providers/formatter'
 import SQLContextProvider from '@/providers/sql'
@@ -45,6 +46,7 @@ export default function RootLayout() {
                 <SQLContextProvider>
                   <FormatterContextProvider>
                     <SubscriptionProvider>
+                      <WatchBridge />
                       <RootNavigator />
                     </SubscriptionProvider>
                   </FormatterContextProvider>

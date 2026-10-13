@@ -5,6 +5,8 @@ import BaselineResult from '@/components/BaselineResult'
 import BaselineTimer from '@/components/BaselineTimer'
 import WrapperScreen from '@/components/WrapperScreen'
 import useBaselineTest from '@/hooks/useBaselineTest'
+import { useSQLContext } from '@/providers/sql'
+import { trainingPlanById } from '@/utils/training_plan'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 
 
@@ -12,6 +14,7 @@ export default function BaselineScreen() {
   const router = useRouter()
   const { entry } = useLocalSearchParams<{ entry?: string | string[] }>()
   const entryValue = Array.isArray(entry) ? entry[0] : entry
+  const { settings } = useSQLContext()
   const test = useBaselineTest(entryValue === 'onboarding')
 
   return (
@@ -45,6 +48,8 @@ export default function BaselineScreen() {
         <BaselinePlans
           outcome={test.outcome}
           saving={test.saving}
+          initialPlanId={trainingPlanById(settings.trainingPlan)?.id}
+          initialCustomPlan={settings.customPlan}
           onStart={(choice) => { void test.save(choice) }}
           onRetake={test.retake}
         />
