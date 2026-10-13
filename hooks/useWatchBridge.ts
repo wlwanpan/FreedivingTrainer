@@ -1,3 +1,4 @@
+import { WatchDetail, WatchDetails } from '@/constants/sessions'
 import { TableType, TableTypes } from '@/constants/tables'
 import { ErrorTitles } from '@/constants/errors'
 import { publishWatchTraining, publishWearableLive } from '@/hooks/useWearableStatus'
@@ -21,6 +22,7 @@ type CompletedSession = {
   completedAt: number
   planWeek: number | null
   planSession: number | null
+  watchDetail: WatchDetail
   heartRates: { bpm: number; recordedAt: Date }[]
 }
 
@@ -35,6 +37,11 @@ function wholeNumber(value: unknown, min: number, max: number): number | null {
 function tableType(value: unknown): TableType | null {
   if (typeof value !== 'string') return null
   return (TableTypes as readonly string[]).includes(value) ? value as TableType : null
+}
+
+function readWatchDetail(value: unknown): WatchDetail {
+  if (typeof value !== 'string') return 'ios'
+  return (WatchDetails as readonly string[]).includes(value) ? value as WatchDetail : 'ios'
 }
 
 function dayStamp(date: Date): string {
@@ -90,6 +97,7 @@ function readCompleted(
     completedAt,
     planWeek: slotted ? week : null,
     planSession: slotted ? sessionIndex : null,
+    watchDetail: readWatchDetail(payload.watchDetail),
     heartRates: readRates(payload.heartRates),
   }
 }
@@ -241,6 +249,8 @@ export default function useWatchBridge() {
         planWeek: completed.planWeek,
         planSession: completed.planSession,
         startedAt: completed.startedAt == null ? null : new Date(completed.startedAt),
+        source: 'watch',
+        watchDetail: completed.watchDetail,
         createdAt,
         updatedAt: createdAt,
       }, planStartedRef.current)
