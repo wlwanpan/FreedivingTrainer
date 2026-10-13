@@ -8,7 +8,7 @@ import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
 import { recordCompletedSession } from '@/hooks/recordCompletedSession'
 import { sessionRounds } from '@/utils/training_plan'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 
 type CompletedSession = {
@@ -111,7 +111,14 @@ export default function useWatchBridge() {
   const subscription = useSubscriptionContext()
   const { showWarning } = useWarningModal()
   const outline = useTrainingOutline()
+  const [syncedAt, setSyncedAt] = useState<number[]>([])
   const savedRef = useRef(new Set<number>())
+  const rememberSyncRef = useRef<(completedAt: number) => void>(() => {})
+  rememberSyncRef.current = (completedAt: number) => {
+    setSyncedAt((current) => (
+      current.includes(completedAt) ? current : [...current, completedAt].slice(-20)
+    ))
+  }
   const sessionsRef = useRef(sessions)
   const insertHeartRatesRef = useRef(insertHeartRates)
   const warnRef = useRef(showWarning)
@@ -137,22 +144,39 @@ export default function useWatchBridge() {
   }
   const sync = syncRef.current
   const context = subscription.freeLimitReached
-    ? { type: 'nextSession', locked: true, loggedCount: sessions.length, planKey, sync }
+    ? { type: 'nextSession', locked: true, loggedCount: sessions.length, planKey, sync, syncedAt }
     : outline != null && next == null
-      ? { type: 'nextSession', complete: true, loggedCount: sessions.length, planKey, sync }
+      ? { type: 'nextSession', complete: true, loggedCount: sessions.length, planKey, sync, syncedAt }
       : next == null || rounds.length === 0
-        ? { type: 'nextSession', loggedCount: sessions.length, planKey, sync }
+        ? { type: 'nextSession', loggedCount: sessions.length, planKey, sync, syncedAt }
         : {
           type: 'nextSession',
           loggedCount: sessions.length,
           planKey,
           sync,
+          syncedAt,
           name: next.name,
           week: next.week,
           sessionIndex: next.index,
           planWeek: outline?.week ?? next.week,
           planWeeks: outline?.weeks ?? 1,
           progress: Math.round((outline?.progress ?? 0) * 100),
+          planName: outline?.planName ?? '',
+          schedule: (outline?.schedule ?? []).map((entry) => ({
+            week: entry.week,
+            current: entry.current,
+            locked: entry.locked,
+            sessions: entry.sessions.map((session) => ({
+              index: session.index,
+              name: session.name,
+              tableType: session.tableType,
+              holdSeconds: session.holdSeconds,
+              restSeconds: session.restStartSeconds,
+              rounds: session.rounds,
+              completed: session.completed,
+              note: session.note,
+            })),
+          })),
           tableType: next.tableType,
           breatheUpSeconds: settings.breatheUpSeconds,
           holdSeconds: next.holdSeconds,
@@ -174,16 +198,25 @@ export default function useWatchBridge() {
     if (!WatchConnectivity.isSupported) return
     let cancelled = false
     let queue = Promise.resolve()
-    const save = (payload: Record<string, unknown>) => {
-      queue = queue.then(() => saveCompletion(payload)).catch(() => undefined)
+    const save = (payload: Record<string, unknown>, replyId?: string) => {
+      queue = queue.then(async () => {
+        const saved = await saveCompletion(payload)
+        if (replyId != null && payload.type === 'sessionComplete') {
+          WatchConnectivity.replyToMessage(replyId, { saved })
+        }
+      }).catch(() => {
+        if (replyId != null && payload.type === 'sessionComplete') {
+          WatchConnectivity.replyToMessage(replyId, { saved: false })
+        }
+      })
     }
-    const saveCompletion = async (payload: Record<string, unknown>) => {
+    const saveCompletion = async (payload: Record<string, unknown>): Promise<boolean> => {
       if (payload.type === 'watchTraining') {
         publishWatchTraining(payload.running === true || payload.running === 1)
-        return
+        return false
       }
       const completed = readCompleted(payload, activePlanKeyRef.current)
-      if (completed == null) return
+      if (completed == null) return false
       const duplicate = savedRef.current.has(completed.completedAt)
         || (completed.planWeek == null && sessionsRef.current.some((session) => (
           session.tableType === completed.tableType
@@ -193,7 +226,8 @@ export default function useWatchBridge() {
         )))
       if (duplicate) {
         savedRef.current.add(completed.completedAt)
-        return
+        rememberSyncRef.current(completed.completedAt)
+        return true
       }
       savedRef.current.add(completed.completedAt)
       const createdAt = new Date(completed.completedAt)
@@ -211,22 +245,27 @@ export default function useWatchBridge() {
         updatedAt: createdAt,
       }, planStartedRef.current)
       const sessionId = result.insertionID
-      if (result.skipped) return
+      if (result.skipped) {
+        rememberSyncRef.current(completed.completedAt)
+        return true
+      }
       if (sessionId == null) {
         savedRef.current.delete(completed.completedAt)
         if (result.error) warnRef.current(ErrorTitles.Sql, result.error.message)
-        return
+        return false
       }
+      rememberSyncRef.current(completed.completedAt)
       if (result.error) warnRef.current(ErrorTitles.Sql, result.error.message)
-      if (completed.heartRates.length === 0) return
+      if (completed.heartRates.length === 0) return true
       const rates = await insertHeartRatesRef.current(completed.heartRates.map((sample) => ({
         ...sample,
         sessionId,
       })))
       if (rates.error) warnRef.current(ErrorTitles.Sql, rates.error.message)
+      return true
     }
     const subscriptions = [
-      WatchConnectivity.addMessageListener((event) => { save(event.message) }),
+      WatchConnectivity.addMessageListener((event) => { save(event.message, event.replyId) }),
       WatchConnectivity.addUserInfoListener((event) => { save(event.userInfo) }),
       WatchConnectivity.addReachabilityListener(() => publishConnection()),
     ]

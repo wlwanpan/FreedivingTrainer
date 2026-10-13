@@ -14,6 +14,7 @@ type NativeWatchConnectivity = {
   getSessionState: () => SessionState
   activate: () => Promise<ActivationState>
   sendMessage: (message: Record<string, unknown>) => Promise<Record<string, unknown>>
+  replyToMessage: (replyId: string, reply: Record<string, unknown>) => void
   updateApplicationContext: (context: Record<string, unknown>) => Promise<void>
   addListener: (eventName: string, listener: (event: never) => void) => EventSubscription
 }
@@ -54,6 +55,9 @@ export const WatchConnectivity = {
   sendMessage(message: Record<string, unknown>): Promise<Record<string, unknown>> {
     if (native == null) return Promise.reject(new Error('WatchConnectivity is not supported'))
     return native.sendMessage(message)
+  },
+  replyToMessage(replyId: string, reply: Record<string, unknown>): void {
+    native?.replyToMessage(replyId, reply)
   },
   updateApplicationContext(context: Record<string, unknown>): Promise<void> {
     if (native == null) return Promise.resolve()

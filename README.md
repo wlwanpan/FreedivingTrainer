@@ -63,9 +63,7 @@ Set `REVENUECAT_IOS_API_KEY` in `.env.local` or as an EAS secret. The app looks 
 ## Releases
 
 ```bash
-eas build --platform ios --profile development
-eas build --platform ios --profile production
-eas submit --platform ios
+eas workflow:run deploy-ios.yml
 ```
 
 Link an EAS project before the first cloud build (`npx eas init`). Do not reuse another app's EAS project id or App Store id.

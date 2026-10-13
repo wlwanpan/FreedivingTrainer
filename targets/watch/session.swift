@@ -2,6 +2,28 @@ import Foundation
 import HealthKit
 import WatchConnectivity
 
+struct WatchListedSession: Identifiable {
+    let index: Int
+    let name: String
+    let tableType: String
+    let holdSeconds: Int
+    let restSeconds: Int
+    let rounds: Int
+    let completed: Bool
+    let note: String
+
+    var id: Int { index }
+}
+
+struct WatchListedWeek: Identifiable {
+    let week: Int
+    let current: Bool
+    let locked: Bool
+    let sessions: [WatchListedSession]
+
+    var id: Int { week }
+}
+
 struct WatchPlan {
     let name: String
     let tableType: String
@@ -15,6 +37,8 @@ struct WatchPlan {
     let planWeek: Int
     let planWeeks: Int
     let progress: Int
+    let planName: String
+    let schedule: [WatchListedWeek]
 }
 
 private struct WatchPhase {
@@ -39,6 +63,7 @@ final class WatchSession: NSObject, ObservableObject {
     @Published var remaining = 0
     @Published var bpm = 0
     @Published var lostNotice: String?
+    @Published var pendingSync = false
 
     private var connectivity: WCSession?
     private let healthStore = HKHealthStore()
@@ -60,6 +85,9 @@ final class WatchSession: NSObject, ObservableObject {
     private var queuedPlan: [String: Any]?
     private var pendingPlan: [String: Any]?
     private var dismissSavedTask: Task<Void, Never>?
+    private var sendingCompletions = Set<Int>()
+
+    private static let pendingDefaultsKey = "pendingSessionCompletions"
 
     var readyDetail: String {
         guard let plan else { return "" }
@@ -93,6 +121,7 @@ final class WatchSession: NSObject, ObservableObject {
 
     override init() {
         super.init()
+        pendingSync = !Self.storedCompletions().isEmpty
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         session.delegate = self
@@ -194,6 +223,7 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     func handle(_ message: [String: Any]) {
+        acknowledge(message["syncedAt"])
         if textValue(message["type"]) == "nextSession" {
             applyPlan(message)
             return
@@ -279,7 +309,9 @@ final class WatchSession: NSObject, ObservableObject {
             planKey: textValue(message["planKey"]) ?? "",
             planWeek: intValue(message["planWeek"]) ?? intValue(message["week"]) ?? 1,
             planWeeks: max(1, intValue(message["planWeeks"]) ?? 1),
-            progress: min(100, max(0, intValue(message["progress"]) ?? 0))
+            progress: min(100, max(0, intValue(message["progress"]) ?? 0)),
+            planName: textValue(message["planName"]) ?? "",
+            schedule: listedWeeks(message["schedule"])
         )
     }
 
@@ -368,8 +400,8 @@ final class WatchSession: NSObject, ObservableObject {
             "restSeconds": plan.restSeconds,
             "roundsCompleted": plan.rounds.count,
             "roundsPlanned": plan.rounds.count,
-            "startedAt": wallStartedAt.timeIntervalSince1970 * 1000,
-            "completedAt": Date().timeIntervalSince1970 * 1000,
+            "startedAt": Int(wallStartedAt.timeIntervalSince1970 * 1000),
+            "completedAt": Int(Date().timeIntervalSince1970 * 1000),
             "heartRates": samples,
         ]
         if plan.week > 0 && plan.sessionIndex > 0 {
@@ -377,7 +409,8 @@ final class WatchSession: NSObject, ObservableObject {
             payload["sessionIndex"] = plan.sessionIndex
             payload["planKey"] = plan.planKey
         }
-        send(payload)
+        storePending(payload)
+        deliver(payload)
     }
 
     private func startHeartRate() {
@@ -450,18 +483,131 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     private func send(_ payload: [String: Any]) {
-        guard let connectivity else { return }
-        if connectivity.isReachable {
-            connectivity.sendMessage(payload, replyHandler: nil) { _ in
-                connectivity.transferUserInfo(payload)
-            }
+        guard let connectivity, connectivity.isReachable else { return }
+        connectivity.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+    }
+
+    private static func storedCompletions() -> [[String: Any]] {
+        let stored = UserDefaults.standard.array(forKey: pendingDefaultsKey) ?? []
+        return stored.compactMap { $0 as? [String: Any] }
+    }
+
+    private func loadPending() -> [[String: Any]] {
+        Self.storedCompletions()
+    }
+
+    private func savePending(_ items: [[String: Any]]) {
+        UserDefaults.standard.set(items, forKey: Self.pendingDefaultsKey)
+        pendingSync = !items.isEmpty
+    }
+
+    private func completionId(_ payload: [String: Any]) -> Int? {
+        guard let value = intValue(payload["completedAt"]), value > 0 else { return nil }
+        return value
+    }
+
+    private func wirePayload(_ payload: [String: Any]) -> [String: Any] {
+        var copy = payload
+        copy.removeValue(forKey: "transferQueued")
+        return copy
+    }
+
+    private func storePending(_ payload: [String: Any]) {
+        guard let id = completionId(payload) else { return }
+        var items = loadPending().filter { completionId($0) != id }
+        items.append(payload)
+        savePending(items)
+    }
+
+    private func removePending(_ id: Int) {
+        sendingCompletions.remove(id)
+        savePending(loadPending().filter { completionId($0) != id })
+    }
+
+    private func acknowledge(_ value: Any?) {
+        let rows: [Any]
+        if let list = value as? [Any] {
+            rows = list
+        } else if let list = value as? NSArray {
+            rows = list.compactMap { $0 }
         } else {
-            connectivity.transferUserInfo(payload)
+            return
         }
+        let ids = Set(rows.compactMap { intValue($0) })
+        guard !ids.isEmpty else { return }
+        ids.forEach { sendingCompletions.remove($0) }
+        let remaining = loadPending().filter { item in
+            guard let id = completionId(item) else { return true }
+            return !ids.contains(id)
+        }
+        if remaining.count != loadPending().count {
+            savePending(remaining)
+        }
+    }
+
+    private func queueTransfer(_ id: Int) {
+        guard let connectivity, connectivity.activationState == .activated else { return }
+        var items = loadPending()
+        guard let index = items.firstIndex(where: { completionId($0) == id }) else { return }
+        var item = items[index]
+        if flag(item["transferQueued"]) { return }
+        connectivity.transferUserInfo(wirePayload(item))
+        item["transferQueued"] = true
+        items[index] = item
+        savePending(items)
+    }
+
+    private func deliver(_ item: [String: Any]) {
+        guard let id = completionId(item) else { return }
+        guard let connectivity, connectivity.activationState == .activated else { return }
+        if connectivity.isReachable {
+            guard !sendingCompletions.contains(id) else { return }
+            sendingCompletions.insert(id)
+            let payload = wirePayload(item)
+            connectivity.sendMessage(payload, replyHandler: { [weak self] reply in
+                Task { @MainActor in
+                    guard let self else { return }
+                    self.sendingCompletions.remove(id)
+                    if flag(reply["saved"]) {
+                        self.removePending(id)
+                    }
+                }
+            }, errorHandler: { [weak self] _ in
+                Task { @MainActor in
+                    guard let self else { return }
+                    self.sendingCompletions.remove(id)
+                    self.queueTransfer(id)
+                }
+            })
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(8))
+                self?.sendingCompletions.remove(id)
+            }
+            return
+        }
+        queueTransfer(id)
+    }
+
+    private func flushPending() {
+        for item in loadPending() {
+            deliver(item)
+        }
+    }
+
+    private func markTransfersRetryable() {
+        var items = loadPending()
+        var changed = false
+        for index in items.indices where flag(items[index]["transferQueued"]) {
+            var item = items[index]
+            item["transferQueued"] = false
+            items[index] = item
+            changed = true
+        }
+        if changed { savePending(items) }
     }
 }
 
-private func clock(_ seconds: Int) -> String {
+func clock(_ seconds: Int) -> String {
     let safe = max(0, seconds)
     return String(format: "%d:%02d", safe / 60, safe % 60)
 }
@@ -481,6 +627,45 @@ private func flag(_ value: Any?) -> Bool {
     if let value = value as? Bool { return value }
     if let number = value as? NSNumber { return number.boolValue }
     return false
+}
+
+private func arrayValue(_ value: Any?) -> [Any] {
+    if let list = value as? [Any] { return list }
+    if let list = value as? NSArray { return list.compactMap { $0 } }
+    return []
+}
+
+private func recordValue(_ value: Any?) -> [String: Any]? {
+    value as? [String: Any] ?? (value as? NSDictionary) as? [String: Any]
+}
+
+private func listedWeeks(_ value: Any?) -> [WatchListedWeek] {
+    arrayValue(value).compactMap { row in
+        guard let record = recordValue(row),
+              let week = intValue(record["week"]),
+              week > 0 else { return nil }
+        let sessions = arrayValue(record["sessions"]).compactMap { item -> WatchListedSession? in
+            guard let session = recordValue(item),
+                  let name = textValue(session["name"]), !name.isEmpty,
+                  let index = intValue(session["index"]) else { return nil }
+            return WatchListedSession(
+                index: index,
+                name: name,
+                tableType: textValue(session["tableType"]) ?? "co2",
+                holdSeconds: intValue(session["holdSeconds"]) ?? 0,
+                restSeconds: intValue(session["restSeconds"]) ?? 0,
+                rounds: intValue(session["rounds"]) ?? 0,
+                completed: flag(session["completed"]),
+                note: textValue(session["note"]) ?? ""
+            )
+        }
+        return WatchListedWeek(
+            week: week,
+            current: flag(record["current"]),
+            locked: flag(record["locked"]),
+            sessions: sessions
+        )
+    }
 }
 
 private func roundsValue(_ value: Any?) -> [(hold: Int, rest: Int)] {
@@ -511,12 +696,14 @@ extension WatchSession: WCSessionDelegate {
         Task { @MainActor in
             self.reachable = session.isReachable
             self.handle(session.receivedApplicationContext)
+            self.flushPending()
         }
     }
 
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         Task { @MainActor in
             self.reachable = session.isReachable
+            self.flushPending()
         }
     }
 
@@ -549,6 +736,17 @@ extension WatchSession: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any]) {
         Task { @MainActor in
             self.handle(userInfo)
+        }
+    }
+
+    nonisolated func session(
+        _ session: WCSession,
+        didFinish userInfoTransfer: WCSessionUserInfoTransfer,
+        error: Error?
+    ) {
+        guard error != nil else { return }
+        Task { @MainActor in
+            self.markTransfersRetryable()
         }
     }
 }
