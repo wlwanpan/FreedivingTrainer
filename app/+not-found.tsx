@@ -16,11 +16,11 @@ const Wrapper = styled.View`
   flex: 1;
   align-items: center;
   justify-content: center;
-  background-color: ${Colors.DeepPrimary};
+  background-color: ${Colors.Canvas};
 `
 
 const SLink = styled(Link)`
   font-size: ${FontSizes.Large};
-  color: ${Colors.White};
+  color: ${Colors.Seafoam};
   text-decoration-line: underline;
 `

@@ -5,7 +5,7 @@ import WrapperScreen from '@/components/WrapperScreen'
 import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
-import { Colors, FontSizes, Layout } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useTrainingOutline from '@/hooks/useTrainingOutline'
 import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
@@ -137,11 +137,11 @@ const SScroll = styled.ScrollView`
 `
 
 const SWeek = styled.View<{ $current: boolean }>`
-  margin: 12px 20px 0;
-  border-radius: 16px;
+  margin: 12px ${Space.screen}px 0;
+  border-radius: ${Radii.Card}px;
   border-width: 1px;
-  border-color: ${(props) => props.$current ? Colors.TealPrimary : Colors.GreyDivider};
-  background-color: ${Colors.White};
+  border-color: ${(props) => props.$current ? Colors.Seafoam : Colors.Hairline};
+  background-color: ${Colors.Card};
   overflow: hidden;
 `
 
@@ -153,32 +153,35 @@ const SWeekHeader = styled.View`
 `
 
 const SWeekTitle = styled.Text`
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  font-weight: 600;
+  color: ${Colors.Text};
 `
 
 const SBadge = styled.Text`
-  font-size: ${FontSizes.XSmall};
-  font-weight: 800;
-  letter-spacing: 0.4px;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XXSmall};
+  font-weight: 600;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `
 
 const SLockedBadge = styled.Text`
-  font-size: ${FontSizes.XSmall};
-  font-weight: 800;
-  letter-spacing: 0.4px;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XXSmall};
+  font-weight: 600;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SLockNote = styled.Text`
   padding: 0 16px 8px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const STraining = styled.Pressable<{ $locked: boolean }>`
@@ -187,7 +190,7 @@ const STraining = styled.Pressable<{ $locked: boolean }>`
   min-height: ${Layout.MinControl}px;
   padding: 12px 16px;
   border-top-width: 1px;
-  border-top-color: ${Colors.GreyDivider};
+  border-top-color: ${Colors.Hairline};
   opacity: ${(props) => props.$locked ? 0.55 : 1};
 `
 
@@ -205,7 +208,7 @@ const SNameRow = styled.View`
 const STrainingName = styled.Text<{ $locked: boolean }>`
   font-size: ${FontSizes.Medium};
   font-weight: 700;
-  color: ${(props) => props.$locked ? Colors.GreyPrimary : Colors.DeepPrimary};
+  color: ${(props) => props.$locked ? Colors.TextMuted : Colors.Text};
 `
 
 const SDone = styled.Text`
@@ -213,27 +216,27 @@ const SDone = styled.Text`
   font-weight: 800;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `
 
 const STrainingMeta = styled.Text<{ $locked: boolean }>`
   margin-top: 2px;
   font-size: ${FontSizes.Small};
   font-weight: 700;
-  color: ${(props) => props.$locked ? Colors.GreyPrimary : Colors.TealPrimary};
+  color: ${(props) => props.$locked ? Colors.TextMuted : Colors.Seafoam};
 `
 
 const STrainingNote = styled.Text`
   margin-top: 2px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SStart = styled.Text<{ $locked: boolean }>`
   font-size: ${FontSizes.Small};
   font-weight: 800;
-  color: ${(props) => props.$locked ? Colors.GreyPrimary : Colors.TealPrimary};
+  color: ${(props) => props.$locked ? Colors.TextMuted : Colors.Seafoam};
 `
 
 const SEmpty = styled.View`
@@ -243,14 +246,16 @@ const SEmpty = styled.View`
 `
 
 const SEmptyTitle = styled.Text`
+  font-family: ${Fonts.Headline};
   font-size: ${FontSizes.XLarge};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  font-weight: 700;
+  color: ${Colors.Text};
 `
 
 const SEmptyCopy = styled.Text`
   margin-top: 8px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Medium};
   line-height: 22px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `

@@ -34,17 +34,17 @@ const SDot = styled.View<{ $live: boolean }>`
   width: 8px;
   height: 8px;
   border-radius: 4px;
-  background-color: ${(props) => props.$live ? Colors.GreenPrimary : Colors.GreyPrimary};
+  background-color: ${(props) => props.$live ? Colors.Seafoam : Colors.TextMuted};
 `
 
 const SLabel = styled.Text<{ $live: boolean }>`
   font-size: ${FontSizes.Small};
   font-weight: 700;
-  color: ${(props) => props.$live ? Colors.GreenPrimary : Colors.GreyPrimary};
+  color: ${(props) => props.$live ? Colors.Seafoam : Colors.TextMuted};
 `
 
 const SSync = styled.Text`
   font-size: ${FontSizes.Small};
   font-weight: 700;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `

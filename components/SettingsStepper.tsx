@@ -1,4 +1,4 @@
-import { Colors, FontSizes, Layout } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Layout, Radii } from '@/design/styles'
 import { formatDuration } from '@/utils/duration'
 import { useFormatterContext } from '@/providers/formatter'
 import { useId, useRef, useState } from 'react'
@@ -81,14 +81,14 @@ export default function SettingsStepper({
       <SLabel>{label}</SLabel>
       <SControls>
         <SStep onPress={() => stepBy(-step)} disabled={!editing && value <= min}>
-          <SStepText>−</SStepText>
+          <SStepText>{mode === 'duration' ? `-${formatDuration(step)}` : '−'}</SStepText>
         </SStep>
         {canType ? (
           <SInput
             ref={inputRef}
             value={shown}
             placeholder={display}
-            placeholderTextColor={Colors.GreyPrimary}
+            placeholderTextColor={Colors.TextMuted}
             keyboardType='number-pad'
             inputMode='numeric'
             inputAccessoryViewID={Platform.OS === 'ios' ? accessoryId : undefined}
@@ -109,7 +109,7 @@ export default function SettingsStepper({
           <SValue>{display}</SValue>
         )}
         <SStep onPress={() => stepBy(step)} disabled={!editing && value >= max}>
-          <SStepText>+</SStepText>
+          <SStepText>{mode === 'duration' ? `+${formatDuration(step)}` : '+'}</SStepText>
         </SStep>
       </SControls>
       {canType && Platform.OS === 'ios' ? (
@@ -141,41 +141,49 @@ const Wrapper = styled.View`
   justify-content: space-between;
   padding: 12px 0;
   border-bottom-width: 1px;
-  border-bottom-color: ${Colors.GreyDivider};
+  border-bottom-color: ${Colors.Hairline};
 `
 
 const SLabel = styled.Text`
   flex: 1;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Medium};
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SControls = styled.View`
   flex-direction: row;
   align-items: center;
+  padding: 4px;
+  border-radius: ${Radii.Control}px;
+  background-color: ${Colors.Telemetry};
 `
 
 const SStep = styled.Pressable`
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  min-width: ${Layout.MinControl}px;
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: ${Radii.Control}px;
   align-items: center;
   justify-content: center;
-  background-color: ${Colors.TealBackground};
 `
 
 const SStepText = styled.Text`
-  font-size: ${FontSizes.Large};
-  color: ${Colors.TealPrimary};
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
   font-weight: 600;
+  font-variant: tabular-nums;
+  color: ${Colors.Seafoam};
 `
 
 const SValue = styled.Text`
   min-width: 64px;
   text-align: center;
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
   font-weight: 600;
-  color: ${Colors.DeepPrimary};
+  font-variant: tabular-nums;
+  color: ${Colors.Text};
 `
 
 const SInput = styled(TextInput)`
@@ -183,20 +191,22 @@ const SInput = styled(TextInput)`
   min-height: ${Layout.MinControl}px;
   padding: 8px 4px;
   text-align: center;
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
   font-weight: 600;
-  color: ${Colors.DeepPrimary};
+  font-variant: tabular-nums;
+  color: ${Colors.Text};
   border-bottom-width: 1px;
-  border-bottom-color: ${Colors.TealPrimary};
+  border-bottom-color: ${Colors.Seafoam};
 `
 
 const SAccessory = styled.View`
   flex-direction: row;
   justify-content: flex-end;
   padding: 4px 12px;
-  background-color: ${Colors.White};
+  background-color: ${Colors.Card};
   border-top-width: 1px;
-  border-top-color: ${Colors.GreyDivider};
+  border-top-color: ${Colors.Hairline};
 `
 
 const SDone = styled.Pressable`
@@ -208,5 +218,5 @@ const SDone = styled.Pressable`
 const SDoneText = styled.Text`
   font-size: ${FontSizes.Medium};
   font-weight: 700;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `

@@ -1,4 +1,4 @@
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { styled } from 'styled-components/native'
 
 
@@ -20,7 +20,8 @@ const Wrapper = styled.View`
 `
 
 const SText = styled.Text`
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Medium};
   text-align: center;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `

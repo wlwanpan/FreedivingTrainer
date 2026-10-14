@@ -1,7 +1,7 @@
 import { createElement, ReactNode } from 'react'
 import { styled } from 'styled-components/native'
 import { useBottomControlInset } from './chrome'
-import { Colors } from './styles'
+import { Colors, Space } from './styles'
 
 
 export const Flex = styled.View`
@@ -16,7 +16,7 @@ export const Spacer = styled.View`
 
 export const TabContainer = styled.View`
   flex: 1;
-  background-color: ${Colors.White};
+  background-color: ${Colors.Canvas};
 `
 
 type FooterProps = {
@@ -32,5 +32,5 @@ export function Footer({ children, aboveTabs = false }: FooterProps) {
 
 const SFooter = styled.View`
   flex-shrink: 0;
-  padding: 12px 20px 0;
+  padding: 12px ${Space.screen}px 0;
 `

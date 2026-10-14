@@ -77,7 +77,7 @@ export default function TrainingGestureTutorial({ onDismiss }: Props) {
     opacity: (1 - rippleB.value) * 0.55,
     transform: [{ scale: 0.5 + rippleB.value * 1.15 }],
   }))
-  const tone = single ? Colors.CoralPrimary : Colors.TealPrimary
+  const tone = single ? Colors.Alert : Colors.Seafoam
 
   return (
     <Wrapper accessibilityViewIsModal>
@@ -116,20 +116,20 @@ const Wrapper = styled.View`
   z-index: 8;
   justify-content: center;
   padding: 20px;
-  background-color: rgba(6, 52, 60, 0.55);
+  background-color: ${Colors.Overlay};
 `
 
 const SCard = styled.View`
   padding: 18px 18px 8px;
   border-radius: 20px;
-  background-color: ${Colors.White};
+  background-color: ${Colors.Card};
 `
 
 const SStage = styled.View`
   height: 196px;
   margin-bottom: 16px;
   border-radius: 16px;
-  background-color: ${Colors.TealBackground};
+  background-color: ${Colors.SeafoamMuted};
   overflow: hidden;
 `
 
@@ -142,7 +142,7 @@ const STarget = styled.View`
   margin-left: -18px;
   border-radius: 18px;
   border-width: 2px;
-  background-color: ${Colors.White};
+  background-color: ${Colors.Card};
 `
 
 const SRipple = styled(Animated.View)`
@@ -167,7 +167,7 @@ const SFinger = styled.View`
   width: 64px;
   height: 92px;
   border-radius: 32px;
-  background-color: ${Colors.DeepPrimary};
+  background-color: ${Colors.CardAlt};
   align-items: center;
 `
 
@@ -176,7 +176,7 @@ const SNail = styled.View`
   height: 18px;
   margin-top: 12px;
   border-radius: 10px;
-  background-color: ${Colors.SandPrimary};
+  background-color: ${Colors.Aquamarine};
 `
 
 const SCrease = styled.View`
@@ -195,12 +195,12 @@ const SCue = styled.View<{ $active: boolean }>`
 const SCueTitle = styled.Text<{ $active: boolean }>`
   font-size: ${FontSizes.Medium};
   font-weight: 800;
-  color: ${(props) => (props.$active ? Colors.DeepPrimary : Colors.GreyPrimary)};
+  color: ${(props) => (props.$active ? Colors.Text : Colors.TextMuted)};
 `
 
 const SCueBody = styled.Text`
   margin-top: 2px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `

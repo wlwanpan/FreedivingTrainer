@@ -1,9 +1,11 @@
 import { WatchDetailLabel } from '@/constants/sessions'
-import { TableTypeLabel } from '@/constants/tables'
-import { Colors, FontSizes, Layout } from '@/design/styles'
+import { TableType, TableTypeLabel } from '@/constants/tables'
+import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import { Session } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
+import { useSQLContext } from '@/providers/sql'
 import { contractionLabel, parseContractions } from '@/utils/contractions'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { styled } from 'styled-components/native'
 
 
@@ -12,85 +14,199 @@ type Props = {
   onDelete?: () => void
 }
 
+const TableDot: Record<TableType, string> = {
+  co2: Colors.Seafoam,
+  o2: Colors.Aquamarine,
+  'one-breath': Colors.Seafoam,
+  walk: Colors.Aquamarine,
+}
+
 export default function SessionListItem({ session, onDelete }: Props) {
+  const { heartRates } = useSQLContext()
   const { formatDay, formatSeconds } = useFormatterContext()
   const logged = parseContractions(session.contractions).length
   const watchLabel = session.source === 'watch'
     ? WatchDetailLabel[session.watchDetail ?? 'ios']
     : null
+  const samples = heartRates.filter((sample) => sample.sessionId === session.id)
+  const avgBpm = samples.length === 0
+    ? null
+    : Math.round(samples.reduce((total, sample) => total + sample.bpm, 0) / samples.length)
 
   return (
     <Wrapper>
-      <SBody>
-        <STitle>{TableTypeLabel[session.tableType]} · {formatDay(session.day)}</STitle>
+      <STop>
+        <STitleRow>
+          <SDot style={{ backgroundColor: TableDot[session.tableType] }} />
+          <STitle>{TableTypeLabel[session.tableType]}</STitle>
+        </STitleRow>
+        {watchLabel != null ? (
+          <SWatchPill>
+            <Ionicons name='watch-outline' size={12} color={Colors.Seafoam} />
+            <SWatchPillText>{watchLabel}</SWatchPillText>
+          </SWatchPill>
+        ) : (
+          <SWhen>{formatDay(session.day)}</SWhen>
+        )}
+      </STop>
+      <SMetaRow>
         <SMeta>
-          {session.roundsCompleted} rounds · hold {formatSeconds(session.holdSeconds)} · rest {formatSeconds(session.restSeconds)}
-          {logged > 0 ? ` · ${contractionLabel(logged)}` : ''}
+          {watchLabel != null ? `${formatDay(session.day)} · ` : ''}
+          {session.roundsCompleted} rounds
         </SMeta>
-      </SBody>
-      {watchLabel != null ? (
-        <SWatchPill>
-          <SWatchPillText>{watchLabel}</SWatchPillText>
-        </SWatchPill>
-      ) : null}
-      {onDelete ? (
-        <SDelete onPress={onDelete}>
-          <SDeleteText>Delete</SDeleteText>
-        </SDelete>
-      ) : null}
+        <STimes>
+          {`Hold ${formatSeconds(session.holdSeconds)} · Rest ${formatSeconds(session.restSeconds)}`}
+        </STimes>
+      </SMetaRow>
+      <SFooter>
+        {avgBpm == null ? null : (
+          <SFact>
+            <Ionicons name='heart' size={13} color={Colors.Seafoam} />
+            <SFactText>{`Avg HR ${avgBpm} bpm`}</SFactText>
+          </SFact>
+        )}
+        <SFact>
+          <Ionicons
+            name={logged > 0 ? 'alert-circle-outline' : 'water-outline'}
+            size={13}
+            color={logged > 0 ? Colors.TextMuted : Colors.Aquamarine}
+          />
+          <SFactText>
+            {logged > 0 ? contractionLabel(logged) : '0 contractions'}
+          </SFactText>
+        </SFact>
+        {onDelete ? (
+          <SDelete onPress={onDelete}>
+            <SDeleteText>Delete</SDeleteText>
+          </SDelete>
+        ) : null}
+      </SFooter>
     </Wrapper>
   )
 }
 
 const Wrapper = styled.View`
-  flex-direction: row;
-  align-items: center;
-  padding: 14px 20px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${Colors.GreyDivider};
+  margin: 0 ${Space.screen}px 10px;
+  padding: ${Space.md}px;
+  border-radius: 12px;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
 `
 
-const SBody = styled.View`
+const STop = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${Space.sm}px;
+`
+
+const STitleRow = styled.View`
   flex: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: ${Space.sm}px;
+`
+
+const SDot = styled.View`
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
 `
 
 const STitle = styled.Text`
+  flex-shrink: 1;
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
   font-weight: 600;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
-const SMeta = styled.Text`
-  margin-top: 4px;
-  font-size: ${FontSizes.Small};
-  color: ${Colors.GreyPrimary};
+const SWhen = styled.Text`
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 500;
+  color: ${Colors.TextMuted};
 `
 
 const SWatchPill = styled.View`
   flex-shrink: 0;
-  margin-left: 8px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background-color: ${Colors.TealBackground};
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: ${Radii.Pill}px;
+  background-color: ${Colors.SeafoamMuted};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
 `
 
 const SWatchPillText = styled.Text`
-  font-size: ${FontSizes.XSmall};
-  font-weight: 800;
-  letter-spacing: 0.4px;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XXSmall};
+  font-weight: 600;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
+`
+
+const SMetaRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${Space.sm}px;
+  margin-top: 6px;
+`
+
+const SMeta = styled.Text`
+  flex: 1;
+  font-family: ${Fonts.Body};
+  font-size: ${FontSizes.XSmall};
+  color: ${Colors.TextMuted};
+`
+
+const STimes = styled.Text`
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XXSmall};
+  font-weight: 500;
+  font-variant: tabular-nums;
+  color: ${Colors.Text};
+`
+
+const SFooter = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: ${Space.md}px;
+  margin-top: ${Space.sm}px;
+  padding-top: ${Space.sm}px;
+  border-top-width: 1px;
+  border-top-color: ${Colors.Hairline};
+`
+
+const SFact = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+`
+
+const SFactText = styled.Text`
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 500;
+  color: ${Colors.TextMuted};
 `
 
 const SDelete = styled.Pressable`
   flex-shrink: 0;
+  margin-left: auto;
   min-height: ${Layout.MinControl}px;
   justify-content: center;
-  padding: 8px;
 `
 
 const SDeleteText = styled.Text`
+  font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.Small};
   font-weight: 600;
-  color: ${Colors.CoralPrimary};
+  color: ${Colors.Alert};
 `

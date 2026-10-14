@@ -1,4 +1,4 @@
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { useFormatterContext } from '@/providers/formatter'
 import { TableRound } from '@/utils/table'
 import { styled } from 'styled-components/native'
@@ -34,27 +34,30 @@ const Wrapper = styled.View<{ $inCard: boolean; $last: boolean }>`
   justify-content: space-between;
   padding: 14px ${(props) => props.$inCard ? 16 : 20}px;
   border-bottom-width: ${(props) => props.$last ? 0 : 1}px;
-  border-bottom-color: ${Colors.GreyDivider};
+  border-bottom-color: ${Colors.Hairline};
 `
 
 const SIndex = styled.Text`
   width: 84px;
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
   font-weight: 600;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SDetail = styled.Text`
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Small};
-  color: ${Colors.GreyPrimary};
+  font-variant: tabular-nums;
+  color: ${Colors.TextMuted};
 `
 
 const SHold = styled.Text`
   font-weight: 700;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `
 
 const SRest = styled.Text`
   font-weight: 700;
-  color: ${Colors.BluePrimary};
+  color: ${Colors.Aquamarine};
 `

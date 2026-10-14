@@ -12,7 +12,7 @@ type Props = {
 export default function Loader({ isLoading, children }: Props) {
   return isLoading ? (
     <Flex>
-      <ActivityIndicator size='large' color={Colors.TealPrimary} />
+      <ActivityIndicator size='large' color={Colors.Seafoam} />
     </Flex>
   ) : (
     children

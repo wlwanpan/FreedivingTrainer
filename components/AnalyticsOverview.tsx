@@ -1,4 +1,4 @@
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { trainingOverview } from '@/utils/training_overview'
@@ -23,27 +23,42 @@ export default function AnalyticsOverview({ onPress }: Props) {
 
   const stats = (
     <>
-      {onPress ? (
-        <SHeader>
-          <Ionicons name='chevron-forward' size={22} color={Colors.TealPrimary} />
-        </SHeader>
-      ) : null}
+      <SHeader>
+        <SHeaderLead>
+          <Ionicons name='pulse-outline' size={16} color={Colors.Seafoam} />
+          <SHeaderLabel>Apnea telemetry</SHeaderLabel>
+        </SHeaderLead>
+        {onPress ? (
+          <Ionicons name='chevron-forward' size={18} color={Colors.TextMuted} />
+        ) : null}
+      </SHeader>
       <SGrid>
         <SStat>
-          <SValue>{overview.trainedDays}</SValue>
-          <SLabel>Days trained</SLabel>
+          <STile>
+            <SValue>{overview.trainedDays}</SValue>
+            <SLabel>Days trained</SLabel>
+          </STile>
         </SStat>
         <SStat>
-          <SValue>{formatSeconds(overview.totalApneaSeconds)}</SValue>
-          <SLabel>Total apnea</SLabel>
+          <STile>
+            <SValueRow>
+              <SValue>{formatSeconds(overview.totalApneaSeconds)}</SValue>
+              <Ionicons name='hourglass-outline' size={16} color={Colors.Aquamarine} />
+            </SValueRow>
+            <SLabel>Total apnea</SLabel>
+          </STile>
         </SStat>
         <SStat>
-          <SValue>{bestApnea}</SValue>
-          <SLabel>Best apnea</SLabel>
+          <STile>
+            <SValue $accent>{bestApnea}</SValue>
+            <SLabel>Personal best</SLabel>
+          </STile>
         </SStat>
         <SStat>
-          <SValue>{bestContraction}</SValue>
-          <SLabel>Best contraction</SLabel>
+          <STile>
+            <SValue>{bestContraction}</SValue>
+            <SLabel>First contraction</SLabel>
+          </STile>
         </SStat>
       </SGrid>
     </>
@@ -59,40 +74,79 @@ export default function AnalyticsOverview({ onPress }: Props) {
 }
 
 const Wrapper = styled.View`
-  margin: 8px 20px 0;
-  padding: 8px 4px;
-  border-radius: 16px;
-  background-color: ${Colors.White};
+  margin: ${Space.md}px ${Space.screen}px 0;
+  padding: 20px;
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
   border-width: 1px;
-  border-color: ${Colors.GreyDivider};
+  border-color: ${Colors.Hairline};
 `
 
 const SPress = styled.Pressable``
 
 const SHeader = styled.View`
   flex-direction: row;
-  justify-content: flex-end;
-  padding: 4px 8px 0;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: ${Space.sm}px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${Colors.Hairline};
+`
+
+const SHeaderLead = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+`
+
+const SHeaderLabel = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: ${Colors.TextMuted};
 `
 
 const SGrid = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
+  margin: -6px;
 `
 
 const SStat = styled.View`
   width: 50%;
-  padding: 10px 12px;
+  padding: 6px;
 `
 
-const SValue = styled.Text`
-  font-size: ${FontSizes.XLarge};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+const STile = styled.View`
+  padding: 14px;
+  border-radius: 12px;
+  background-color: ${Colors.Telemetry};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+`
+
+const SValueRow = styled.View`
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+`
+
+const SValue = styled.Text<{ $accent?: boolean }>`
+  font-family: ${Fonts.Headline};
+  font-size: ${FontSizes.Stat};
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  font-variant: tabular-nums;
+  color: ${(props) => props.$accent ? Colors.Seafoam : Colors.Text};
 `
 
 const SLabel = styled.Text`
-  margin-top: 2px;
-  font-size: ${FontSizes.Small};
-  color: ${Colors.GreyPrimary};
+  margin-top: 4px;
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 500;
+  color: ${Colors.TextMuted};
 `

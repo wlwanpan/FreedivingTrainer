@@ -1,4 +1,4 @@
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { TrainingOutline } from '@/hooks/useTrainingOutline'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { ReactNode } from 'react'
@@ -13,27 +13,56 @@ type Props = {
 }
 
 export default function PlanProgress({ outline, onRetest, onPress, children }: Props) {
+  const [phase, focus] = splitLevel(outline.level)
+  const percent = Math.round(outline.progress * 100)
+  const current = outline.schedule.find((entry) => entry.current)
+  const weekTotal = current?.sessions.length ?? 0
+  const weekDone = current?.sessions.filter((session) => session.completed).length ?? 0
+  const weekLeft = Math.max(0, weekTotal - weekDone)
+  const weekLabel = outline.weekComplete
+    ? `Week ${outline.week} of ${outline.weeks} · Complete`
+    : `Week ${outline.week} of ${outline.weeks} · In progress`
+
   const overview = (
     <>
       <SHeader>
         <SHeaderText>
+          <SMetaRow>
+            {phase ? <SPhase>{phase}</SPhase> : null}
+            {focus ? <SFocus>{focus}</SFocus> : null}
+          </SMetaRow>
           <SPlanName>{outline.planName}</SPlanName>
-          <SLevel>{outline.level}</SLevel>
         </SHeaderText>
         {onPress ? (
-          <Ionicons name='chevron-forward' size={22} color={Colors.TealPrimary} />
+          <SIcon>
+            <Ionicons name='arrow-forward' size={18} color={Colors.TextMuted} />
+          </SIcon>
         ) : null}
       </SHeader>
       <SWeekLine>
-        {outline.weekComplete
-          ? `Week ${outline.week} of ${outline.weeks} · Complete`
-          : `Week ${outline.week} of ${outline.weeks}`}
+        <SWeekCopy>{weekLabel}</SWeekCopy>
+        <SPercent>{`${percent}%`}</SPercent>
       </SWeekLine>
       <STrack>
-        <SFill style={{ width: `${Math.round(outline.progress * 100)}%` }} />
+        <SFill style={{ width: `${percent}%` }} />
       </STrack>
-      <SPercent>{`${Math.round(outline.progress * 100)}% of the plan`}</SPercent>
-      <SFrequency>{outline.frequency}</SFrequency>
+      {weekTotal > 0 ? (
+        <SWeekMeta>
+          <SDoneRow>
+            <Ionicons name='checkmark-circle' size={14} color={Colors.Seafoam} />
+            <SFrequency>
+              {`${weekDone} of ${weekTotal} sessions this week`}
+            </SFrequency>
+          </SDoneRow>
+          <SRemain>
+            {weekLeft === 0
+              ? 'Week complete'
+              : `${weekLeft} ${weekLeft === 1 ? 'session' : 'sessions'} remaining`}
+          </SRemain>
+        </SWeekMeta>
+      ) : (
+        <SFrequency>{outline.frequency}</SFrequency>
+      )}
     </>
   )
 
@@ -52,11 +81,19 @@ export default function PlanProgress({ outline, onRetest, onPress, children }: P
   )
 }
 
+function splitLevel(level: string): [string | null, string | null] {
+  const parts = level.split(' · ')
+  if (parts.length < 2) return [level || null, null]
+  return [parts[0], parts.slice(1).join(' · ')]
+}
+
 const Wrapper = styled.View`
-  margin: 8px 20px 0;
-  padding: 16px;
-  border-radius: 16px;
-  background-color: ${Colors.TealBackground};
+  margin: ${Space.md}px ${Space.screen}px 0;
+  padding: 20px;
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
 `
 
 const SPress = styled.Pressable``
@@ -65,64 +102,130 @@ const SHeader = styled.View`
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: ${Space.sm}px;
 `
 
 const SHeaderText = styled.View`
   flex: 1;
 `
 
+const SMetaRow = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+`
+
+const SPhase = styled.Text`
+  padding: 2px 8px;
+  border-radius: ${Radii.Pill}px;
+  overflow: hidden;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XXSmall};
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: ${Colors.Seafoam};
+  background-color: ${Colors.SeafoamMuted};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+`
+
+const SFocus = styled.Text`
+  font-family: ${Fonts.Body};
+  font-size: ${FontSizes.XSmall};
+  color: ${Colors.TextMuted};
+`
+
 const SPlanName = styled.Text`
+  font-family: ${Fonts.Headline};
   font-size: ${FontSizes.Large};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: ${Colors.Text};
 `
 
-const SLevel = styled.Text`
-  margin-top: 2px;
-  font-size: ${FontSizes.Small};
-  color: ${Colors.GreyPrimary};
+const SIcon = styled.View`
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  align-items: center;
+  justify-content: center;
 `
 
-const SWeekLine = styled.Text`
-  margin-top: 12px;
-  font-size: ${FontSizes.Medium};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+const SWeekLine = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: ${Space.md}px;
+`
+
+const SWeekCopy = styled.Text`
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 500;
+  color: ${Colors.Text};
 `
 
 const STrack = styled.View`
-  height: 8px;
-  margin-top: 8px;
-  border-radius: 4px;
-  background-color: ${Colors.White};
+  height: 10px;
+  margin-top: ${Space.sm}px;
+  padding: 2px;
+  border-radius: ${Radii.Pill}px;
+  background-color: ${Colors.BreathTrack};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
   overflow: hidden;
 `
 
 const SFill = styled.View`
-  height: 8px;
-  border-radius: 4px;
-  background-color: ${Colors.TealPrimary};
+  height: 100%;
+  border-radius: ${Radii.Pill}px;
+  background-color: ${Colors.Seafoam};
 `
 
 const SPercent = styled.Text`
-  margin-top: 6px;
-  font-size: ${FontSizes.Small};
+  font-family: ${Fonts.Headline};
+  font-size: ${FontSizes.XSmall};
   font-weight: 700;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
+`
+
+const SWeekMeta = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${Space.sm}px;
+  margin-top: 10px;
+`
+
+const SDoneRow = styled.View`
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
 `
 
 const SFrequency = styled.Text`
-  margin-top: 8px;
-  font-size: ${FontSizes.Small};
-  line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 500;
+  color: ${Colors.TextMuted};
+`
+
+const SRemain = styled.Text`
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 500;
+  color: ${Colors.Seafoam};
 `
 
 const SLink = styled.Text`
-  margin-top: 8px;
+  margin-top: ${Space.sm}px;
+  font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.Small};
-  font-weight: 700;
+  font-weight: 600;
   line-height: 20px;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `

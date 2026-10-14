@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#06343C"
+        "backgroundColor": "#E0F2FE"
       },
       "edgeToEdgeEnabled": true
     },
@@ -45,7 +45,7 @@
           "image": "./assets/images/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#06343C"
+          "backgroundColor": "#E0F2FE"
         }
       ],
       "expo-sqlite",

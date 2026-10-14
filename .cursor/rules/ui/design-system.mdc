@@ -1,0 +1,52 @@
+---
+description: Pelagic Apnea visual design system — follow for all UI
+alwaysApply: true
+---
+
+# Pelagic Apnea
+
+Light lagoon UI for static apnea tables. Caustic ocean wash, frosted glass cards, teal/lagoon signals. Put tokens in `design/styles.ts`; do not hardcode hex or font sizes in components.
+
+## Color
+
+Canvas `#E0F2FE` (caustic wash may mix `#E6FAF8` / `#F0FDF4`). Cards `#FFFFFF` / `#F0FDF4`. Hover/selected `#BAE6FD`.
+
+- **Seafoam** `#0D9488` — primary actions, personal best, completed intervals
+- **Teal soft** `#14B8A6` — hold timers, progress fill (`Seafoam` glow sits at `#2DD4BF`)
+- **Lagoon** `#0891B2` — CTA gradients, CO2 vs O2, chips
+- **Aquamarine** `#38BDF8` — secondary charts, breath rings, progress tracks
+- **Text** `#082F49` values/timers, `#0369A1` labels, `#0284C7` disabled/grid
+- **Alert red** `#F43F5E` — contractions, hypoxemia, tap-out only
+
+On-fill labels (seafoam, lagoon, alert) are `#FFFFFF`. Ghost controls use mint/white fill with lagoon or teal border.
+
+## Type
+
+Timers and titles: **Manrope**, `tabular-nums` on clocks. Body and labels: **Geist**.
+
+- Timer 64/68, -0.04em (mobile 48/52, -0.03em), weight 700
+- Headline 32/40, 24/32, 20/28
+- Body 16/24, 14/20, 12/16
+- Micro-labels (`TOTAL APNEA`, `CONTRACTION`): Geist 12 or 10, weight 600, uppercase, tracking 0.05–0.08em
+
+## Layout
+
+8pt rhythm. 16px screen margin (32px tablet). Group a metric with its label (`4–8px`); separate table intervals with `16px`. Isolate the active timer with `48px` vertical padding.
+
+## Elevation
+
+Frosted glass, not heavy drop shadows. Card edge `1px solid rgba(7, 89, 133, 0.12)` plus white highlight. Glass `0 8px 32px rgba(14, 165, 233, 0.12)`. Nav `0 12px 40px rgba(12, 74, 110, 0.16)`. Active hold / CTA glow `0 10px 25px rgba(13, 148, 136, 0.35)`. Frosted cards may use `#FFFFFF` at 70% plus `backdrop-blur: 20px`.
+
+## Shape
+
+8px compact controls, 16px cards/sheets, 24px–pill for primary actions, tabs, and status chips. Circular contraction log for eyes-closed tapping.
+
+## Components
+
+- **Primary button:** 52px, pill or 24px radius, seafoam fill (lagoon gradient allowed), white label, press scale `0.98`
+- **Ghost button:** `#F0FDF4` fill, lagoon/teal border, `#082F49` label
+- **Segmented control:** track `#E0F2FE`, 4px inset, selected `#FFFFFF`
+- **Telemetry card:** white glass, ocean hairline; 2×2 or 4×1 for hold/rest/contractions
+- **Table rows:** active seafoam, done `#0284C7`, upcoming translucent cyan
+- **Breath ring:** track `#E0F2FE`, fill seafoam or aquamarine
+- **Duration steppers:** ocean-100 panel, `+0:05` / `-0:05` tap zones

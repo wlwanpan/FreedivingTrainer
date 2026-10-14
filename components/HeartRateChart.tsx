@@ -91,16 +91,16 @@ function Chart({
           axisOptions={{
             font,
             tickCount: { x: Math.min(4, Math.max(points.length, 2)), y: 4 },
-            labelColor: { x: Colors.GreyPrimary, y: Colors.GreyPrimary },
-            lineColor: { grid: Colors.GreyDivider, frame: Colors.GreyDivider },
+            labelColor: { x: Colors.TextMuted, y: Colors.TextMuted },
+            lineColor: { grid: Colors.Hairline, frame: Colors.Hairline },
             formatXLabel: (value) => value == null ? '' : clockLabel(value),
             formatYLabel: (value) => value == null ? '' : String(Math.round(value)),
           }}
         >
           {({ points: series }) => (
             <>
-              <Line points={series.bpm} color={Colors.CoralPrimary} strokeWidth={3} />
-              <Scatter points={series.bpm} radius={4} color={Colors.CoralPrimary} />
+              <Line points={series.bpm} color={Colors.Aquamarine} strokeWidth={3} />
+              <Scatter points={series.bpm} radius={4} color={Colors.Aquamarine} />
             </>
           )}
         </CartesianChart>
@@ -115,14 +115,14 @@ const SSection = styled.Text`
   font-weight: 700;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SEmpty = styled.Text`
   margin: 0 20px;
   font-size: ${FontSizes.Medium};
   line-height: 22px;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const Wrapper = styled.View`
@@ -133,7 +133,7 @@ const SCaption = styled.Text`
   margin-bottom: 8px;
   font-size: ${FontSizes.Small};
   font-weight: 700;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SChart = styled.View`

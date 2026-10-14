@@ -1,4 +1,4 @@
-import { Colors, FontSizes, Layout } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Layout } from '@/design/styles'
 import { PressableProps } from 'react-native'
 import { styled } from 'styled-components/native'
 
@@ -17,7 +17,7 @@ export default function HeaderTextBtn({ onClick, disabled, text, ...props }: Pro
       {...props}
     >
       {({ pressed }) => (
-        <SText style={{ color: pressed || disabled ? Colors.GreyPrimary : Colors.DeepPrimary }}>
+        <SText style={{ color: pressed || disabled ? Colors.TextMuted : Colors.Text }}>
           {text}
         </SText>
       )}
@@ -33,6 +33,7 @@ const Wrapper = styled.Pressable`
 `
 
 const SText = styled.Text`
+  font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.Medium};
   font-weight: 600;
 `

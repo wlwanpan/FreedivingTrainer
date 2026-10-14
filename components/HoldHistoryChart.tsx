@@ -62,11 +62,11 @@ export default function HoldHistoryChart() {
     <Wrapper>
       <SLegend>
         <SKey>
-          <SSwatch style={{ backgroundColor: Colors.TealPrimary }} />
+          <SSwatch style={{ backgroundColor: Colors.Seafoam }} />
           <SKeyLabel>Breath-hold</SKeyLabel>
         </SKey>
         <SKey>
-          <SSwatch style={{ backgroundColor: Colors.CoralPrimary }} />
+          <SSwatch style={{ backgroundColor: Colors.Alert }} />
           <SKeyLabel>First contraction</SKeyLabel>
         </SKey>
       </SLegend>
@@ -81,18 +81,18 @@ export default function HoldHistoryChart() {
           axisOptions={{
             font,
             tickCount: { x: Math.min(4, Math.max(points.length, 2)), y: 4 },
-            labelColor: { x: Colors.GreyPrimary, y: Colors.GreyPrimary },
-            lineColor: { grid: Colors.GreyDivider, frame: Colors.GreyDivider },
+            labelColor: { x: Colors.TextMuted, y: Colors.TextMuted },
+            lineColor: { grid: Colors.Hairline, frame: Colors.Hairline },
             formatXLabel: (value) => formatDay(dayStamp(value)),
             formatYLabel: (value) => value == null ? '' : formatSeconds(value),
           }}
         >
           {({ points: series }) => (
             <>
-              <Line points={series.hold} color={Colors.TealPrimary} strokeWidth={3} />
-              <Scatter points={series.hold} radius={4} color={Colors.TealPrimary} />
-              <Line points={series.contraction} color={Colors.CoralPrimary} strokeWidth={3} />
-              <Scatter points={series.contraction} radius={4} color={Colors.CoralPrimary} />
+              <Line points={series.hold} color={Colors.Seafoam} strokeWidth={3} />
+              <Scatter points={series.hold} radius={4} color={Colors.Seafoam} />
+              <Line points={series.contraction} color={Colors.Alert} strokeWidth={3} />
+              <Scatter points={series.contraction} radius={4} color={Colors.Alert} />
             </>
           )}
         </CartesianChart>
@@ -125,7 +125,7 @@ const SSwatch = styled.View`
 
 const SKeyLabel = styled.Text`
   font-size: ${FontSizes.Small};
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SChart = styled.View`

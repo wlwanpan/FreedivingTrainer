@@ -5,7 +5,7 @@ import HoldHistoryChart from '@/components/HoldHistoryChart'
 import WrapperScreen from '@/components/WrapperScreen'
 import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
 import { useBottomControlInset } from '@/design/chrome'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { Session } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
@@ -69,44 +69,48 @@ const SScroll = styled.ScrollView`
 `
 
 const SSection = styled.Text`
-  margin: 22px 20px 8px;
-  font-size: ${FontSizes.Small};
-  font-weight: 700;
-  letter-spacing: 0.4px;
+  margin: 22px ${Space.screen}px 8px;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SEmpty = styled.Text`
-  margin: 0 20px;
+  margin: 0 ${Space.screen}px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Medium};
   line-height: 22px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SCard = styled.View`
-  margin: 0 20px;
-  border-radius: 16px;
+  margin: 0 ${Space.screen}px;
+  border-radius: ${Radii.Card}px;
   border-width: 1px;
-  border-color: ${Colors.GreyDivider};
-  background-color: ${Colors.White};
+  border-color: ${Colors.Hairline};
+  background-color: ${Colors.Card};
   overflow: hidden;
 `
 
 const SRow = styled.View<{ $last: boolean }>`
   padding: 14px 16px;
   border-bottom-width: ${(props) => props.$last ? 0 : 1}px;
-  border-bottom-color: ${Colors.GreyDivider};
+  border-bottom-color: ${Colors.Hairline};
 `
 
 const SName = styled.Text`
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
-  font-weight: 700;
-  color: ${Colors.DeepPrimary};
+  font-weight: 600;
+  color: ${Colors.Text};
 `
 
 const SMeta = styled.Text`
   margin-top: 2px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Small};
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
