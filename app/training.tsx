@@ -7,6 +7,7 @@ import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes, Layout } from '@/design/styles'
 import useTrainingOutline from '@/hooks/useTrainingOutline'
+import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
@@ -23,10 +24,11 @@ export default function TrainingScreen() {
   const { showWarning } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
   const outline = useTrainingOutline()
+  const watchBusy = watchBlocksPhoneStart(useWearableStatus())
   const paddingBottom = useBottomControlInset(false)
 
   const start = (session: WeekSession, week: number, locked: boolean) => {
-    if (locked) return
+    if (locked || watchBusy) return
     if (subscription.freeLimitReached) {
       router.push('/paywall')
       return
@@ -95,7 +97,7 @@ export default function TrainingScreen() {
               {entry.sessions.map((session) => (
                 <STraining
                   key={`${entry.week}-${session.kind}-${session.index}`}
-                  disabled={entry.locked}
+                  disabled={entry.locked || watchBusy}
                   $locked={entry.locked}
                   onPress={() => start(session, entry.week, entry.locked)}
                 >
@@ -107,7 +109,9 @@ export default function TrainingScreen() {
                     <STrainingMeta $locked={entry.locked}>{sessionSummary(session, formatSeconds)}</STrainingMeta>
                     <STrainingNote>{session.note}</STrainingNote>
                   </STrainingBody>
-                  <SStart $locked={entry.locked}>{entry.locked ? 'Locked' : 'Start'}</SStart>
+                  <SStart $locked={entry.locked || watchBusy}>
+                    {entry.locked ? 'Locked' : watchBusy ? 'On Watch' : 'Start'}
+                  </SStart>
                 </STraining>
               ))}
             </SWeek>

@@ -75,8 +75,8 @@ export default function TrainScreen() {
     session?: string | string[]
   }>()
   const tableType = parseTableType(params.type)
-  const training = useTrainingClock(tableType, parseTrainTable(params), parseSlot(params))
   const title = parseLabel(params.name) ?? (tableType == null ? '' : TableTypeLabel[tableType])
+  const training = useTrainingClock(tableType, parseTrainTable(params), parseSlot(params), title)
 
   useEffect(() => {
     if (tableType == null || !training.ready) {

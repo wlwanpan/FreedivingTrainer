@@ -10,6 +10,7 @@ import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
 import { Colors, FontSizes, Layout } from '@/design/styles'
 import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
+import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
@@ -26,6 +27,8 @@ export default function HomeScreen() {
   const { showWarning } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
   const outline = useTrainingOutline()
+  const wearable = useWearableStatus()
+  const watchBusy = watchBlocksPhoneStart(wearable)
   const paddingBottom = useBottomControlInset(true)
   const logged = [...sessions].sort((a, b) => {
     const byTime = a.createdAt.getTime() - b.createdAt.getTime()
@@ -49,6 +52,7 @@ export default function HomeScreen() {
     : 'Next session'
 
   const start = (session: WeekSession & { week: number }) => {
+    if (watchBusy) return
     if (subscription.freeLimitReached) {
       router.push('/paywall')
       return
@@ -118,12 +122,12 @@ export default function HomeScreen() {
                 <SDone>Done</SDone>
               </SDoneRow>
             ) : (
-              <SNext onPress={() => start(nextSession)}>
+              <SNext disabled={watchBusy} onPress={() => start(nextSession)}>
                 <SNextBody>
                   <SNextTitle>{sessionTitle}</SNextTitle>
                   <SNextMeta>{sessionSummary(nextSession, formatSeconds)}</SNextMeta>
                 </SNextBody>
-                <SStart>Start</SStart>
+                <SStart $muted={watchBusy}>{watchBusy ? 'On Watch' : 'Start'}</SStart>
               </SNext>
             )}
           </PlanProgress>
@@ -214,10 +218,10 @@ const SNextMeta = styled.Text`
   color: ${Colors.TealPrimary};
 `
 
-const SStart = styled.Text`
+const SStart = styled.Text<{ $muted?: boolean }>`
   font-size: ${FontSizes.Small};
   font-weight: 800;
-  color: ${Colors.TealPrimary};
+  color: ${(props) => props.$muted ? Colors.GreyPrimary : Colors.TealPrimary};
 `
 
 const SDoneRow = styled.View`

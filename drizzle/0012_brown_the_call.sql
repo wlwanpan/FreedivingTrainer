@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `watch_synced_at` integer;

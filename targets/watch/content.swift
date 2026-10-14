@@ -60,6 +60,15 @@ struct ContentView: View {
 
     private var homePage: some View {
         VStack(spacing: 8) {
+            if session.pendingSync {
+                Text("Waiting for your iPhone")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            if session.phoneTraining && session.reachable {
+                phoneTrainingNotice
+            }
             if session.planComplete {
                 Text("Week complete")
                     .font(.headline)
@@ -82,11 +91,10 @@ struct ContentView: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    Button("Start") {
+                    phoneOrStart {
                         showSchedule = false
                         session.startPlan()
                     }
-                    .buttonStyle(.borderedProminent)
                 }
             } else {
                 Text("Choose a plan on your iPhone")
@@ -145,7 +153,9 @@ struct ContentView: View {
         VStack(spacing: 12) {
             if let table {
                 tableCard(table)
-                if session.locked {
+                if session.phoneTraining && session.reachable {
+                    phoneTrainingNotice
+                } else if session.locked {
                     Text("Unlock lifetime access on your iPhone")
                         .font(.caption)
                         .multilineTextAlignment(.center)
@@ -229,6 +239,28 @@ struct ContentView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(Color.accentColor.opacity(0.55), lineWidth: 1)
+        }
+    }
+
+    @ViewBuilder
+    private func phoneOrStart(start: @escaping () -> Void) -> some View {
+        if !session.phoneTraining || !session.reachable {
+            Button("Start", action: start)
+                .buttonStyle(.borderedProminent)
+        }
+    }
+
+    private var phoneTrainingNotice: some View {
+        VStack(spacing: 2) {
+            Text("Training on your iPhone")
+                .font(.caption)
+                .multilineTextAlignment(.center)
+            if !session.phoneTrainingName.isEmpty {
+                Text(session.phoneTrainingName)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
     }
 

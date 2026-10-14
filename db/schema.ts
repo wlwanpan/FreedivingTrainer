@@ -24,6 +24,7 @@ export const settings = sqliteTable('settings', {
   trainingPlanStartedAt: integer('training_plan_started_at', { mode: 'timestamp' }),
   customPlan: text('custom_plan'),
   wearable: text('wearable'),
+  watchSyncedAt: integer('watch_synced_at', { mode: 'timestamp' }),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }),
 })

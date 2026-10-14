@@ -75,6 +75,8 @@ final class WatchSession: NSObject, ObservableObject {
     @Published var bpm = 0
     @Published var lostNotice: String?
     @Published var pendingSync = false
+    @Published var phoneTraining = false
+    @Published var phoneTrainingName = ""
 
     private var connectivity: WCSession?
     private let healthStore = HKHealthStore()
@@ -97,6 +99,8 @@ final class WatchSession: NSObject, ObservableObject {
     private var pendingPlan: [String: Any]?
     private var dismissSavedTask: Task<Void, Never>?
     private var sendingCompletions = Set<Int>()
+    private var contextTimer: Timer?
+    private var lastContextKey = ""
 
     private static let pendingDefaultsKey = "pendingSessionCompletions"
 
@@ -165,7 +169,7 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     private func start(_ plan: WatchPlan) {
-        guard !running, !locked else { return }
+        guard !running, !locked, !(phoneTraining && reachable) else { return }
         let built = makePhases(plan)
         guard !built.isEmpty else { return }
         activePlan = plan
@@ -196,12 +200,14 @@ final class WatchSession: NSObject, ObservableObject {
             paused = false
             startClock()
             advance()
+            refreshTrainingLink()
             return
         }
         pausedAt = Date()
         paused = true
         ticker?.invalidate()
         ticker = nil
+        refreshTrainingLink()
     }
 
     func exitPlan() {
@@ -259,6 +265,10 @@ final class WatchSession: NSObject, ObservableObject {
 
     func handle(_ message: [String: Any]) {
         acknowledge(message["syncedAt"])
+        if textValue(message["type"]) == "phoneTraining" {
+            applyPhoneTraining(message)
+            return
+        }
         if textValue(message["type"]) == "nextSession" {
             applyPlan(message)
             return
@@ -272,6 +282,7 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     private func applyPlan(_ message: [String: Any]) {
+        applyPhoneTraining(message)
         installTables(message)
         let key = textValue(message["planKey"]) ?? ""
         let changed = key != planKey
@@ -437,7 +448,90 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     private func publishTraining(_ active: Bool) {
-        send(["type": "watchTraining", "running": active])
+        refreshTrainingLink()
+        if !active {
+            stopContextTimer()
+        }
+    }
+
+    private func trainingPayload() -> [String: Any] {
+        var payload: [String: Any] = [
+            "type": "watchTraining",
+            "running": running,
+            "paused": paused,
+            "name": activePlan?.name ?? "",
+            "phase": phaseTitle,
+            "updatedAt": Int(Date().timeIntervalSince1970 * 1000),
+            "pendingCount": loadPending().count,
+        ]
+        if running {
+            payload["startedAt"] = Int(wallStartedAt.timeIntervalSince1970 * 1000)
+        }
+        return payload
+    }
+
+    private func contextSignature(_ payload: [String: Any]) -> String {
+        [
+            flag(payload["running"]) ? "1" : "0",
+            flag(payload["paused"]) ? "1" : "0",
+            textValue(payload["name"]) ?? "",
+            textValue(payload["phase"]) ?? "",
+            String(intValue(payload["startedAt"]) ?? 0),
+            String(intValue(payload["updatedAt"]) ?? 0),
+            String(intValue(payload["pendingCount"]) ?? -1),
+        ].joined(separator: "|")
+    }
+
+    private func writeTrainingContext(_ payload: [String: Any]) {
+        guard let connectivity, connectivity.activationState == .activated else { return }
+        let key = contextSignature(payload)
+        if key == lastContextKey { return }
+        do {
+            try connectivity.updateApplicationContext(payload)
+            lastContextKey = key
+        } catch {}
+    }
+
+    private func publishTrainingContext() {
+        writeTrainingContext(trainingPayload())
+    }
+
+    private func refreshTrainingLink() {
+        let payload = trainingPayload()
+        send(payload)
+        writeTrainingContext(payload)
+        if running {
+            startContextTimer()
+        }
+    }
+
+    private func startContextTimer() {
+        if contextTimer != nil { return }
+        let timer = Timer(timeInterval: 15, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.running else { return }
+                let payload = self.trainingPayload()
+                self.send(payload)
+                self.writeTrainingContext(payload)
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        contextTimer = timer
+    }
+
+    private func stopContextTimer() {
+        contextTimer?.invalidate()
+        contextTimer = nil
+    }
+
+    private func applyPhoneTraining(_ message: [String: Any]) {
+        let record = recordValue(message["phoneTraining"]) ?? (
+            textValue(message["type"]) == "phoneTraining" ? message : nil
+        )
+        guard let record else { return }
+        let active = flag(record["running"])
+        phoneTraining = active
+        phoneTrainingName = active ? (textValue(record["name"]) ?? "") : ""
     }
 
     private func sendCompletion() {
@@ -550,6 +644,7 @@ final class WatchSession: NSObject, ObservableObject {
     private func savePending(_ items: [[String: Any]]) {
         UserDefaults.standard.set(items, forKey: Self.pendingDefaultsKey)
         pendingSync = !items.isEmpty
+        publishTrainingContext()
     }
 
     private func completionId(_ payload: [String: Any]) -> Int? {
@@ -766,6 +861,7 @@ extension WatchSession: WCSessionDelegate {
             self.reachable = session.isReachable
             self.handle(session.receivedApplicationContext)
             self.flushPending()
+            self.publishTrainingContext()
         }
     }
 
@@ -773,6 +869,7 @@ extension WatchSession: WCSessionDelegate {
         Task { @MainActor in
             self.reachable = session.isReachable
             self.flushPending()
+            self.publishTrainingContext()
         }
     }
 

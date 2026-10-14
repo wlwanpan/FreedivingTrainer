@@ -9,18 +9,26 @@ export default function WearableStatus() {
 
   return (
     <Wrapper>
-      <SDot $live={live} />
-      <SLabel $live={live}>{wearableLabel(status)}</SLabel>
+      <SRow>
+        <SDot $live={live} />
+        <SLabel $live={live}>{wearableLabel(status)}</SLabel>
+      </SRow>
+      {status.syncLabel == null ? null : <SSync>{status.syncLabel}</SSync>}
     </Wrapper>
   )
 }
 
 const Wrapper = styled.View`
-  flex-direction: row;
   align-items: center;
   align-self: center;
-  gap: 6px;
+  gap: 2px;
   margin-bottom: 8px;
+`
+
+const SRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
 `
 
 const SDot = styled.View<{ $live: boolean }>`
@@ -34,4 +42,10 @@ const SLabel = styled.Text<{ $live: boolean }>`
   font-size: ${FontSizes.Small};
   font-weight: 700;
   color: ${(props) => props.$live ? Colors.GreenPrimary : Colors.GreyPrimary};
+`
+
+const SSync = styled.Text`
+  font-size: ${FontSizes.Small};
+  font-weight: 700;
+  color: ${Colors.GreyPrimary};
 `
