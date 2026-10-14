@@ -2,7 +2,7 @@ import { HeartRateSampleInsert } from '@/db/schema'
 import { publishWearableLive } from '@/hooks/useWearableStatus'
 import { ensureWatchSession, WatchConnectivity } from '@/hooks/watchConnectivity'
 import { useSQLContext } from '@/providers/sql'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 
 const MinBpm = 30
@@ -40,6 +40,7 @@ export default function useSessionHeartRate(enabled: boolean) {
   const sessionIdRef = useRef<number | null>(null)
   const flushingRef = useRef(false)
   const trackingRef = useRef(false)
+  const [bpm, setBpm] = useState<number | null>(null)
   insertRef.current = insertHeartRates
 
   const publish = useCallback((heartRateActive?: boolean) => {
@@ -71,6 +72,7 @@ export default function useSessionHeartRate(enabled: boolean) {
     if (seenRef.current.has(at)) return
     seenRef.current.add(at)
     bufferRef.current.push(sample)
+    setBpm(sample.bpm)
     publish(true)
     void flush()
   }, [flush, publish])
@@ -103,5 +105,5 @@ export default function useSessionHeartRate(enabled: boolean) {
     }
   }, [enabled, publish, record])
 
-  return { attach }
+  return { attach, bpm }
 }

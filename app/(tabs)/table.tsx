@@ -103,6 +103,7 @@ export default function TableScreen() {
                 value={settings.o2Rounds}
                 min={1}
                 max={20}
+                last
                 onChange={(value) => { void updateSetting({ o2Rounds: value }) }}
               />
             </>
@@ -143,6 +144,7 @@ export default function TableScreen() {
                 value={settings.co2Rounds}
                 min={1}
                 max={20}
+                last
                 onChange={(value) => { void updateSetting({ co2Rounds: value }) }}
               />
             </>
@@ -197,7 +199,13 @@ const SScroll = styled.ScrollView`
 `
 
 const SEditor = styled.View`
-  padding: 0 ${Space.screen}px;
+  margin: ${Space.md}px ${Space.screen}px 0;
+  padding: 0 16px;
+  border-radius: ${Radii.Card}px;
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+  background-color: ${Colors.Card};
+  overflow: hidden;
 `
 
 const SRounds = styled.View`

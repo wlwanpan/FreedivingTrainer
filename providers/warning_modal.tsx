@@ -3,9 +3,13 @@ import { createContext, ReactNode, useCallback, useContext, useRef } from 'react
 import { Keyboard } from 'react-native'
 
 
+export type ConfirmOptions = {
+  confirmTitle?: string
+}
+
 interface IWarningModal {
   showWarning: (title: string, description: string) => void
-  showConfirmation: (title: string, description: string) => Promise<boolean>
+  showConfirmation: (title: string, description: string, options?: ConfirmOptions) => Promise<boolean>
   showConfirmDeletion: (title: string, description: string) => Promise<boolean>
   confirmResolverRef: React.RefObject<((confirmed: boolean) => void) | null>
   markWarningClosed: () => void
@@ -48,6 +52,7 @@ export default function WarningModalProvider({ children }: Props) {
     title: string,
     description: string,
     mode: 'confirm' | 'confirm_deletion',
+    options?: ConfirmOptions,
   ): Promise<boolean> => {
     if (isWarningVisibleRef.current) return false
     return new Promise((resolve) => {
@@ -56,13 +61,20 @@ export default function WarningModalProvider({ children }: Props) {
       isWarningVisibleRef.current = true
       router.push({
         pathname: '/warning',
-        params: { title, description, mode },
+        params: {
+          title,
+          description,
+          mode,
+          confirmTitle: options?.confirmTitle,
+        },
       })
     })
   }, [router])
 
   const showConfirmation = useCallback(
-    (title: string, description: string) => showConfirmModal(title, description, 'confirm'),
+    (title: string, description: string, options?: ConfirmOptions) => (
+      showConfirmModal(title, description, 'confirm', options)
+    ),
     [showConfirmModal],
   )
 

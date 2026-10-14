@@ -21,7 +21,7 @@ export function canLogContraction(input: {
   kind: PhaseKind | null
 }): 'log' | 'hold-only' | 'ignore' {
   if (input.done || input.paused || input.kind == null) return 'ignore'
-  if (input.kind !== 'hold') return 'hold-only'
+  if (input.kind !== 'hold') return 'ignore'
   return 'log'
 }
 
@@ -59,6 +59,29 @@ export function serializeContractions(items: LoggedContraction[]): string | null
     at: item.offsetSeconds,
   }))
   return JSON.stringify(stored)
+}
+
+function firstContractionOffsets(items: LoggedContraction[]): number[] {
+  const byRound = new Map<number, number>()
+  for (const item of items) {
+    const current = byRound.get(item.roundIndex)
+    if (current == null || item.offsetSeconds < current) {
+      byRound.set(item.roundIndex, item.offsetSeconds)
+    }
+  }
+  return [...byRound.values()]
+}
+
+export function averageFirstContractionSeconds(
+  sessions: readonly { contractions?: string | null }[],
+  current: readonly LoggedContraction[] = [],
+): number | null {
+  const firsts = [
+    ...sessions.flatMap((session) => firstContractionOffsets(parseContractions(session.contractions))),
+    ...firstContractionOffsets([...current]),
+  ]
+  if (firsts.length === 0) return null
+  return Math.round(firsts.reduce((total, seconds) => total + seconds, 0) / firsts.length)
 }
 
 export function parseContractions(raw: string | null | undefined): LoggedContraction[] {

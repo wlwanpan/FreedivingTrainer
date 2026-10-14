@@ -7,9 +7,6 @@ const trainingSprite: ImageSourcePropType = require('../assets/images/training_s
 
 const SpriteSize = 1254
 
-/** Share of the icon width taken by its rounded corner. */
-export const TrainingSpriteCorner = 0.25
-
 /** Tight square around each icon, in sheet pixels. */
 const Frame: Record<TrainingSpriteName, { x: number; y: number; size: number }> = {
   rest: { x: 99, y: 99, size: 500 },

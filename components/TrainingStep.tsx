@@ -1,7 +1,7 @@
-import { Colors, Fonts, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii } from '@/design/styles'
 import { TrainPhaseKind } from '@/hooks/useTrainingClock'
 import { useFormatterContext } from '@/providers/formatter'
-import { TrainingSpriteCorner, trainingSpriteFrame } from '@/utils/training_sprite'
+import { trainingSpriteFrame } from '@/utils/training_sprite'
 import { useEffect } from 'react'
 import { useWindowDimensions } from 'react-native'
 import Animated, {
@@ -34,8 +34,14 @@ export const TrainingStepLayout = {
   edge: 16,
 } as const
 
-export function trainingCardSize(windowWidth: number): number {
-  return Math.max(0, (windowWidth - TrainingStepLayout.inset * 2) * 0.9)
+export type TrainingCardSize = {
+  width: number
+  height: number
+}
+
+export function trainingCardSize(windowWidth: number): TrainingCardSize {
+  const width = Math.max(0, (windowWidth - TrainingStepLayout.inset * 2) * 0.9)
+  return { width, height: Math.round(width * 0.6) }
 }
 
 const Place = {
@@ -45,14 +51,14 @@ const Place = {
   complete: { scale: 1, opacity: 1 },
 } as const
 
-export function trainingStepY(role: TrainingStepRole, chainHeight: number, cardSize: number): number {
-  const current = Math.max(0, (chainHeight - cardSize) / 2)
+export function trainingStepY(role: TrainingStepRole, chainHeight: number, card: TrainingCardSize): number {
+  const current = Math.max(0, (chainHeight - card.height) / 2)
   if (role === 'done') {
-    const lifted = current - TrainingStepLayout.gap - cardSize * Place.done.scale
+    const lifted = current - TrainingStepLayout.gap - card.height * Place.done.scale
     return Math.max(TrainingStepLayout.edge, lifted)
   }
   if (role === 'next') {
-    return current + cardSize + TrainingStepLayout.gap
+    return current + card.height + TrainingStepLayout.gap
   }
   return current
 }
@@ -89,8 +95,7 @@ export default function TrainingStep({
 }: Props) {
   const { formatSeconds } = useFormatterContext()
   const { width } = useWindowDimensions()
-  const cardSize = trainingCardSize(width)
-  const corner = cardSize * TrainingSpriteCorner
+  const card = trainingCardSize(width)
   const place = Place[role]
   const translateY = useSharedValue(y)
   const scale = useSharedValue(place.scale)
@@ -146,6 +151,7 @@ export default function TrainingStep({
       ? Colors.Seafoam
       : PhaseColor[kind]
   const sprite = trainingSpriteFrame(role === 'complete' ? 'meditate' : kind)
+  const cover = Math.max(card.width, card.height)
 
   return (
     <SExit
@@ -153,10 +159,10 @@ export default function TrainingStep({
       style={{ zIndex }}
       pointerEvents={role === 'current' || role === 'complete' ? 'auto' : 'none'}
     >
-      <SCard style={[animatedStyle, { width: cardSize, borderRadius: corner }]}>
-        <SClip style={{ height: cardSize, borderRadius: corner }}>
+      <SCard style={[animatedStyle, { width: card.width, borderRadius: Radii.Card }]}>
+        <SClip style={{ height: card.height, borderRadius: Radii.Card }}>
           <SSpriteFrame>
-            <SSpriteWindow>
+            <SSpriteWindow style={{ width: cover, height: cover }}>
               <SSprite source={sprite.source} style={sprite.style} />
             </SSpriteWindow>
           </SSpriteFrame>
@@ -179,7 +185,7 @@ export default function TrainingStep({
             <SDetail>{detail}</SDetail>
           )}
           {role === 'done' && aside ? <SDetail>{aside}</SDetail> : null}
-          <SVeil style={[veilStyle, { borderRadius: corner }]} />
+          <SVeil style={[veilStyle, { borderRadius: Radii.Card }]} />
         </SClip>
       </SCard>
     </SExit>
