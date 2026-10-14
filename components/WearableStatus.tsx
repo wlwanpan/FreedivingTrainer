@@ -19,10 +19,9 @@ export default function WearableStatus() {
 }
 
 const Wrapper = styled.View`
-  align-items: center;
-  align-self: center;
+  align-items: flex-start;
   gap: 2px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 `
 
 const SRow = styled.View`

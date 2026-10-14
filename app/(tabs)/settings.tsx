@@ -3,6 +3,7 @@ import FreeSessionsBanner from '@/components/FreeSessionsBanner'
 import ScreenHeader from '@/components/ScreenHeader'
 import SettingsChoice from '@/components/SettingsChoice'
 import SettingsStepper from '@/components/SettingsStepper'
+import WearableStatus from '@/components/WearableStatus'
 import WrapperScreen from '@/components/WrapperScreen'
 import { DateFormats } from '@/constants/dates'
 import { ErrorTitles } from '@/constants/errors'
@@ -10,14 +11,19 @@ import { useBottomControlInset } from '@/design/chrome'
 import { Colors, FontSizes } from '@/design/styles'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
-import useWearableStatus, { wearableLabel, wearableLive, withWatchTrainingLoss } from '@/hooks/useWearableStatus'
+import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
+import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { styled } from 'styled-components/native'
+
+
+const appName = Constants.expoConfig?.name ?? 'Freediving & CO2 Tables'
+const appVersion = Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? ''
 
 
 export default function SettingsScreen() {
@@ -27,11 +33,6 @@ export default function SettingsScreen() {
   const { formatSeconds } = useFormatterContext()
   const { showWarning, showConfirmDeletion } = useWarningModal()
   const updateSetting = useUpdateSetting()
-  const wearable = useWearableStatus()
-  const watchSelected = wearable.kind === 'apple-watch'
-  const deviceStatus = watchSelected && !wearable.connected
-    ? 'Waiting for Apple Watch'
-    : wearableLabel(wearable)
   const planWeek = useCurrentPlanWeek()
   const paddingBottom = useBottomControlInset(true)
   const [eraseInFlight, setEraseInFlight] = useState(false)
@@ -241,24 +242,9 @@ export default function SettingsScreen() {
           <SCardTitle>Device</SCardTitle>
           <SGroup>Apple Watch</SGroup>
           <SNote>
-            {watchSelected
-              ? 'Open Freediving on your Apple Watch. Home shows Connected when the watch session is reachable.'
-              : 'Heart rate from your watch during a table. Garmin can be connected later.'}
+            Heart rate from your watch during a table. Status updates automatically when the watch session is reachable. Garmin can be connected later.
           </SNote>
-          <SDeviceStatus $live={wearableLive(wearable)}>{deviceStatus}</SDeviceStatus>
-          {watchSelected ? (
-            <Button
-              title='Disconnect'
-              onPress={() => { void updateSetting({ wearable: null }) }}
-              defaultBGColor={Colors.GreyPrimary}
-              pressedBGColor={Colors.GreyFaded}
-            />
-          ) : (
-            <Button
-              title='Connect Apple Watch'
-              onPress={() => { void updateSetting({ wearable: 'apple-watch' }) }}
-            />
-          )}
+          <WearableStatus />
         </SCard>
 
         <SCard>
@@ -287,6 +273,9 @@ export default function SettingsScreen() {
             pressedBGColor={Colors.RedBackground}
           />
         </SCard>
+        <SAppVersion>
+          {appVersion === '' ? appName : `${appName} ${appVersion}`}
+        </SAppVersion>
       </SScroll>
     </WrapperScreen>
   )
@@ -329,16 +318,17 @@ const SNote = styled.Text`
   color: ${Colors.DeepPrimary};
 `
 
-const SDeviceStatus = styled.Text<{ $live: boolean }>`
-  margin-bottom: 12px;
-  font-size: ${FontSizes.Small};
-  font-weight: 700;
-  color: ${(props) => props.$live ? Colors.GreenPrimary : Colors.GreyPrimary};
-`
-
 const SChoiceRow = styled.View`
   flex-direction: row;
   gap: 8px;
   margin-top: 8px;
   margin-bottom: 4px;
+`
+
+const SAppVersion = styled.Text`
+  margin: 8px 20px 12px;
+  text-align: center;
+  font-size: ${FontSizes.Small};
+  font-weight: 700;
+  color: ${Colors.GreyPrimary};
 `

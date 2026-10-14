@@ -27,6 +27,8 @@ type Props = {
   current: TrainStep | null
   next: TrainStep | null
   remainingSeconds: number
+  elapsedTotalSeconds: number
+  remainingTotalSeconds: number
   roundCount: number
   paused: boolean
   done: boolean
@@ -48,6 +50,8 @@ export default function TrainingClock({
   current,
   next,
   remainingSeconds,
+  elapsedTotalSeconds,
+  remainingTotalSeconds,
   roundCount,
   paused,
   done,
@@ -221,6 +225,15 @@ export default function TrainingClock({
           </SInfo>
         )}
       />
+      <STimeRow>
+        <STimePill
+          accessibilityLabel={`${formatSeconds(elapsedTotalSeconds)} elapsed, ${formatSeconds(remainingTotalSeconds)} left`}
+        >
+          <STimeText>
+            {formatSeconds(elapsedTotalSeconds)} / {formatSeconds(remainingTotalSeconds)}
+          </STimeText>
+        </STimePill>
+      </STimeRow>
       <SStage>
         <GestureDetector gesture={taps}>
           <SChain
@@ -319,6 +332,24 @@ function asideFor(step: TrainStep | null, contractions: LoggedContraction[]): st
 
 const Wrapper = styled.View`
   flex: 1;
+`
+
+const STimeRow = styled.View`
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0 20px 8px;
+`
+
+const STimePill = styled.View`
+  padding: 6px 12px;
+  border-radius: 999px;
+  background-color: ${Colors.TealBackground};
+`
+
+const STimeText = styled.Text`
+  font-size: ${FontSizes.Small};
+  font-weight: 800;
+  color: ${Colors.DeepPrimary};
 `
 
 const SStage = styled.View`

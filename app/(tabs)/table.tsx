@@ -52,6 +52,11 @@ export default function TableScreen() {
   return (
     <WrapperScreen skipBottomInset>
       <ScreenHeader title='Table' />
+      {watchBusy ? (
+        <SBanner>
+          <SBannerText>Table started on Apple Watch</SBannerText>
+        </SBanner>
+      ) : null}
       <TableTypeSwitch value={tableType} onChange={setTableType} />
       <SCopy>{TableTypeDescription[tableType]}</SCopy>
       <SScroll
@@ -156,7 +161,7 @@ export default function TableScreen() {
       </SScroll>
       <Footer aboveTabs>
         <Button
-          title={watchBusy ? 'Training on Apple Watch' : 'Start'}
+          title='Start'
           disabled={watchBusy}
           onPress={start}
         />
@@ -164,6 +169,19 @@ export default function TableScreen() {
     </WrapperScreen>
   )
 }
+
+const SBanner = styled.View`
+  margin: 4px 20px 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: ${Colors.TealBackground};
+`
+
+const SBannerText = styled.Text`
+  font-size: ${FontSizes.Small};
+  font-weight: 600;
+  color: ${Colors.TealPrimary};
+`
 
 const SCopy = styled.Text`
   margin: 4px 20px 0;
