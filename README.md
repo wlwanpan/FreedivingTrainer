@@ -62,6 +62,16 @@ Set `REVENUECAT_IOS_API_KEY` in `.env.local` or as an EAS secret. The app looks 
 
 ## Releases
 
+The production iOS build signs two targets: the iPhone app (`com.wlwanpan.FreedivingTrainer`) and the watch app (`com.wlwanpan.FreedivingTrainer.watch`). Each target needs its own provisioning profile. They can share the distribution certificate.
+
+After adding or changing a native target, create those credentials once from an interactive terminal before the EAS workflow can succeed:
+
+```bash
+eas credentials:configure-build -p ios -e production
+```
+
+Reuse the existing Apple Distribution certificate when prompted. EAS registers the watch bundle identifier, enables HealthKit, and stores a watch App Store profile. Later `eas workflow:run deploy-ios.yml` runs can then reuse those credentials in non-interactive CI.
+
 ```bash
 eas workflow:run deploy-ios.yml
 ```

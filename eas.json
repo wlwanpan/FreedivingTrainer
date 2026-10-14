@@ -11,7 +11,8 @@
         "image": "latest"
       },
       "env": {
-        "APP_VARIANT": "development"
+        "APP_VARIANT": "development",
+        "EXPO_APPLE_TEAM_ID": "WD73B9M86L"
       }
     },
     "ios-simulator": {
@@ -23,14 +24,16 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "preview"
+        "APP_VARIANT": "preview",
+        "EXPO_APPLE_TEAM_ID": "WD73B9M86L"
       }
     },
     "production": {
       "autoIncrement": true,
       "environment": "production",
       "env": {
-        "APP_VARIANT": "production"
+        "APP_VARIANT": "production",
+        "EXPO_APPLE_TEAM_ID": "WD73B9M86L"
       }
     }
   },
@@ -38,7 +41,8 @@
     "production": {
       "ios": {
         "bundleIdentifier": "com.wlwanpan.FreedivingTrainer",
-        "ascAppId": "6821739312"
+        "ascAppId": "6821739312",
+        "appleTeamId": "WD73B9M86L"
       }
     }
   }
