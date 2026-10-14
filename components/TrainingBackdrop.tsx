@@ -1,5 +1,6 @@
 import TrainingBubbles from '@/components/TrainingBubbles'
 import TrainingSeaLife from '@/components/TrainingSeaLife'
+import { Colors } from '@/design/styles'
 import { Canvas, Fill, LinearGradient, useClock } from '@shopify/react-native-skia'
 import { useEffect } from 'react'
 import { LayoutChangeEvent } from 'react-native'
@@ -53,7 +54,7 @@ export default function TrainingBackdrop({ paused }: Props) {
           <LinearGradient
             start={{ x: 0, y: 0 }}
             end={washEnd}
-            colors={['#F4FFFE', '#7EE8E4', '#1EC4D4']}
+            colors={[Colors.Canvas, Colors.CardAlt, Colors.BreathTrack]}
           />
         </Fill>
         <TrainingSeaLife time={elapsed} frame={frame} />

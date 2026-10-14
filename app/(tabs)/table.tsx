@@ -7,7 +7,7 @@ import WrapperScreen from '@/components/WrapperScreen'
 import { TableType, TableTypeDescription, TableTypeLabel } from '@/constants/tables'
 import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useSQLContext } from '@/providers/sql'
@@ -51,7 +51,7 @@ export default function TableScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <ScreenHeader title='Table' />
+      <ScreenHeader title='Tables' />
       {watchBusy ? (
         <SBanner>
           <SBannerText>Table started on Apple Watch</SBannerText>
@@ -171,23 +171,25 @@ export default function TableScreen() {
 }
 
 const SBanner = styled.View`
-  margin: 4px 20px 4px;
+  margin: 4px ${Space.screen}px 4px;
   padding: 10px 12px;
   border-radius: 10px;
-  background-color: ${Colors.TealBackground};
+  background-color: ${Colors.SeafoamMuted};
 `
 
 const SBannerText = styled.Text`
+  font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.Small};
   font-weight: 600;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `
 
 const SCopy = styled.Text`
-  margin: 4px 20px 0;
+  margin: 4px ${Space.screen}px 0;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SScroll = styled.ScrollView`
@@ -195,14 +197,14 @@ const SScroll = styled.ScrollView`
 `
 
 const SEditor = styled.View`
-  padding: 0 20px;
+  padding: 0 ${Space.screen}px;
 `
 
 const SRounds = styled.View`
-  margin: 16px 20px 0;
-  border-radius: 16px;
+  margin: ${Space.md}px ${Space.screen}px 0;
+  border-radius: ${Radii.Card}px;
   border-width: 1px;
-  border-color: ${Colors.GreyDivider};
-  background-color: ${Colors.White};
+  border-color: ${Colors.Hairline};
+  background-color: ${Colors.Card};
   overflow: hidden;
 `

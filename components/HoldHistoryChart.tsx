@@ -1,5 +1,4 @@
-import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { BaselineTest, Setting } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
@@ -49,7 +48,10 @@ export default function HoldHistoryChart() {
 
   if (points.length === 0) {
     return (
-      <EmptyListPlaceholder message='Take a baseline test to see breath-hold and first contraction over time.' />
+      <Wrapper>
+        <STitle>Hold history</STitle>
+        <SEmpty>Take a baseline test to see breath-hold and first contraction over time.</SEmpty>
+      </Wrapper>
     )
   }
 
@@ -60,13 +62,14 @@ export default function HoldHistoryChart() {
 
   return (
     <Wrapper>
+      <STitle>Hold history</STitle>
       <SLegend>
         <SKey>
-          <SSwatch style={{ backgroundColor: Colors.TealPrimary }} />
+          <SSwatch style={{ backgroundColor: Colors.Seafoam }} />
           <SKeyLabel>Breath-hold</SKeyLabel>
         </SKey>
         <SKey>
-          <SSwatch style={{ backgroundColor: Colors.CoralPrimary }} />
+          <SSwatch style={{ backgroundColor: Colors.Alert }} />
           <SKeyLabel>First contraction</SKeyLabel>
         </SKey>
       </SLegend>
@@ -81,18 +84,18 @@ export default function HoldHistoryChart() {
           axisOptions={{
             font,
             tickCount: { x: Math.min(4, Math.max(points.length, 2)), y: 4 },
-            labelColor: { x: Colors.GreyPrimary, y: Colors.GreyPrimary },
-            lineColor: { grid: Colors.GreyDivider, frame: Colors.GreyDivider },
+            labelColor: { x: Colors.TextMuted, y: Colors.TextMuted },
+            lineColor: { grid: Colors.Hairline, frame: Colors.Hairline },
             formatXLabel: (value) => formatDay(dayStamp(value)),
             formatYLabel: (value) => value == null ? '' : formatSeconds(value),
           }}
         >
           {({ points: series }) => (
             <>
-              <Line points={series.hold} color={Colors.TealPrimary} strokeWidth={3} />
-              <Scatter points={series.hold} radius={4} color={Colors.TealPrimary} />
-              <Line points={series.contraction} color={Colors.CoralPrimary} strokeWidth={3} />
-              <Scatter points={series.contraction} radius={4} color={Colors.CoralPrimary} />
+              <Line points={series.hold} color={Colors.Seafoam} strokeWidth={3} />
+              <Scatter points={series.hold} radius={4} color={Colors.Seafoam} />
+              <Line points={series.contraction} color={Colors.Alert} strokeWidth={3} />
+              <Scatter points={series.contraction} radius={4} color={Colors.Alert} />
             </>
           )}
         </CartesianChart>
@@ -102,13 +105,41 @@ export default function HoldHistoryChart() {
 }
 
 const Wrapper = styled.View`
-  padding: 12px 20px 0;
+  margin: ${Space.md}px ${Space.screen}px 0;
+  padding: 20px;
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-opacity: 0.06;
+  shadow-radius: 12px;
+  shadow-offset: 0px 8px;
+  elevation: 2;
+`
+
+const STitle = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: ${Colors.TextMuted};
+`
+
+const SEmpty = styled.Text`
+  margin-top: ${Space.sm}px;
+  font-family: ${Fonts.Body};
+  font-size: ${FontSizes.Small};
+  line-height: 20px;
+  color: ${Colors.TextMuted};
 `
 
 const SLegend = styled.View`
   flex-direction: row;
-  gap: 16px;
-  margin-bottom: 8px;
+  gap: ${Space.md}px;
+  margin-top: ${Space.sm}px;
+  margin-bottom: ${Space.sm}px;
 `
 
 const SKey = styled.View`
@@ -124,8 +155,10 @@ const SSwatch = styled.View`
 `
 
 const SKeyLabel = styled.Text`
+  font-family: ${Fonts.BodyMedium};
   font-size: ${FontSizes.Small};
-  color: ${Colors.GreyPrimary};
+  font-weight: 500;
+  color: ${Colors.TextMuted};
 `
 
 const SChart = styled.View`

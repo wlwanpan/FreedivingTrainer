@@ -1,4 +1,4 @@
-import { Colors, FontSizes, Layout } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Layout, Space } from '@/design/styles'
 import { ReactNode } from 'react'
 import { styled } from 'styled-components/native'
 
@@ -11,11 +11,12 @@ type Props = {
 export default function ScreenHeader({ title, right }: Props) {
   return (
     <Wrapper>
-      <SSide />
-      <STitle>{title}</STitle>
-      <SSide>
+      <SLead>
+        <STitle>{title}</STitle>
+      </SLead>
+      <SRight>
         {right}
-      </SSide>
+      </SRight>
     </Wrapper>
   )
 }
@@ -24,22 +25,29 @@ const Wrapper = styled.View`
   flex-direction: row;
   flex-shrink: 0;
   align-items: center;
+  justify-content: space-between;
   min-height: ${Layout.MinControl}px;
-  padding: 8px 12px 4px;
+  padding: ${Space.sm}px ${Space.screen}px ${Space.xs}px;
 `
 
-const SSide = styled.View`
-  width: ${Layout.MinControl}px;
-  height: ${Layout.MinControl}px;
-  align-items: flex-end;
+const SLead = styled.View`
+  flex: 1;
   justify-content: center;
 `
 
 const STitle = styled.Text`
-  flex: 1;
-  text-align: center;
+  flex-shrink: 1;
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Large};
-  font-style: italic;
-  font-weight: 900;
-  color: ${Colors.TealPrimary};
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: ${Colors.Text};
+`
+
+const SRight = styled.View`
+  min-width: ${Layout.MinControl}px;
+  min-height: ${Layout.MinControl}px;
+  flex-shrink: 0;
+  align-items: flex-end;
+  justify-content: center;
 `

@@ -1,5 +1,5 @@
 import { ManualTableTypes, TableType, TableTypeLabel } from '@/constants/tables'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { styled } from 'styled-components/native'
 
 
@@ -26,22 +26,23 @@ export default function TableTypeSwitch({ value, onChange }: Props) {
 
 const Wrapper = styled.View`
   flex-direction: row;
-  margin: 8px 20px 4px;
+  margin: ${Space.sm}px ${Space.screen}px ${Space.xs}px;
   padding: 4px;
-  border-radius: 12px;
-  background-color: ${Colors.GreyBackground};
+  border-radius: ${Radii.Button}px;
+  background-color: ${Colors.SegmentTrack};
 `
 
 const SOption = styled.Pressable<{ $selected: boolean }>`
   flex: 1;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 20px;
   align-items: center;
-  background-color: ${(props) => props.$selected ? Colors.White : 'transparent'};
+  background-color: ${(props) => props.$selected ? Colors.SegmentSelected : 'transparent'};
 `
 
 const SLabel = styled.Text<{ $selected: boolean }>`
+  font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.Medium};
-  font-weight: 700;
-  color: ${(props) => props.$selected ? Colors.TealPrimary : Colors.GreyPrimary};
+  font-weight: 600;
+  color: ${(props) => props.$selected ? Colors.Seafoam : Colors.TextMuted};
 `

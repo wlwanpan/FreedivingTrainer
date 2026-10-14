@@ -1,7 +1,7 @@
 import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import { Footer } from '@/design/styled'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { formatDuration } from '@/utils/duration'
 import { styled } from 'styled-components/native'
 
@@ -47,15 +47,13 @@ export default function BaselineTimer({
           title={marked ? 'Undo contraction' : 'First contraction'}
           onPress={onContraction}
           disabled={!controlsReady}
-          defaultBGColor={marked ? Colors.GreyPrimary : undefined}
-          pressedBGColor={marked ? Colors.GreyFaded : undefined}
+          variant={marked ? 'muted' : 'primary'}
         />
         <Button
           title='I need to breathe'
           onPress={onFinish}
           disabled={!controlsReady}
-          defaultBGColor={Colors.CoralPrimary}
-          pressedBGColor={Colors.RedPrimary}
+          variant='danger'
         />
       </Footer>
     </Wrapper>
@@ -75,9 +73,11 @@ const SClock = styled.View`
 
 const STime = styled.Text`
   width: 100%;
+  font-family: ${Fonts.Headline};
   font-size: ${FontSizes.Timer};
   font-weight: 700;
-  color: ${Colors.DeepPrimary};
+  letter-spacing: -1.4px;
+  color: ${Colors.Seafoam};
   text-align: center;
 `
 
@@ -86,6 +86,6 @@ const SStatus = styled.Text`
   font-size: ${FontSizes.Medium};
   line-height: 22px;
   text-align: center;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 

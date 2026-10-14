@@ -56,29 +56,35 @@ export default function TabLayout() {
 
   return (
     <NativeTabs
-      backgroundColor={Colors.White}
-      tintColor={Colors.TealPrimary}
-      labelStyle={{ color: Colors.TealPrimary }}
+      backgroundColor={Colors.Chrome}
+      tintColor={Colors.Seafoam}
+      iconColor={{ default: Colors.TextMuted, selected: Colors.Seafoam }}
+      labelStyle={{
+        default: { color: Colors.TextMuted },
+        selected: { color: Colors.Seafoam },
+      }}
+      blurEffect='systemMaterialLight'
+      disableTransparentOnScrollEdge
     >
       <NativeTabs.Trigger name='index'>
         <Label>Home</Label>
         <Icon
-          sf={{ default: 'house', selected: 'house.fill' }}
-          androidSrc={<VectorIcon family={Ionicons} name='home-outline' />}
+          sf={{ default: 'drop', selected: 'drop.fill' }}
+          androidSrc={<VectorIcon family={Ionicons} name='water-outline' />}
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name='table'>
-        <Label>Table</Label>
+        <Label>Tables</Label>
         <Icon
-          sf={{ default: 'tablecells', selected: 'tablecells.fill' }}
-          androidSrc={<VectorIcon family={Ionicons} name='grid-outline' />}
+          sf={{ default: 'timer', selected: 'timer' }}
+          androidSrc={<VectorIcon family={Ionicons} name='timer-outline' />}
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name='settings'>
         <Label>Settings</Label>
         <Icon
-          sf={{ default: 'gearshape', selected: 'gearshape.fill' }}
-          androidSrc={<VectorIcon family={Ionicons} name='settings-outline' />}
+          sf={{ default: 'slider.horizontal.3', selected: 'slider.horizontal.3' }}
+          androidSrc={<VectorIcon family={Ionicons} name='options-outline' />}
         />
       </NativeTabs.Trigger>
     </NativeTabs>

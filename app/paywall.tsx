@@ -1,7 +1,7 @@
 import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import WrapperScreen from '@/components/WrapperScreen'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -94,8 +94,7 @@ export default function PaywallScreen() {
           onPress={() => { void handleRestore() }}
           loading={restoreInFlight}
           disabled={!subscription.configured}
-          defaultBGColor={Colors.GreyPrimary}
-          pressedBGColor={Colors.GreyFaded}
+          variant='ghost'
         />
       </SBody>
     </WrapperScreen>
@@ -107,16 +106,18 @@ const SBody = styled.View`
 `
 
 const STitle = styled.Text`
+  font-family: ${Fonts.Headline};
   font-size: ${FontSizes.XLarge};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  font-weight: 700;
+  color: ${Colors.Text};
 `
 
 const SUsage = styled.Text`
   margin-top: 8px;
   margin-bottom: 16px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Medium};
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SProp = styled.View`
@@ -124,20 +125,23 @@ const SProp = styled.View`
 `
 
 const SPropTitle = styled.Text`
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
-  font-weight: 700;
-  color: ${Colors.DeepPrimary};
+  font-weight: 600;
+  color: ${Colors.Text};
 `
 
 const SPropCopy = styled.Text`
   margin-top: 2px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SNote = styled.Text`
   margin-bottom: 12px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Small};
-  color: ${Colors.CoralPrimary};
+  color: ${Colors.Alert};
 `

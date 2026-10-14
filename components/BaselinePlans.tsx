@@ -157,8 +157,7 @@ export default function BaselinePlans({
           title='Retake test'
           onPress={onRetake}
           disabled={saving}
-          defaultBGColor={Colors.GreyPrimary}
-          pressedBGColor={Colors.GreyFaded}
+          variant='ghost'
         />
       </Footer>
     </Wrapper>
@@ -201,7 +200,7 @@ const SRule = styled.Text`
   margin-bottom: 12px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SCard = styled.View<{ $selected: boolean }>`
@@ -209,8 +208,8 @@ const SCard = styled.View<{ $selected: boolean }>`
   padding: 16px;
   border-radius: 16px;
   border-width: 2px;
-  border-color: ${(props) => props.$selected ? Colors.TealPrimary : Colors.GreyDivider};
-  background-color: ${(props) => props.$selected ? Colors.TealBackground : Colors.White};
+  border-color: ${(props) => props.$selected ? Colors.Seafoam : Colors.Hairline};
+  background-color: ${(props) => props.$selected ? Colors.SeafoamMuted : Colors.Card};
 `
 
 const SCardPress = styled.Pressable``
@@ -233,7 +232,7 @@ const SGain = styled.Text`
   font-weight: 800;
   line-height: 20px;
   text-align: right;
-  color: ${Colors.GreenPrimary};
+  color: ${Colors.Seafoam};
 `
 
 const SRecommend = styled.Text`
@@ -241,34 +240,34 @@ const SRecommend = styled.Text`
   font-weight: 800;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `
 
 const SName = styled.Text`
   margin-top: 2px;
   font-size: ${FontSizes.Large};
   font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SMeta = styled.Text`
   margin-top: 2px;
   font-size: ${FontSizes.Small};
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SFocus = styled.Text`
   margin-top: 10px;
   font-size: ${FontSizes.Medium};
   font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SMethod = styled.Text`
   margin-top: 4px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SBuilder = styled.View`
@@ -279,7 +278,7 @@ const SSessionLabel = styled.Text`
   margin-top: 8px;
   font-size: ${FontSizes.Small};
   font-weight: 700;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SSessionRow = styled.View`

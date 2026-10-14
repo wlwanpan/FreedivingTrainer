@@ -1,4 +1,4 @@
-import { FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { ReactNode } from 'react'
 import { styled } from 'styled-components/native'
 import BackBtn from './BackBtn'
@@ -73,6 +73,8 @@ const SRight = styled(SSide)`
 const STitle = styled.Text`
   flex: 1;
   text-align: center;
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
-  font-weight: bold;
+  font-weight: 600;
+  color: ${Colors.Text};
 `

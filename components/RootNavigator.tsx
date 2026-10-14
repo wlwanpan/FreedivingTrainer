@@ -10,7 +10,7 @@ export default function RootNavigator() {
   return (
     <Stack screenOptions={{
       headerShown: false,
-      contentStyle: { backgroundColor: Colors.White },
+      contentStyle: { backgroundColor: Colors.Canvas },
     }}>
       <Stack.Screen name='(tabs)' options={{ animation: 'fade' }} />
       <Stack.Screen
@@ -29,6 +29,13 @@ export default function RootNavigator() {
       />
       <Stack.Screen
         name='analytics'
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name='sessions'
         options={{
           animation: 'slide_from_right',
           gestureEnabled: true,

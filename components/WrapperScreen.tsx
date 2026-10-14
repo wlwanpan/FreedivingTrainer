@@ -50,5 +50,5 @@ const SScrollable = styled(ScrollView)`
 
 const Wrapper = styled.View`
   flex: 1;
-  background-color: ${Colors.White};
+  background-color: ${Colors.Canvas};
 `

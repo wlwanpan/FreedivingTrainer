@@ -8,6 +8,8 @@ struct watchEntry: App {
         WindowGroup {
             ContentView()
                 .environmentObject(session)
+                .preferredColorScheme(.light)
+                .tint(Pelagic.seafoam)
         }
     }
 }

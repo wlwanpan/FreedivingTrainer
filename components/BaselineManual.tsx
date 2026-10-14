@@ -127,14 +127,14 @@ const SCopy = styled.Text`
   margin-top: 8px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SSection = styled.Text`
   margin-top: 22px;
   font-size: ${FontSizes.Medium};
   font-weight: 700;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SChoiceRow = styled.View`
@@ -147,5 +147,5 @@ const SNote = styled.Text`
   margin-top: 12px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `

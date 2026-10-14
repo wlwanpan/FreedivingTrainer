@@ -1,4 +1,4 @@
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useRouter } from 'expo-router'
 import { styled } from 'styled-components/native'
@@ -26,11 +26,12 @@ const Wrapper = styled.Pressable`
   margin-bottom: 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  background-color: ${Colors.TealBackground};
+  background-color: ${Colors.SeafoamMuted};
 `
 
 const SText = styled.Text`
+  font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.Small};
   font-weight: 600;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `

@@ -1,5 +1,7 @@
 import AnalyticsOverview from '@/components/AnalyticsOverview'
 import Button from '@/components/Button'
+import DashboardBreathe from '@/components/DashboardBreathe'
+import DashboardSafety from '@/components/DashboardSafety'
 import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
 import PlanProgress from '@/components/PlanProgress'
 import ScreenHeader from '@/components/ScreenHeader'
@@ -7,7 +9,7 @@ import SessionListItem from '@/components/SessionListItem'
 import WrapperScreen from '@/components/WrapperScreen'
 import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
-import { Colors, FontSizes, Layout } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
 import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
@@ -15,9 +17,12 @@ import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
 import { baselineFollowsPlan, sessionRounds, WeekSession } from '@/utils/training_plan'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
 import { styled } from 'styled-components/native'
 
+
+const LatestCount = 3
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -29,11 +34,13 @@ export default function HomeScreen() {
   const wearable = useWearableStatus()
   const watchBusy = watchBlocksPhoneStart(wearable)
   const paddingBottom = useBottomControlInset(true)
-  const logged = [...sessions].sort((a, b) => {
-    const byTime = a.createdAt.getTime() - b.createdAt.getTime()
-    if (byTime !== 0) return byTime
-    return a.id - b.id
-  })
+  const latest = [...sessions]
+    .sort((a, b) => {
+      const byTime = b.createdAt.getTime() - a.createdAt.getTime()
+      if (byTime !== 0) return byTime
+      return b.id - a.id
+    })
+    .slice(0, LatestCount)
 
   const nextSession = nextTrainingSession(outline)
   const planStartedAt = settings.trainingPlanStartedAt
@@ -42,13 +49,6 @@ export default function HomeScreen() {
     && nextSession == null
     && planStartedAt != null
     && !baselineFollowsPlan(settings.baselineTestedAt, sessions, planStartedAt)
-  const openingSession = outline?.schedule.find((entry) => entry.week === 1)?.sessions[0] ?? null
-  const sessionTitle = nextSession != null
-    && nextSession.week === 1
-    && nextSession.index === openingSession?.index
-    && !nextSession.completed
-    ? 'Start session'
-    : 'Next session'
 
   const start = (session: WeekSession & { week: number }) => {
     if (watchBusy) return
@@ -78,7 +78,14 @@ export default function HomeScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <ScreenHeader title='Home' />
+      <ScreenHeader
+        title='Dashboard'
+        right={(
+          <SHeaderBtn onPress={() => router.push('/settings')} accessibilityLabel='Settings'>
+            <Ionicons name='person-outline' size={18} color={Colors.Seafoam} />
+          </SHeaderBtn>
+        )}
+      />
       <SScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom }}
@@ -104,40 +111,76 @@ export default function HomeScreen() {
             onRetest={() => router.push('/baseline')}
           >
             {offerBaseline ? (
-              <SNext onPress={() => router.push('/baseline')}>
-                <SNextBody>
-                  <SNextTitle>Retake baseline</SNextTitle>
-                  <SNextMeta>A new maximum hold readjusts the tables.</SNextMeta>
-                </SNextBody>
-                <SStart>Start</SStart>
-              </SNext>
+              <SDrill>
+                <SDrillHead>
+                  <SDrillIcon>
+                    <Ionicons name='reload' size={18} color={Colors.Seafoam} />
+                  </SDrillIcon>
+                  <SDrillCopy>
+                    <SDrillKicker>Upcoming drill</SDrillKicker>
+                    <SDrillName>Retake baseline</SDrillName>
+                  </SDrillCopy>
+                </SDrillHead>
+                <SDrillMeta>A new maximum hold readjusts the tables.</SDrillMeta>
+                <Button title='Start session' onPress={() => router.push('/baseline')} style={{ marginBottom: 0 }} />
+              </SDrill>
             ) : nextSession == null ? (
-              <SDoneRow>
-                <SNextBody>
-                  <SNextTitle>Week complete</SNextTitle>
-                  <SNextMeta>{finishedSummary(outline, formatSeconds)}</SNextMeta>
-                </SNextBody>
-                <SDone>Done</SDone>
-              </SDoneRow>
+              <SDrill>
+                <SDrillHead>
+                  <SDrillIcon>
+                    <Ionicons name='checkmark' size={18} color={Colors.Seafoam} />
+                  </SDrillIcon>
+                  <SDrillCopy>
+                    <SDrillKicker>This week</SDrillKicker>
+                    <SDrillName>Week complete</SDrillName>
+                  </SDrillCopy>
+                </SDrillHead>
+                <SDrillMeta>{finishedSummary(outline, formatSeconds)}</SDrillMeta>
+              </SDrill>
             ) : (
-              <SNext disabled={watchBusy} onPress={() => start(nextSession)}>
-                <SNextBody>
-                  <SNextTitle>{sessionTitle}</SNextTitle>
-                  <SNextMeta>{sessionSummary(nextSession, formatSeconds)}</SNextMeta>
-                </SNextBody>
-                <SStart $muted={watchBusy}>{watchBusy ? 'On Watch' : 'Start'}</SStart>
-              </SNext>
+              <SDrill>
+                <SDrillHead>
+                  <SDrillIcon>
+                    <Ionicons name='alarm-outline' size={18} color={Colors.Seafoam} />
+                  </SDrillIcon>
+                  <SDrillCopy>
+                    <SDrillKicker>Upcoming drill</SDrillKicker>
+                    <SDrillName>{nextSession.name}</SDrillName>
+                  </SDrillCopy>
+                </SDrillHead>
+                <SChips>
+                  <SChip>{holdChip(nextSession, formatSeconds)}</SChip>
+                  <SChip>{`Rest ${formatSeconds(nextSession.restStartSeconds)}`}</SChip>
+                  <SRounds>{`${nextSession.rounds} rounds total`}</SRounds>
+                </SChips>
+                <Button
+                  title={watchBusy ? 'On Watch' : 'Start session'}
+                  disabled={watchBusy}
+                  onPress={() => start(nextSession)}
+                  style={{ marginBottom: 0 }}
+                />
+              </SDrill>
             )}
           </PlanProgress>
         )}
-        <SSection>Latest sessions</SSection>
-        {logged.length === 0 ? (
+        <DashboardBreathe />
+        <SSectionRow>
+          <SSection>Latest sessions</SSection>
+          {sessions.length > 0 ? (
+            <SSeeAll onPress={() => router.push('/sessions')}>
+              <SSeeAllText>See all</SSeeAllText>
+              <Ionicons name='chevron-forward' size={15} color={Colors.Seafoam} />
+            </SSeeAll>
+          ) : null}
+        </SSectionRow>
+        {latest.length === 0 ? (
           <EmptyListPlaceholder message='Finish a table to see it here.' />
         ) : (
-          logged.map((session) => (
+          latest.map((session) => (
             <SessionListItem key={session.id} session={session} />
           ))
         )}
+        <DashboardSafety />
       </SScroll>
     </WrapperScreen>
   )
@@ -163,88 +206,171 @@ function sessionSummary(
   return `${session.name} · ${hold} · ${session.rounds} rounds`
 }
 
+function holdChip(
+  session: WeekSession,
+  formatSeconds: (seconds: number) => string,
+): string {
+  return session.tableType === 'o2'
+    ? `Holds from ${formatSeconds(session.holdSeconds)}`
+    : `Hold ${formatSeconds(session.holdSeconds)}`
+}
+
 const SScroll = styled.ScrollView`
   flex: 1;
 `
 
+const SHeaderBtn = styled.Pressable`
+  width: ${Layout.MinControl}px;
+  height: ${Layout.MinControl}px;
+  border-radius: ${Layout.MinControl / 2}px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${Colors.SeafoamMuted};
+  border-width: 1px;
+  border-color: ${Colors.HairlineStrong};
+`
+
 const SPlan = styled.View`
-  margin: 8px 20px 0;
-  padding: 16px 16px 8px;
-  border-radius: 16px;
-  background-color: ${Colors.TealBackground};
+  margin: ${Space.md}px ${Space.screen}px 0;
+  padding: 20px;
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-opacity: 0.06;
+  shadow-radius: 12px;
+  shadow-offset: 0px 8px;
+  elevation: 2;
 `
 
 const SPlanName = styled.Text`
+  font-family: ${Fonts.Headline};
   font-size: ${FontSizes.Large};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  font-weight: 700;
+  color: ${Colors.Text};
 `
 
 const SMeta = styled.Text`
   margin-top: 4px;
-  margin-bottom: 8px;
+  margin-bottom: ${Space.sm}px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
-const SNext = styled.Pressable`
+const SDrill = styled.View`
+  margin-top: ${Space.md}px;
+  padding: ${Space.md}px;
+  border-radius: 12px;
+  background-color: ${Colors.Telemetry};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+`
+
+const SDrillHead = styled.View`
   flex-direction: row;
   align-items: center;
-  margin: 12px -16px -16px;
-  padding: 12px 16px;
-  min-height: ${Layout.MinControl}px;
-  border-top-width: 1px;
-  border-top-color: ${Colors.GreyDivider};
+  gap: 10px;
 `
 
-const SNextBody = styled.View`
+const SDrillIcon = styled.View`
+  width: 32px;
+  height: 32px;
+  border-radius: ${Radii.Control}px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${Colors.SeafoamMuted};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+`
+
+const SDrillCopy = styled.View`
   flex: 1;
-  padding-right: 12px;
 `
 
-const SNextTitle = styled.Text`
-  font-size: ${FontSizes.Medium};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
-`
-
-const SNextMeta = styled.Text`
-  margin-top: 2px;
-  font-size: ${FontSizes.Small};
+const SDrillKicker = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XXSmall};
   font-weight: 700;
-  color: ${Colors.TealPrimary};
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: ${Colors.TextMuted};
 `
 
-const SStart = styled.Text<{ $muted?: boolean }>`
+const SDrillName = styled.Text`
+  font-family: ${Fonts.HeadlineSemi};
+  font-size: ${FontSizes.Medium};
+  font-weight: 600;
+  color: ${Colors.Text};
+`
+
+const SDrillMeta = styled.Text`
+  margin-top: 8px;
+  margin-bottom: 4px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Small};
-  font-weight: 800;
-  color: ${(props) => props.$muted ? Colors.GreyPrimary : Colors.TealPrimary};
+  line-height: 20px;
+  color: ${Colors.TextMuted};
 `
 
-const SDoneRow = styled.View`
+const SChips = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: ${Space.sm}px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+`
+
+const SChip = styled.Text`
+  padding: 4px 10px;
+  border-radius: ${Radii.Control}px;
+  overflow: hidden;
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 500;
+  font-variant: tabular-nums;
+  color: ${Colors.Text};
+  background-color: ${Colors.Canvas};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+`
+
+const SRounds = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  color: ${Colors.Seafoam};
+`
+
+const SSectionRow = styled.View`
   flex-direction: row;
   align-items: center;
-  margin: 12px -16px -16px;
-  padding: 12px 16px;
+  justify-content: space-between;
+  margin: 22px ${Space.screen}px 8px;
   min-height: ${Layout.MinControl}px;
-  border-top-width: 1px;
-  border-top-color: ${Colors.GreyDivider};
-`
-
-const SDone = styled.Text`
-  font-size: ${FontSizes.XSmall};
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: ${Colors.TealPrimary};
 `
 
 const SSection = styled.Text`
-  margin: 22px 20px 4px;
-  font-size: ${FontSizes.Small};
-  font-weight: 700;
-  letter-spacing: 0.4px;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
+`
+
+const SSeeAll = styled.Pressable`
+  flex-direction: row;
+  align-items: center;
+  min-height: ${Layout.MinControl}px;
+`
+
+const SSeeAllText = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  color: ${Colors.Seafoam};
 `

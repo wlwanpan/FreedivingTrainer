@@ -219,7 +219,7 @@ export default function TrainingClock({
               <Ionicons
                 name='information-circle-outline'
                 size={28}
-                color={pressed ? Colors.GreyPrimary : Colors.DeepPrimary}
+                color={pressed ? Colors.TextMuted : Colors.Text}
               />
             )}
           </SInfo>
@@ -343,13 +343,13 @@ const STimeRow = styled.View`
 const STimePill = styled.View`
   padding: 6px 12px;
   border-radius: 999px;
-  background-color: ${Colors.TealBackground};
+  background-color: ${Colors.SeafoamMuted};
 `
 
 const STimeText = styled.Text`
   font-size: ${FontSizes.Small};
   font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SStage = styled.View`
@@ -382,11 +382,13 @@ const SNotices = styled.View`
 const SPill = styled.View`
   padding: 8px 14px;
   border-radius: 999px;
-  background-color: ${Colors.DeepPrimary};
+  background-color: ${Colors.Chrome};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
 `
 
 const SPillText = styled.Text`
-  color: ${Colors.White};
+  color: ${Colors.Text};
   font-size: ${FontSizes.Small};
   font-weight: 700;
   text-align: center;
@@ -395,11 +397,13 @@ const SPillText = styled.Text`
 const SPauseCard = styled.View`
   padding: 10px 16px;
   border-radius: 14px;
-  background-color: ${Colors.DeepPrimary};
+  background-color: ${Colors.Chrome};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
 `
 
 const SPauseTitle = styled.Text`
-  color: ${Colors.White};
+  color: ${Colors.Text};
   font-size: ${FontSizes.Medium};
   font-weight: 800;
   text-align: center;
@@ -407,7 +411,7 @@ const SPauseTitle = styled.Text`
 
 const SPauseHint = styled.Text`
   margin-top: 2px;
-  color: ${Colors.SandPrimary};
+  color: ${Colors.Aquamarine};
   font-size: ${FontSizes.Small};
   text-align: center;
 `

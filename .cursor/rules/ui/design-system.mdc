@@ -1,0 +1,52 @@
+---
+description: Pelagic Apnea visual design system — follow for all UI
+alwaysApply: true
+---
+
+# Pelagic Apnea
+
+Light lagoon-zen UI for static apnea tables. Mist canvas, white frosted cards, teal signals, marine ink. Put tokens in `design/styles.ts`; do not hardcode hex or font sizes in components.
+
+## Color
+
+Canvas `#F4F9F9`. Cards `#FFFFFF`. Inset tiles / hero wash `#E6F6F4`. Hover `#E6F6F4`.
+
+- **Seafoam** `#0D9488` — primary actions, personal best, completed intervals
+- **Lagoon** `#14B8A6` — hold timers, progress fill, active chips
+- **Aquamarine** `#06B6D4` — secondary charts, CO2 vs O2, rest cues
+- **Text** `#0D2B38` values/timers, `#52798A` labels, `#94A3B8` disabled/grid
+- **Alert red** `#F43F5E` — contractions, hypoxemia, tap-out only
+
+On-fill labels (seafoam, alert) are `#FFFFFF`. Ghost controls use `#E6F6F4` fill, teal border, seafoam label. Hairline `#E1EDF1`.
+
+## Type
+
+Timers and titles: **Manrope**, `tabular-nums` on clocks. Body and labels: **Geist**.
+
+- Timer 64/68, -0.04em (mobile 48/52, -0.03em), weight 700
+- Headline 32/40, 24/32, 20/28
+- Body 16/24, 14/20, 12/16
+- Micro-labels (`TOTAL APNEA`, `CONTRACTION`): Geist 12 or 10, weight 600, uppercase, tracking 0.05–0.08em
+
+## Layout
+
+8pt rhythm. 16px screen margin (32px tablet). Group a metric with its label (`4–8px`); separate table intervals with `16px`. Isolate the active timer with `48px` vertical padding.
+
+## Elevation
+
+Soft zen shadows, not heavy drop shadows. Card edge `1px solid #E1EDF1`. Glass `0 8px 24px rgba(13, 78, 102, 0.06)`. CTA glow `0 6px 20px rgba(13, 148, 136, 0.32)`. Frosted chrome may use `#FFFFFF` at 90% plus `backdrop-blur`.
+
+## Shape
+
+8px compact controls, 16px cards/sheets and primary actions, 24px–pill for tabs and status chips. Circular contraction log for eyes-closed tapping.
+
+## Components
+
+- **Primary button:** 48px, 16px radius, seafoam fill, white label, press scale `0.98`
+- **Ghost button:** `#E6F6F4` fill, teal border, seafoam label
+- **Segmented control:** track `#F4F9F9`, 4px inset, selected `#FFFFFF`
+- **Telemetry card:** white card, mist inset tiles `#F4F9F9`; 2×2 or 4×1 for hold/rest/contractions
+- **Charts:** white card, hairline, 16px radius. Title and legend sit inside the card, never on the canvas.
+- **Table rows:** active seafoam, done `#94A3B8`, upcoming translucent cyan
+- **Breath ring:** track `#E1EDF1`, fill lagoon or aquamarine
+- **Duration steppers:** mist panel, `+0:05` / `-0:05` tap zones

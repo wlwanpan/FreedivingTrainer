@@ -1,6 +1,6 @@
 import Button from '@/components/Button'
 import WrapperScreen from '@/components/WrapperScreen'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii } from '@/design/styles'
 import { useSQLContext } from '@/providers/sql'
 import { useRouter } from 'expo-router'
 import { useEffect } from 'react'
@@ -52,46 +52,53 @@ const SBody = styled.View`
 `
 
 const SEyebrow = styled.Text`
-  font-size: ${FontSizes.Small};
-  font-weight: 700;
-  letter-spacing: 0.6px;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `
 
 const STitle = styled.Text`
   margin-top: 8px;
+  font-family: ${Fonts.Headline};
   font-size: ${FontSizes.XLarge};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  font-weight: 700;
+  color: ${Colors.Text};
 `
 
 const SCopy = styled.Text`
   margin-top: 12px;
   margin-bottom: 24px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Medium};
   line-height: 22px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SCard = styled.View`
   margin-bottom: 12px;
   padding: 16px;
-  border-radius: 14px;
-  background-color: ${Colors.TealBackground};
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
 `
 
 const SCardTitle = styled.Text`
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
-  font-weight: 700;
-  color: ${Colors.DeepPrimary};
+  font-weight: 600;
+  color: ${Colors.Text};
 `
 
 const SCardCopy = styled.Text`
   margin-top: 4px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SFooter = styled.View`

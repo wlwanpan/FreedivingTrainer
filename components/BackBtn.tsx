@@ -16,7 +16,7 @@ export default function BackBtn({ onPress, disabled }: Props) {
         <Ionicons
           name='chevron-back-outline'
           size={28}
-          color={pressed || disabled ? Colors.GreyPrimary : Colors.DeepPrimary}
+          color={pressed || disabled ? Colors.TextMuted : Colors.Text}
         />
       )}
     </SButton>

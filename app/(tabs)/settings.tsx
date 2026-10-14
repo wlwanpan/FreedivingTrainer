@@ -8,7 +8,7 @@ import WrapperScreen from '@/components/WrapperScreen'
 import { DateFormats } from '@/constants/dates'
 import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
@@ -233,8 +233,7 @@ export default function SettingsScreen() {
             title='Restore purchase'
             onPress={() => { void restore() }}
             loading={restoreInFlight}
-            defaultBGColor={Colors.GreyPrimary}
-            pressedBGColor={Colors.GreyFaded}
+            variant='ghost'
           />
         </SCard>
 
@@ -269,8 +268,7 @@ export default function SettingsScreen() {
             title='Erase all data'
             onPress={() => { void erase() }}
             loading={eraseInFlight}
-            defaultBGColor={Colors.RedPrimary}
-            pressedBGColor={Colors.RedBackground}
+            variant='danger'
           />
         </SCard>
         <SAppVersion>
@@ -286,36 +284,39 @@ const SScroll = styled.ScrollView`
 `
 
 const SCard = styled.View`
-  margin: 0 20px 12px;
+  margin: 0 ${Space.screen}px 12px;
   padding: 16px 16px 8px;
-  border-radius: 16px;
-  background-color: ${Colors.White};
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
   border-width: 1px;
-  border-color: ${Colors.GreyDivider};
+  border-color: ${Colors.Hairline};
 `
 
 const SCardTitle = styled.Text`
+  font-family: ${Fonts.HeadlineSemi};
   font-size: ${FontSizes.Medium};
-  font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  font-weight: 600;
+  color: ${Colors.Text};
 `
 
 const SGroup = styled.Text`
   margin-top: 16px;
   margin-bottom: 4px;
-  font-size: ${FontSizes.Small};
-  font-weight: 700;
-  letter-spacing: 0.4px;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SNote = styled.Text`
   margin-top: 8px;
   margin-bottom: 12px;
+  font-family: ${Fonts.Body};
   font-size: ${FontSizes.Medium};
   line-height: 22px;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SChoiceRow = styled.View`
@@ -326,9 +327,10 @@ const SChoiceRow = styled.View`
 `
 
 const SAppVersion = styled.Text`
-  margin: 8px 20px 12px;
+  margin: 8px ${Space.screen}px 12px;
   text-align: center;
+  font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.Small};
-  font-weight: 700;
-  color: ${Colors.GreyPrimary};
+  font-weight: 600;
+  color: ${Colors.TextMuted};
 `

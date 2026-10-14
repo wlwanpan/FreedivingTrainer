@@ -39,8 +39,7 @@ export default function BaselinePrep({ onStart, onEnterTimes, onBack }: Props) {
         <Button
           title='Enter times'
           onPress={onEnterTimes}
-          defaultBGColor={Colors.GreyPrimary}
-          pressedBGColor={Colors.GreyFaded}
+          variant='ghost'
         />
       </Footer>
     </Wrapper>
@@ -59,14 +58,14 @@ const SBody = styled.ScrollView`
 const STitle = styled.Text`
   font-size: ${FontSizes.XLarge};
   font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SCopy = styled.Text`
   margin-top: 12px;
   font-size: ${FontSizes.Medium};
   line-height: 22px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SWarning = styled.Text`
@@ -75,25 +74,25 @@ const SWarning = styled.Text`
   font-size: ${FontSizes.Small};
   line-height: 20px;
   font-weight: 600;
-  color: ${Colors.CoralPrimary};
+  color: ${Colors.Alert};
 `
 
 const SCard = styled.View`
   margin-bottom: 12px;
   padding: 16px;
   border-radius: 14px;
-  background-color: ${Colors.TealBackground};
+  background-color: ${Colors.SeafoamMuted};
 `
 
 const SCardTitle = styled.Text`
   font-size: ${FontSizes.Medium};
   font-weight: 700;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SCardCopy = styled.Text`
   margin-top: 4px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `

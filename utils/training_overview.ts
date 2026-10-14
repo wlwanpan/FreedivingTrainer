@@ -3,9 +3,25 @@ import { BaselineTest, Session, Setting } from '@/db/schema'
 
 export type TrainingOverview = {
   trainedDays: number
+  trainedStreak: number
   totalApneaSeconds: number
   bestApneaSeconds: number | null
   bestContractionSeconds: number | null
+}
+
+const DayMs = 86_400_000
+
+function trainedStreak(sessions: Session[]): number {
+  const days = [...new Set(sessions.map((session) => session.day))].sort().reverse()
+  if (days.length === 0) return 0
+  let streak = 1
+  for (let index = 0; index < days.length - 1; index += 1) {
+    const newer = new Date(`${days[index]}T00:00:00`).getTime()
+    const older = new Date(`${days[index + 1]}T00:00:00`).getTime()
+    if (newer - older !== DayMs) break
+    streak += 1
+  }
+  return streak
 }
 
 function recordedHolds(tests: BaselineTest[], settings: Setting): { hold: number; contraction: number | null }[] {
@@ -40,6 +56,7 @@ export function trainingOverview(
 
   return {
     trainedDays: new Set(sessions.map((session) => session.day)).size,
+    trainedStreak: trainedStreak(sessions),
     totalApneaSeconds: sessions.reduce(
       (total, session) => total + session.holdSeconds * session.roundsCompleted,
       0,

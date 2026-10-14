@@ -1,6 +1,8 @@
 import RootNavigator from '@/components/RootNavigator'
 import WatchBridge from '@/components/WatchBridge'
 import { DATABASE_NAME, drizzleDb } from '@/db/client'
+import { useAppFonts } from '@/design/fonts'
+import { Colors } from '@/design/styles'
 import FormatterContextProvider from '@/providers/formatter'
 import SQLContextProvider from '@/providers/sql'
 import SubscriptionProvider from '@/providers/subscription'
@@ -10,6 +12,8 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator'
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin'
 import * as SplashScreen from 'expo-splash-screen'
 import { SQLiteProvider, openDatabaseSync } from 'expo-sqlite'
+import { StatusBar } from 'expo-status-bar'
+import * as SystemUI from 'expo-system-ui'
 import { Suspense, useEffect, useMemo } from 'react'
 import { ActivityIndicator } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -18,8 +22,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 
 SplashScreen.preventAutoHideAsync()
+void SystemUI.setBackgroundColorAsync(Colors.Canvas)
 
 export default function RootLayout() {
+  const fontsReady = useAppFonts()
   const studioDb = useMemo(() => openDatabaseSync(DATABASE_NAME, {
     useNewConnection: true,
   }), [])
@@ -31,16 +37,17 @@ export default function RootLayout() {
   }
 
   useEffect(() => {
-    if (error || success) {
+    if (fontsReady && (error || success)) {
       SplashScreen.hideAsync()
     }
-  }, [success, error])
+  }, [fontsReady, success, error])
 
   return (
     <KeyboardProvider>
       <SafeAreaProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Suspense fallback={<ActivityIndicator size='large' />}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.Canvas }}>
+          <StatusBar style='dark' />
+          <Suspense fallback={<ActivityIndicator size='large' color={Colors.Seafoam} />}>
             <SQLiteProvider databaseName={DATABASE_NAME}>
               <WarningModalProvider>
                 <SQLContextProvider>

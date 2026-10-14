@@ -45,21 +45,21 @@ const Wrapper = styled.Pressable`
   left: 0;
   z-index: 7;
   justify-content: flex-end;
-  background-color: rgba(6, 52, 60, 0.45);
+  background-color: ${Colors.Overlay};
 `
 
 const SCard = styled.Pressable`
   padding: 22px 20px 8px;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  background-color: ${Colors.White};
+  background-color: ${Colors.Card};
 `
 
 const STitle = styled.Text`
   margin-bottom: 14px;
   font-size: ${FontSizes.Large};
   font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SRow = styled.View`
@@ -75,11 +75,11 @@ const SMark = styled.View`
   border-radius: 16px;
   align-items: center;
   justify-content: center;
-  background-color: ${Colors.TealBackground};
+  background-color: ${Colors.SeafoamMuted};
 `
 
 const SMarkText = styled.Text`
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
   font-size: ${FontSizes.Medium};
   font-weight: 800;
 `
@@ -91,14 +91,14 @@ const SCopy = styled.View`
 const SRowTitle = styled.Text`
   font-size: ${FontSizes.Medium};
   font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SRowBody = styled.Text`
   margin-top: 2px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SReplay = styled.Pressable`
@@ -111,5 +111,5 @@ const SReplay = styled.Pressable`
 const SReplayText = styled.Text`
   font-size: ${FontSizes.Medium};
   font-weight: 700;
-  color: ${Colors.TealPrimary};
+  color: ${Colors.Seafoam};
 `

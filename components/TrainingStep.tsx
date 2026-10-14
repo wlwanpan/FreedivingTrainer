@@ -1,4 +1,4 @@
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { TrainPhaseKind } from '@/hooks/useTrainingClock'
 import { useFormatterContext } from '@/providers/formatter'
 import { TrainingSpriteCorner, trainingSpriteFrame } from '@/utils/training_sprite'
@@ -23,9 +23,9 @@ const PhaseLabel: Record<TrainPhaseKind, string> = {
 }
 
 const PhaseColor: Record<TrainPhaseKind, string> = {
-  breathe: Colors.DeepPrimary,
-  hold: Colors.TealPrimary,
-  rest: Colors.BluePrimary,
+  breathe: Colors.Aquamarine,
+  hold: Colors.Seafoam,
+  rest: Colors.Aquamarine,
 }
 
 export const TrainingStepLayout = {
@@ -141,9 +141,9 @@ export default function TrainingStep({
       ? PhaseLabel[kind]
       : PhaseLabel[kind]
   const color = role === 'done'
-    ? Colors.GreyPrimary
+    ? Colors.TextMuted
     : role === 'complete'
-      ? Colors.TealPrimary
+      ? Colors.Seafoam
       : PhaseColor[kind]
   const sprite = trainingSpriteFrame(role === 'complete' ? 'meditate' : kind)
 
@@ -166,7 +166,7 @@ export default function TrainingStep({
           ) : (
             <STime
               style={{
-                color: role === 'complete' ? Colors.DeepPrimary : color,
+                color: role === 'complete' ? Colors.Text : color,
                 fontVariant: ['tabular-nums'],
               }}
             >
@@ -195,10 +195,12 @@ const SExit = styled(Animated.View)`
 
 const SCard = styled(Animated.View)`
   align-self: center;
-  background-color: ${Colors.White};
-  shadow-color: ${Colors.Black};
-  shadow-offset: 0px 10px;
-  shadow-opacity: 0.08;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Seafoam};
+  shadow-offset: 0px 0px;
+  shadow-opacity: 0.18;
   shadow-radius: 18px;
   elevation: 4;
 `
@@ -207,7 +209,7 @@ const SClip = styled.View`
   justify-content: center;
   padding: 22px 20px 18px;
   overflow: hidden;
-  background-color: ${Colors.White};
+  background-color: ${Colors.Card};
 `
 
 const SSpriteFrame = styled.View`
@@ -245,8 +247,10 @@ const SDoneLabel = styled.Text`
 
 const STime = styled.Text`
   margin-top: 6px;
+  font-family: ${Fonts.Headline};
   font-size: ${FontSizes.Timer};
   font-weight: 700;
+  letter-spacing: -1.4px;
   text-align: center;
 `
 
@@ -255,7 +259,7 @@ const SDoneTime = styled.Text`
   font-size: ${FontSizes.Medium};
   font-weight: 700;
   text-align: center;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SDetail = styled.Text`
@@ -263,7 +267,7 @@ const SDetail = styled.Text`
   font-size: ${FontSizes.Small};
   line-height: 20px;
   text-align: center;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SVeil = styled(Animated.View)`
@@ -272,5 +276,5 @@ const SVeil = styled(Animated.View)`
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: rgba(255, 255, 255, 0.42);
+  background-color: ${Colors.Overlay};
 `

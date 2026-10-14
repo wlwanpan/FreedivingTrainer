@@ -90,8 +90,7 @@ export default function BaselineResult({ outcome, saving, onUse, onRetake }: Pro
           title='Retake test'
           onPress={onRetake}
           disabled={saving}
-          defaultBGColor={Colors.GreyPrimary}
-          pressedBGColor={Colors.GreyFaded}
+          variant='ghost'
         />
       </Footer>
     </Wrapper>
@@ -135,7 +134,7 @@ const SBody = styled.View`
 const STitle = styled.Text`
   font-size: ${FontSizes.XLarge};
   font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SStats = styled.View`
@@ -148,20 +147,20 @@ const SStat = styled.View`
   flex: 1;
   padding: 16px;
   border-radius: 14px;
-  background-color: ${Colors.TealBackground};
+  background-color: ${Colors.SeafoamMuted};
 `
 
 const SStatLabel = styled.Text`
   font-size: ${FontSizes.Small};
   font-weight: 700;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SStatValue = styled.Text`
   margin-top: 4px;
   font-size: ${FontSizes.XLarge};
   font-weight: 800;
-  color: ${Colors.DeepPrimary};
+  color: ${Colors.Text};
 `
 
 const SSection = styled.Text`
@@ -172,14 +171,14 @@ const SSection = styled.Text`
   font-weight: 700;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SBodyCopy = styled.Text`
   margin-top: 12px;
   font-size: ${FontSizes.Medium};
   line-height: 22px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
 
 const SCopy = styled.Text`
@@ -187,5 +186,5 @@ const SCopy = styled.Text`
   padding: 0 20px;
   font-size: ${FontSizes.Small};
   line-height: 20px;
-  color: ${Colors.GreyPrimary};
+  color: ${Colors.TextMuted};
 `
