@@ -13,10 +13,11 @@ import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { contractionLabel, contractionsInRound, ContractionTap, LoggedContraction, sessionResultNote } from '@/utils/contractions'
+import { playTrainingHaptic } from '@/utils/training_haptic'
 import { TrainingGestureCopy } from '@/utils/training_gestures'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { LayoutChangeEvent, useWindowDimensions, Vibration } from 'react-native'
+import { LayoutChangeEvent, useWindowDimensions } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { styled } from 'styled-components/native'
 
@@ -101,7 +102,7 @@ export default function TrainingClock({
 
   onPauseRef.current = () => {
     if (doneRef.current) return
-    Vibration.vibrate(12)
+    playTrainingHaptic(settings.trainingHaptic, 'tap')
     onTogglePauseRef.current()
   }
   onContractionRef.current = () => {

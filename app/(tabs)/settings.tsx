@@ -92,6 +92,21 @@ export default function SettingsScreen() {
             />
           </SChoiceRow>
 
+          <SGroup>Haptic</SGroup>
+          <SNote>A tap when a step changes on your iPhone and Apple Watch.</SNote>
+          <SChoiceRow>
+            <SettingsChoice
+              label='On'
+              selected={settings.trainingHaptic}
+              onPress={() => { void updateSetting({ trainingHaptic: true }) }}
+            />
+            <SettingsChoice
+              label='Off'
+              selected={!settings.trainingHaptic}
+              onPress={() => { void updateSetting({ trainingHaptic: false }) }}
+            />
+          </SChoiceRow>
+
           <SGroup>Preparation</SGroup>
           <SettingsStepper
             label='Breathe-up'

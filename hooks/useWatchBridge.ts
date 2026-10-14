@@ -115,6 +115,7 @@ export default function useWatchBridge() {
     sync,
     syncedAt,
     tables,
+    trainingHaptic: settings.trainingHaptic,
     phoneTraining: phoneTrainingContext(phoneTraining),
   }
   const context = subscription.freeLimitReached

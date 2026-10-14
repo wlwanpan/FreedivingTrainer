@@ -27,6 +27,7 @@ export const DefaultSettings: Setting = {
   dateFormat: DefaultDateFormat,
   breatheUpSeconds: 60,
   trainingAnimation: true,
+  trainingHaptic: true,
   trainingGesturesSeen: false,
   co2HoldSeconds: 90,
   co2RestStartSeconds: 120,
