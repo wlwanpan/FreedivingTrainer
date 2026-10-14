@@ -35,7 +35,15 @@ export default function AnalyticsOverview({ onPress }: Props) {
       <SGrid>
         <SStat>
           <STile>
-            <SValue>{overview.trainedDays}</SValue>
+            <SValueRow>
+              <SValue>{overview.trainedDays}</SValue>
+              {overview.trainedStreak > 1 ? (
+                <SStreak>
+                  <Ionicons name='flame' size={12} color={Colors.Seafoam} />
+                  <SStreakText>{`+${overview.trainedStreak}d`}</SStreakText>
+                </SStreak>
+              ) : null}
+            </SValueRow>
             <SLabel>Days trained</SLabel>
           </STile>
         </SStat>
@@ -50,13 +58,19 @@ export default function AnalyticsOverview({ onPress }: Props) {
         </SStat>
         <SStat>
           <STile>
-            <SValue $accent>{bestApnea}</SValue>
+            <SValueRow>
+              <SValue $accent>{bestApnea}</SValue>
+              <Ionicons name='ribbon-outline' size={16} color={Colors.Seafoam} />
+            </SValueRow>
             <SLabel>Personal best</SLabel>
           </STile>
         </SStat>
         <SStat>
           <STile>
-            <SValue>{bestContraction}</SValue>
+            <SValueRow>
+              <SValue $muted>{bestContraction}</SValue>
+              <Ionicons name='resize-outline' size={16} color={Colors.TextMuted} />
+            </SValueRow>
             <SLabel>First contraction</SLabel>
           </STile>
         </SStat>
@@ -80,6 +94,11 @@ const Wrapper = styled.View`
   background-color: ${Colors.Card};
   border-width: 1px;
   border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-opacity: 0.06;
+  shadow-radius: 12px;
+  shadow-offset: 0px 8px;
+  elevation: 2;
 `
 
 const SPress = styled.Pressable``
@@ -88,10 +107,7 @@ const SHeader = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 12px;
-  margin-bottom: ${Space.sm}px;
-  border-bottom-width: 1px;
-  border-bottom-color: ${Colors.Hairline};
+  padding-bottom: ${Space.sm}px;
 `
 
 const SHeaderLead = styled.View`
@@ -130,17 +146,38 @@ const STile = styled.View`
 
 const SValueRow = styled.View`
   flex-direction: row;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
+  gap: 6px;
 `
 
-const SValue = styled.Text<{ $accent?: boolean }>`
+const SValue = styled.Text<{ $accent?: boolean; $muted?: boolean }>`
   font-family: ${Fonts.Headline};
   font-size: ${FontSizes.Stat};
   font-weight: 700;
   letter-spacing: -0.6px;
   font-variant: tabular-nums;
-  color: ${(props) => props.$accent ? Colors.Seafoam : Colors.Text};
+  color: ${(props) => (
+    props.$accent ? Colors.Seafoam : props.$muted ? Colors.TextMuted : Colors.Text
+  )};
+`
+
+const SStreak = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: ${Radii.Pill}px;
+  background-color: ${Colors.SeafoamMuted};
+  border-width: 1px;
+  border-color: ${Colors.HairlineStrong};
+`
+
+const SStreakText = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XXSmall};
+  font-weight: 600;
+  color: ${Colors.Seafoam};
 `
 
 const SLabel = styled.Text`

@@ -92,6 +92,11 @@ const Wrapper = styled.View`
   background-color: ${Colors.Card};
   border-width: 1px;
   border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-opacity: 0.05;
+  shadow-radius: 10px;
+  shadow-offset: 0px 4px;
+  elevation: 1;
 `
 
 const STop = styled.View`

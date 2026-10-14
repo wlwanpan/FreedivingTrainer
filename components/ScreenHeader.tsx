@@ -12,7 +12,6 @@ export default function ScreenHeader({ title, right }: Props) {
   return (
     <Wrapper>
       <SLead>
-        <SDot />
         <STitle>{title}</STitle>
       </SLead>
       <SRight>
@@ -33,20 +32,7 @@ const Wrapper = styled.View`
 
 const SLead = styled.View`
   flex: 1;
-  flex-direction: row;
-  align-items: center;
-  gap: ${Space.sm}px;
-`
-
-const SDot = styled.View`
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
-  background-color: ${Colors.Seafoam};
-  shadow-color: ${Colors.Seafoam};
-  shadow-opacity: 0.7;
-  shadow-radius: 6px;
-  shadow-offset: 0px 0px;
+  justify-content: center;
 `
 
 const STitle = styled.Text`

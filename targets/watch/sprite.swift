@@ -47,11 +47,14 @@ struct TrainingSpriteBackground: View {
 
     var body: some View {
         GeometryReader { geo in
-            if let image = sprite.image {
-                Image(uiImage: image)
-                    .resizable()
-                    .frame(width: geo.size.width, height: geo.size.height)
-                    .opacity(0.45)
+            ZStack {
+                Pelagic.canvas
+                if let image = sprite.image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .opacity(0.18)
+                }
             }
         }
         .ignoresSafeArea()

@@ -27,16 +27,16 @@ const Palette: Record<ButtonVariant, {
     border: 'transparent',
   },
   ghost: {
-    bg: Colors.CardAlt,
+    bg: Colors.SeafoamMuted,
     pressed: Colors.Hover,
-    text: Colors.Text,
-    border: Colors.Aquamarine,
+    text: Colors.Seafoam,
+    border: Colors.HairlineStrong,
   },
   muted: {
-    bg: Colors.Hover,
-    pressed: Colors.CardAlt,
+    bg: Colors.Telemetry,
+    pressed: Colors.Hover,
     text: Colors.Text,
-    border: 'transparent',
+    border: Colors.Hairline,
   },
   danger: {
     bg: Colors.Alert,
@@ -74,6 +74,16 @@ export default function Button({
           borderWidth: tone.border === 'transparent' ? 0 : 1,
           opacity: loading ? 1 : (isDisabled ? 0.5 : 1),
           transform: [{ scale: state.pressed && !isDisabled ? 0.98 : 1 }],
+          ...(variant === 'primary' ? {
+            shadowColor: Colors.Seafoam,
+            shadowOpacity: 0.28,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 6 },
+            elevation: 3,
+          } : {
+            shadowOpacity: 0,
+            elevation: 0,
+          }),
         },
       ]}
       {...props}

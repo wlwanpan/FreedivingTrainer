@@ -35,6 +35,13 @@ export default function RootNavigator() {
         }}
       />
       <Stack.Screen
+        name='sessions'
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
         name='training'
         options={{
           animation: 'slide_from_right',

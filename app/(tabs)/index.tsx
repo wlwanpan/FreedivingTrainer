@@ -1,7 +1,7 @@
 import AnalyticsOverview from '@/components/AnalyticsOverview'
 import Button from '@/components/Button'
-import DashboardHero from '@/components/DashboardHero'
-import DashboardQuote from '@/components/DashboardQuote'
+import DashboardBreathe from '@/components/DashboardBreathe'
+import DashboardSafety from '@/components/DashboardSafety'
 import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
 import PlanProgress from '@/components/PlanProgress'
 import ScreenHeader from '@/components/ScreenHeader'
@@ -78,12 +78,18 @@ export default function HomeScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <ScreenHeader title='Dashboard' />
+      <ScreenHeader
+        title='Dashboard'
+        right={(
+          <SHeaderBtn onPress={() => router.push('/settings')} accessibilityLabel='Settings'>
+            <Ionicons name='person-outline' size={18} color={Colors.Seafoam} />
+          </SHeaderBtn>
+        )}
+      />
       <SScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom }}
       >
-        <DashboardHero outline={outline} />
         <AnalyticsOverview onPress={() => router.push('/analytics')} />
         {outline == null ? (
           <SPlan>
@@ -157,10 +163,11 @@ export default function HomeScreen() {
             )}
           </PlanProgress>
         )}
+        <DashboardBreathe />
         <SSectionRow>
           <SSection>Latest sessions</SSection>
           {sessions.length > 0 ? (
-            <SSeeAll onPress={() => router.push('/analytics')}>
+            <SSeeAll onPress={() => router.push('/sessions')}>
               <SSeeAllText>See all</SSeeAllText>
               <Ionicons name='chevron-forward' size={15} color={Colors.Seafoam} />
             </SSeeAll>
@@ -173,7 +180,7 @@ export default function HomeScreen() {
             <SessionListItem key={session.id} session={session} />
           ))
         )}
-        <DashboardQuote />
+        <DashboardSafety />
       </SScroll>
     </WrapperScreen>
   )
@@ -212,6 +219,17 @@ const SScroll = styled.ScrollView`
   flex: 1;
 `
 
+const SHeaderBtn = styled.Pressable`
+  width: ${Layout.MinControl}px;
+  height: ${Layout.MinControl}px;
+  border-radius: ${Layout.MinControl / 2}px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${Colors.SeafoamMuted};
+  border-width: 1px;
+  border-color: ${Colors.HairlineStrong};
+`
+
 const SPlan = styled.View`
   margin: ${Space.md}px ${Space.screen}px 0;
   padding: 20px;
@@ -219,6 +237,11 @@ const SPlan = styled.View`
   background-color: ${Colors.Card};
   border-width: 1px;
   border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-opacity: 0.06;
+  shadow-radius: 12px;
+  shadow-offset: 0px 8px;
+  elevation: 2;
 `
 
 const SPlanName = styled.Text`

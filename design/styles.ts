@@ -1,32 +1,33 @@
 export type ColorHex = string
 
 export const Colors = {
-  Canvas: '#E0F2FE',
+  Canvas: '#F4F9F9',
   Card: '#FFFFFF',
-  CardAlt: '#F0FDF4',
-  Hover: '#BAE6FD',
-  Telemetry: '#FFFFFF',
+  CardAlt: '#E6F6F4',
+  Hover: '#E6F6F4',
+  Telemetry: '#F4F9F9',
   Chrome: '#FFFFFF',
-  SegmentTrack: '#E0F2FE',
+  SegmentTrack: '#F4F9F9',
   SegmentSelected: '#FFFFFF',
-  BreathTrack: '#E0F2FE',
+  BreathTrack: '#E1EDF1',
   Seafoam: '#0D9488',
-  SeafoamPressed: 'rgba(13, 148, 136, 0.80)',
-  SeafoamMuted: '#CCFBF1',
-  SeafoamGlow: 'rgba(45, 212, 191, 0.45)',
-  Aquamarine: '#38BDF8',
-  AquamarineMuted: 'rgba(56, 189, 248, 0.22)',
-  Lagoon: '#0891B2',
-  Text: '#082F49',
-  TextMuted: '#0369A1',
-  TextDisabled: '#0284C7',
+  SeafoamPressed: 'rgba(13, 148, 136, 0.82)',
+  SeafoamMuted: '#E6F6F4',
+  SeafoamGlow: 'rgba(20, 184, 166, 0.32)',
+  Aquamarine: '#06B6D4',
+  AquamarineMuted: 'rgba(6, 182, 212, 0.16)',
+  Lagoon: '#14B8A6',
+  Text: '#0D2B38',
+  TextMuted: '#52798A',
+  TextDisabled: '#94A3B8',
   Alert: '#F43F5E',
   AlertPressed: 'rgba(244, 63, 94, 0.72)',
   AlertMuted: 'rgba(244, 63, 94, 0.16)',
   OnSeafoam: '#FFFFFF',
-  Hairline: 'rgba(7, 89, 133, 0.12)',
-  HairlineStrong: 'rgba(7, 89, 133, 0.18)',
-  Overlay: 'rgba(8, 47, 73, 0.45)',
+  Hairline: '#E1EDF1',
+  HairlineStrong: 'rgba(13, 148, 136, 0.20)',
+  Overlay: 'rgba(13, 43, 56, 0.45)',
+  Shadow: '#0D4E66',
   Black: '#000000',
 } as const
 
@@ -54,7 +55,7 @@ export const FontSizes = {
 export const Radii = {
   Control: 8,
   Card: 16,
-  Button: 24,
+  Button: 16,
   Pill: 999,
 } as const
 
@@ -69,5 +70,5 @@ export const Space = {
 
 export const Layout = {
   MinControl: 44,
-  PrimaryButton: 52,
+  PrimaryButton: 48,
 } as const

@@ -94,6 +94,11 @@ const Wrapper = styled.View`
   background-color: ${Colors.Card};
   border-width: 1px;
   border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-opacity: 0.06;
+  shadow-radius: 12px;
+  shadow-offset: 0px 8px;
+  elevation: 2;
 `
 
 const SPress = styled.Pressable``
@@ -182,7 +187,7 @@ const STrack = styled.View`
 const SFill = styled.View`
   height: 100%;
   border-radius: ${Radii.Pill}px;
-  background-color: ${Colors.Seafoam};
+  background-color: ${Colors.Lagoon};
 `
 
 const SPercent = styled.Text`

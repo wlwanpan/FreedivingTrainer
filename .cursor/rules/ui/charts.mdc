@@ -1,0 +1,28 @@
+---
+description: Put charts in white cards, never on the canvas
+globs: components/**, app/**
+alwaysApply: false
+---
+
+# Charts
+
+Victory (or any) charts sit inside a white card. Do not place a plot, legend, or axis labels directly on the mist canvas.
+
+- Card chrome matches telemetry: `Colors.Card`, `Radii.Card` (16), `1px` `Colors.Hairline`, screen margin `Space.screen`, top gap `Space.md`.
+- Title and legend live **inside** the card. Use the micro-label style (Geist 12, weight 600, uppercase) for the chart name.
+- Empty states stay in the same card. Do not swap a chart for a full-width placeholder outside the card.
+- Give the plot a fixed height (`SChart`). Do not let the line float on `Colors.Canvas`.
+
+```tsx
+// ❌ BAD
+<>
+  <SSection>Heart rate</SSection>
+  <SChart><CartesianChart /></SChart>
+</>
+
+// ✅ GOOD
+<Wrapper>
+  <STitle>Heart rate</STitle>
+  <SChart><CartesianChart /></SChart>
+</Wrapper>
+```

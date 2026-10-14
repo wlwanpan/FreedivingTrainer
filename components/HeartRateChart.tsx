@@ -1,5 +1,5 @@
 import { TableTypeLabel } from '@/constants/tables'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { HeartRateSample, Session } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
@@ -44,15 +44,17 @@ export default function HeartRateChart() {
   const font = useMemo(() => matchFont({ fontFamily: 'Helvetica', fontSize: 12 }), [])
   const { session, points } = latestSessionSamples(heartRates, sessions)
 
-  return (
-    <>
-      <SSection>Heart rate</SSection>
-      {points.length === 0 || session == null ? (
+  if (points.length === 0 || session == null) {
+    return (
+      <Wrapper>
+        <STitle>Heart rate</STitle>
         <SEmpty>Finish a table with your Apple Watch to see heart rate.</SEmpty>
-      ) : (
-        <Chart session={session} points={points} font={font} dayLabel={formatDay(session.day)} />
-      )}
-    </>
+      </Wrapper>
+    )
+  }
+
+  return (
+    <Chart session={session} points={points} font={font} dayLabel={formatDay(session.day)} />
   )
 }
 
@@ -79,6 +81,7 @@ function Chart({
 
   return (
     <Wrapper>
+      <STitle>Heart rate</STitle>
       <SCaption>{`${dayLabel} · ${TableTypeLabel[session.tableType]}`}</SCaption>
       <SChart>
         <CartesianChart
@@ -109,30 +112,43 @@ function Chart({
   )
 }
 
-const SSection = styled.Text`
-  margin: 22px 20px 8px;
-  font-size: ${FontSizes.Small};
-  font-weight: 700;
-  letter-spacing: 0.4px;
+const Wrapper = styled.View`
+  margin: ${Space.md}px ${Space.screen}px 0;
+  padding: 20px;
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-opacity: 0.06;
+  shadow-radius: 12px;
+  shadow-offset: 0px 8px;
+  elevation: 2;
+`
+
+const STitle = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
   color: ${Colors.TextMuted};
 `
 
 const SEmpty = styled.Text`
-  margin: 0 20px;
-  font-size: ${FontSizes.Medium};
-  line-height: 22px;
-  color: ${Colors.Text};
-`
-
-const Wrapper = styled.View`
-  padding: 0 20px;
+  margin-top: ${Space.sm}px;
+  font-family: ${Fonts.Body};
+  font-size: ${FontSizes.Small};
+  line-height: 20px;
+  color: ${Colors.TextMuted};
 `
 
 const SCaption = styled.Text`
-  margin-bottom: 8px;
+  margin-top: 4px;
+  margin-bottom: ${Space.sm}px;
+  font-family: ${Fonts.BodyMedium};
   font-size: ${FontSizes.Small};
-  font-weight: 700;
+  font-weight: 500;
   color: ${Colors.TextMuted};
 `
 

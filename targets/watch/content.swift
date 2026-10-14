@@ -14,6 +14,8 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
+            Pelagic.canvas
+                .ignoresSafeArea()
             if let sprite = session.backdrop {
                 TrainingSpriteBackground(sprite: sprite)
                     .ignoresSafeArea()
@@ -27,17 +29,18 @@ struct ContentView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .alert("Exit training?", isPresented: $confirmExit) {
-                Button("Exit", role: .destructive) { session.exitPlan() }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Session progress will be lost.")
-            }
-            .alert("Training ended", isPresented: lostNoticePresented) {
-                Button("OK", role: .cancel) { session.lostNotice = nil }
-            } message: {
-                Text(session.lostNotice ?? "This training is lost.")
-            }
+        .foregroundStyle(Pelagic.text)
+        .alert("Exit training?", isPresented: $confirmExit) {
+            Button("Exit", role: .destructive) { session.exitPlan() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Session progress will be lost.")
+        }
+        .alert("Training ended", isPresented: lostNoticePresented) {
+            Button("OK", role: .cancel) { session.lostNotice = nil }
+        } message: {
+            Text(session.lostNotice ?? "This training is lost.")
+        }
     }
 
     @ViewBuilder
@@ -63,7 +66,7 @@ struct ContentView: View {
             if session.pendingSync {
                 Text("Waiting for your iPhone")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
             }
             if session.phoneTraining && session.reachable {
@@ -72,14 +75,16 @@ struct ContentView: View {
             if session.planComplete {
                 Text("Week complete")
                     .font(.headline)
+                    .foregroundStyle(Pelagic.text)
                     .multilineTextAlignment(.center)
                 Text("Saved on your iPhone")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
             } else if session.locked {
                 Text("Unlock lifetime access on your iPhone")
                     .font(.caption)
+                    .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
             } else if let plan = session.plan {
                 VStack(spacing: 12) {
@@ -99,6 +104,7 @@ struct ContentView: View {
             } else {
                 Text("Choose a plan on your iPhone")
                     .font(.caption)
+                    .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
             }
         }
@@ -110,40 +116,41 @@ struct ContentView: View {
             if session.running {
                 Text(session.paused ? "Paused" : session.phaseTitle)
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.92))
-                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(phaseColor)
                 Text(session.clockText)
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .minimumScaleFactor(0.6)
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.45), radius: 3, y: 1)
+                    .monospacedDigit()
+                    .foregroundStyle(phaseColor)
                 if !session.sessionDetail.isEmpty {
                     Text(session.sessionDetail)
                         .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.92))
-                        .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+                        .foregroundStyle(Pelagic.muted)
                 }
                 if session.paused {
                     Button("Resume", action: session.togglePause)
                         .buttonStyle(.borderedProminent)
+                        .tint(Pelagic.seafoam)
                     Button("Exit", role: .destructive) { confirmExit = true }
                         .buttonStyle(.bordered)
+                        .tint(Pelagic.alert)
                 } else {
                     Button("Pause", action: session.togglePause)
                         .buttonStyle(.bordered)
+                        .tint(Pelagic.seafoam)
                 }
             } else {
                 Text("Saved")
                     .font(.headline)
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
+                    .foregroundStyle(Pelagic.seafoam)
                 Text(session.pendingSync ? "Waiting for your iPhone" : "Sent to your iPhone")
                     .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.92))
+                    .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
-                    .shadow(color: .black.opacity(0.45), radius: 2, y: 1)
                 Button("Okay", action: session.dismissSaved)
                     .buttonStyle(.borderedProminent)
+                    .tint(Pelagic.seafoam)
             }
         }
         .padding()
@@ -158,19 +165,22 @@ struct ContentView: View {
                 } else if session.locked {
                     Text("Unlock lifetime access on your iPhone")
                         .font(.caption)
+                        .foregroundStyle(Pelagic.muted)
                         .multilineTextAlignment(.center)
                 } else {
                     Button("Start") {
                         session.startTable(table)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(Pelagic.seafoam)
                 }
             } else {
                 Text(title)
                     .font(.headline)
+                    .foregroundStyle(Pelagic.text)
                 Text("Open the iPhone app to sync this table")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
             }
         }
@@ -207,6 +217,7 @@ struct ContentView: View {
         VStack(spacing: 6) {
             Text(title)
                 .font(.headline)
+                .foregroundStyle(Pelagic.text)
                 .multilineTextAlignment(.center)
             if let meta {
                 HStack(spacing: 4) {
@@ -217,29 +228,20 @@ struct ContentView: View {
                     }
                 }
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Pelagic.muted)
             }
             if let progress {
                 ProgressView(value: progress, total: 100)
                     .progressViewStyle(.linear)
-                    .tint(.accentColor)
+                    .tint(Pelagic.lagoon)
             }
             Text(detail)
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Pelagic.muted)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 10)
-        .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.primary.opacity(0.08))
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color.accentColor.opacity(0.55), lineWidth: 1)
-        }
+        .pelagicCard(emphasized: true)
     }
 
     @ViewBuilder
@@ -247,6 +249,7 @@ struct ContentView: View {
         if !session.phoneTraining || !session.reachable {
             Button("Start", action: start)
                 .buttonStyle(.borderedProminent)
+                .tint(Pelagic.seafoam)
         }
     }
 
@@ -254,11 +257,12 @@ struct ContentView: View {
         VStack(spacing: 2) {
             Text("Training on your iPhone")
                 .font(.caption)
+                .foregroundStyle(Pelagic.text)
                 .multilineTextAlignment(.center)
             if !session.phoneTrainingName.isEmpty {
                 Text(session.phoneTrainingName)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
             }
         }
@@ -270,6 +274,15 @@ struct ContentView: View {
         let count = table.rounds.count
         let rounds = count == 1 ? "round" : "rounds"
         return "\(prefix) · \(count) \(rounds)"
+    }
+
+    private var phaseColor: Color {
+        if session.paused { return Pelagic.muted }
+        switch session.phaseTitle {
+        case "Hold": return Pelagic.lagoon
+        case "Rest": return Pelagic.aquamarine
+        default: return Pelagic.seafoam
+        }
     }
 }
 
@@ -295,12 +308,14 @@ private struct PlanScheduleList: View {
                     Text("Plan")
                 }
                 .font(.caption2)
+                .foregroundStyle(Pelagic.seafoam)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)
             if !plan.planName.isEmpty {
                 Text(plan.planName)
                     .font(.headline)
+                    .foregroundStyle(Pelagic.text)
             }
             ScrollViewReader { proxy in
                 ScrollView {
@@ -331,65 +346,57 @@ private struct PlanScheduleList: View {
                 Spacer(minLength: 4)
                 if complete {
                     Text("Complete")
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Pelagic.seafoam)
                 } else if focused {
                     Text("This week")
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Pelagic.seafoam)
                 }
                 if week.locked {
                     Text("Locked")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Pelagic.muted)
                 }
             }
             .font(.caption2)
+            .foregroundStyle(Pelagic.text)
             if week.locked {
                 Text("Finish week \(plan.planWeek) to start these.")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Pelagic.muted)
             }
             ForEach(week.sessions) { session in
                 VStack(alignment: .leading, spacing: 2) {
                     if session.index != week.sessions.first?.index {
                         Divider()
+                            .overlay(Pelagic.hairline)
                     }
                     HStack(alignment: .firstTextBaseline) {
                         Text(session.name)
                             .font(.caption)
                             .fontWeight(.semibold)
+                            .foregroundStyle(Pelagic.text)
                         Spacer(minLength: 4)
                         if session.completed {
                             Text("Done")
                                 .font(.caption2)
                                 .fontWeight(.bold)
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Pelagic.seafoam)
                         }
                     }
                     Text(sessionDetail(session))
                         .font(.caption2)
-                        .foregroundStyle(week.locked ? .secondary : Color.accentColor)
+                        .foregroundStyle(week.locked ? Pelagic.muted : Pelagic.seafoam)
                     if !session.note.isEmpty {
                         Text(session.note)
                             .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Pelagic.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .opacity(week.locked ? 0.55 : 1)
             }
         }
-        .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.primary.opacity(0.08))
-        }
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(
-                    focused ? Color.accentColor.opacity(0.9) : Color.primary.opacity(0.15),
-                    lineWidth: 1
-                )
-        }
+        .pelagicCard(emphasized: focused)
     }
 
     private func sessionDetail(_ session: WatchListedSession) -> String {

@@ -1,5 +1,4 @@
-import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
-import { Colors, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { BaselineTest, Setting } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
@@ -49,7 +48,10 @@ export default function HoldHistoryChart() {
 
   if (points.length === 0) {
     return (
-      <EmptyListPlaceholder message='Take a baseline test to see breath-hold and first contraction over time.' />
+      <Wrapper>
+        <STitle>Hold history</STitle>
+        <SEmpty>Take a baseline test to see breath-hold and first contraction over time.</SEmpty>
+      </Wrapper>
     )
   }
 
@@ -60,6 +62,7 @@ export default function HoldHistoryChart() {
 
   return (
     <Wrapper>
+      <STitle>Hold history</STitle>
       <SLegend>
         <SKey>
           <SSwatch style={{ backgroundColor: Colors.Seafoam }} />
@@ -102,13 +105,41 @@ export default function HoldHistoryChart() {
 }
 
 const Wrapper = styled.View`
-  padding: 12px 20px 0;
+  margin: ${Space.md}px ${Space.screen}px 0;
+  padding: 20px;
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-opacity: 0.06;
+  shadow-radius: 12px;
+  shadow-offset: 0px 8px;
+  elevation: 2;
+`
+
+const STitle = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: ${Colors.TextMuted};
+`
+
+const SEmpty = styled.Text`
+  margin-top: ${Space.sm}px;
+  font-family: ${Fonts.Body};
+  font-size: ${FontSizes.Small};
+  line-height: 20px;
+  color: ${Colors.TextMuted};
 `
 
 const SLegend = styled.View`
   flex-direction: row;
-  gap: 16px;
-  margin-bottom: 8px;
+  gap: ${Space.md}px;
+  margin-top: ${Space.sm}px;
+  margin-bottom: ${Space.sm}px;
 `
 
 const SKey = styled.View`
@@ -124,7 +155,9 @@ const SSwatch = styled.View`
 `
 
 const SKeyLabel = styled.Text`
+  font-family: ${Fonts.BodyMedium};
   font-size: ${FontSizes.Small};
+  font-weight: 500;
   color: ${Colors.TextMuted};
 `
 
