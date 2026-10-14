@@ -32,6 +32,7 @@ type Props = {
   remainingSeconds: number
   elapsedTotalSeconds: number
   totalSeconds: number
+  stepCount: number
   roundCount: number
   heartRateBpm: number | null
   paused: boolean
@@ -56,6 +57,7 @@ export default function TrainingClock({
   remainingSeconds,
   elapsedTotalSeconds,
   totalSeconds,
+  stepCount,
   roundCount,
   heartRateBpm,
   paused,
@@ -275,6 +277,8 @@ export default function TrainingClock({
                 seconds={previous.seconds}
                 roundIndex={previous.roundIndex}
                 roundCount={roundCount}
+                stepIndex={previous.index}
+                stepCount={stepCount}
                 aside={previousAside}
                 animated={animated}
               />
@@ -289,6 +293,8 @@ export default function TrainingClock({
                 remainingSeconds={remainingSeconds}
                 roundIndex={current.roundIndex}
                 roundCount={roundCount}
+                stepIndex={current.index}
+                stepCount={stepCount}
                 aside={currentAside}
                 animated={animated}
               />
@@ -311,6 +317,8 @@ export default function TrainingClock({
                 seconds={next.seconds}
                 roundIndex={next.roundIndex}
                 roundCount={roundCount}
+                stepIndex={next.index}
+                stepCount={stepCount}
                 animated={animated}
               />
             ) : null}

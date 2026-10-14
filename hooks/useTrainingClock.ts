@@ -338,6 +338,7 @@ export default function useTrainingClock(
     remainingSeconds: location.remaining,
     elapsedTotalSeconds,
     totalSeconds,
+    stepCount: phases.length,
     roundCount: rounds.length,
     heartRateBpm: heartRate.bpm,
     previous,
