@@ -9,6 +9,7 @@ import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes } from '@/design/styles'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
+import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { buildCo2Table, buildO2Table } from '@/utils/table'
@@ -22,11 +23,13 @@ export default function TableScreen() {
   const { settings } = useSQLContext()
   const subscription = useSubscriptionContext()
   const updateSetting = useUpdateSetting()
+  const watchBusy = watchBlocksPhoneStart(useWearableStatus())
   const paddingBottom = useBottomControlInset(true)
   const [tableType, setTableType] = useState<TableType>('co2')
   const rounds = tableType === 'o2' ? buildO2Table(settings) : buildCo2Table(settings)
 
   const start = () => {
+    if (watchBusy) return
     if (subscription.freeLimitReached) {
       router.push('/paywall')
       return
@@ -152,7 +155,11 @@ export default function TableScreen() {
         </SRounds>
       </SScroll>
       <Footer aboveTabs>
-        <Button title='Start' onPress={start} />
+        <Button
+          title={watchBusy ? 'Training on Apple Watch' : 'Start'}
+          disabled={watchBusy}
+          onPress={start}
+        />
       </Footer>
     </WrapperScreen>
   )

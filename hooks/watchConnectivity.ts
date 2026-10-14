@@ -1,6 +1,7 @@
 import type {
   ActivationDidCompleteEvent,
   ActivationState,
+  ApplicationContextReceivedEvent,
   MessageReceivedEvent,
   ReachabilityChangedEvent,
   SessionState,
@@ -16,6 +17,7 @@ type NativeWatchConnectivity = {
   sendMessage: (message: Record<string, unknown>) => Promise<Record<string, unknown>>
   replyToMessage: (replyId: string, reply: Record<string, unknown>) => void
   updateApplicationContext: (context: Record<string, unknown>) => Promise<void>
+  getReceivedApplicationContext: () => Record<string, unknown>
   addListener: (eventName: string, listener: (event: never) => void) => EventSubscription
 }
 
@@ -63,6 +65,9 @@ export const WatchConnectivity = {
     if (native == null) return Promise.resolve()
     return native.updateApplicationContext(context)
   },
+  get receivedApplicationContext(): Record<string, unknown> {
+    return native?.getReceivedApplicationContext() ?? {}
+  },
   addActivationListener(callback: (event: ActivationDidCompleteEvent) => void): EventSubscription {
     return listen('onActivationDidComplete', callback)
   },
@@ -74,6 +79,11 @@ export const WatchConnectivity = {
   },
   addReachabilityListener(callback: (event: ReachabilityChangedEvent) => void): EventSubscription {
     return listen('onReachabilityChanged', callback)
+  },
+  addApplicationContextListener(
+    callback: (event: ApplicationContextReceivedEvent) => void,
+  ): EventSubscription {
+    return listen('onApplicationContextReceived', callback)
   },
 }
 

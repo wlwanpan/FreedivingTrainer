@@ -13,6 +13,7 @@ import { todayDate } from '@/utils/date'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, Vibration } from 'react-native'
+import { publishPhoneTraining } from './phoneTraining'
 import { recordCompletedSession } from './recordCompletedSession'
 import useSessionHeartRate from './useSessionHeartRate'
 import useTablePlan from './useTablePlan'
@@ -109,6 +110,7 @@ export default function useTrainingClock(
   tableType: TableType | null,
   table: TrainTable | null = null,
   slot: TrainPlanSlot | null = null,
+  name = '',
 ) {
   const sql = useSQLContext()
   const { showWarning } = useWarningModal()
@@ -245,6 +247,22 @@ export default function useTrainingClock(
     Vibration.vibrate(20)
     return { kind: 'logged', offsetSeconds }
   }, [])
+
+  useEffect(() => {
+    if (tableType == null || saved) {
+      publishPhoneTraining(null)
+      return
+    }
+    publishPhoneTraining({
+      running: true,
+      paused,
+      name,
+      phase: current?.kind ?? '',
+      startedAt: wallStartedAtRef.current,
+    })
+  }, [tableType, saved, paused, name, current?.kind])
+
+  useEffect(() => () => publishPhoneTraining(null), [])
 
   useEffect(() => {
     if (location.index === announcedIndex.current) return
