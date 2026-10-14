@@ -56,7 +56,8 @@
           "appleTeamId": "WD73B9M86L"
         }
       ],
-      "./plugins/withWatchEasParent"
+      "./plugins/withWatchEasParent",
+      "./plugins/withPbxprojObjectVersion"
     ],
     "experiments": {
       "typedRoutes": true,
