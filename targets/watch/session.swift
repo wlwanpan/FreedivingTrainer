@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 import WatchConnectivity
+import WatchKit
 
 struct WatchListedSession: Identifiable {
     let index: Int
@@ -100,8 +101,10 @@ final class WatchSession: NSObject, ObservableObject {
     private var sendingCompletions = Set<Int>()
     private var contextTimer: Timer?
     private var lastContextKey = ""
+    private var hapticEnabled = true
 
     private static let pendingDefaultsKey = "pendingSessionCompletions"
+    private static let hapticDefaultsKey = "trainingHapticEnabled"
 
     var readyDetail: String {
         guard let plan else { return "" }
@@ -136,6 +139,9 @@ final class WatchSession: NSObject, ObservableObject {
     override init() {
         super.init()
         pendingSync = !Self.storedCompletions().isEmpty
+        if UserDefaults.standard.object(forKey: Self.hapticDefaultsKey) != nil {
+            hapticEnabled = UserDefaults.standard.bool(forKey: Self.hapticDefaultsKey)
+        }
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         session.delegate = self
@@ -187,6 +193,11 @@ final class WatchSession: NSObject, ObservableObject {
         startClock()
         advance()
         publishTraining(true)
+    }
+
+    private func playHaptic(_ type: WKHapticType) {
+        guard hapticEnabled else { return }
+        WKInterfaceDevice.current().play(type)
     }
 
     func togglePause() {
@@ -267,7 +278,14 @@ final class WatchSession: NSObject, ObservableObject {
         }
     }
 
+    private func applyHaptic(_ message: [String: Any]) {
+        if message["trainingHaptic"] == nil { return }
+        hapticEnabled = flag(message["trainingHaptic"])
+        UserDefaults.standard.set(hapticEnabled, forKey: Self.hapticDefaultsKey)
+    }
+
     private func applyPlan(_ message: [String: Any]) {
+        applyHaptic(message)
         applyPhoneTraining(message)
         installTables(message)
         let key = textValue(message["planKey"]) ?? ""
@@ -393,7 +411,12 @@ final class WatchSession: NSObject, ObservableObject {
         for phase in phases {
             if cursor < phase.seconds {
                 remaining = phase.seconds - cursor
-                phaseTitle = phase.title
+                if phase.title != phaseTitle {
+                    if !phaseTitle.isEmpty {
+                        playHaptic(.start)
+                    }
+                    phaseTitle = phase.title
+                }
                 if let round = phase.round {
                     let total = activePlan?.rounds.count ?? round
                     roundText = "Round \(round) of \(total)"
@@ -423,6 +446,7 @@ final class WatchSession: NSObject, ObservableObject {
         captureSamples = false
         stopHeartRate()
         publishTraining(false)
+        playHaptic(.success)
         if let queued = queuedPlan {
             queuedPlan = nil
             finished = false

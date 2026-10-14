@@ -13,10 +13,11 @@ import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { contractionLabel, contractionsInRound, ContractionTap, LoggedContraction, sessionResultNote } from '@/utils/contractions'
+import { playTrainingHaptic } from '@/utils/training_haptic'
 import { TrainingGestureCopy } from '@/utils/training_gestures'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { LayoutChangeEvent, useWindowDimensions, Vibration } from 'react-native'
+import { LayoutChangeEvent, useWindowDimensions } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { styled } from 'styled-components/native'
 
@@ -28,7 +29,7 @@ type Props = {
   next: TrainStep | null
   remainingSeconds: number
   elapsedTotalSeconds: number
-  remainingTotalSeconds: number
+  totalSeconds: number
   roundCount: number
   paused: boolean
   done: boolean
@@ -51,7 +52,7 @@ export default function TrainingClock({
   next,
   remainingSeconds,
   elapsedTotalSeconds,
-  remainingTotalSeconds,
+  totalSeconds,
   roundCount,
   paused,
   done,
@@ -101,7 +102,7 @@ export default function TrainingClock({
 
   onPauseRef.current = () => {
     if (doneRef.current) return
-    Vibration.vibrate(12)
+    playTrainingHaptic(settings.trainingHaptic, 'tap')
     onTogglePauseRef.current()
   }
   onContractionRef.current = () => {
@@ -227,10 +228,10 @@ export default function TrainingClock({
       />
       <STimeRow>
         <STimePill
-          accessibilityLabel={`${formatSeconds(elapsedTotalSeconds)} elapsed, ${formatSeconds(remainingTotalSeconds)} left`}
+          accessibilityLabel={`${formatSeconds(elapsedTotalSeconds)} elapsed of ${formatSeconds(totalSeconds)}`}
         >
           <STimeText>
-            {formatSeconds(elapsedTotalSeconds)} / {formatSeconds(remainingTotalSeconds)}
+            {formatSeconds(elapsedTotalSeconds)} / {formatSeconds(totalSeconds)}
           </STimeText>
         </STimePill>
       </STimeRow>
@@ -349,6 +350,7 @@ const STimePill = styled.View`
 const STimeText = styled.Text`
   font-size: ${FontSizes.Small};
   font-weight: 800;
+  font-variant: tabular-nums;
   color: ${Colors.Text};
 `
 

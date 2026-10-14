@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `training_haptic` integer DEFAULT true NOT NULL;

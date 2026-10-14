@@ -97,7 +97,7 @@ export default function TrainScreen() {
         next={training.next}
         remainingSeconds={training.remainingSeconds}
         elapsedTotalSeconds={training.elapsedTotalSeconds}
-        remainingTotalSeconds={training.remainingTotalSeconds}
+        totalSeconds={training.totalSeconds}
         roundCount={training.roundCount}
         paused={training.paused}
         done={training.done}

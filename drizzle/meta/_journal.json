@@ -92,6 +92,13 @@
       "when": 1791995268717,
       "tag": "0012_brown_the_call",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1792011633690,
+      "tag": "0013_furry_jack_power",
+      "breakpoints": true
     }
   ]
 }

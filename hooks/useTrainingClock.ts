@@ -11,8 +11,9 @@ import {
 } from '@/utils/contractions'
 import { todayDate } from '@/utils/date'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
+import { playTrainingHaptic } from '@/utils/training_haptic'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AppState, Vibration } from 'react-native'
+import { AppState } from 'react-native'
 import { publishPhoneTraining } from './phoneTraining'
 import { recordCompletedSession } from './recordCompletedSession'
 import useSessionHeartRate from './useSessionHeartRate'
@@ -127,6 +128,8 @@ export default function useTrainingClock(
   const intro = sql.updatedAt != null && !sql.settings.trainingGesturesSeen
   const pausedAtRef = useRef<number | null>(intro ? startedAtRef.current : null)
   const announcedIndex = useRef(0)
+  const hapticRef = useRef(sql.settings.trainingHaptic)
+  hapticRef.current = sql.settings.trainingHaptic
   const saveStarted = useRef(false)
   const [now, setNow] = useState(startedAtRef.current)
   const [paused, setPaused] = useState(intro)
@@ -139,7 +142,6 @@ export default function useTrainingClock(
   const location = locate(phases, elapsedSeconds)
   const totalSeconds = phases.reduce((sum, phase) => sum + phase.seconds, 0)
   const elapsedTotalSeconds = Math.min(totalSeconds, Math.max(0, elapsedSeconds))
-  const remainingTotalSeconds = Math.max(0, totalSeconds - elapsedTotalSeconds)
   const done = phases.length > 0 && location.done
   const heartRate = useSessionHeartRate(tableType != null && !done)
   const stepAt = (index: number): TrainStep | null => {
@@ -247,7 +249,7 @@ export default function useTrainingClock(
     if (roundIndex == null) return { kind: 'ignore' }
     const offsetSeconds = contractionOffset(sample.phaseSeconds, sample.remaining)
     setContractions((currentItems) => [...currentItems, { roundIndex, offsetSeconds }])
-    Vibration.vibrate(20)
+    playTrainingHaptic(hapticRef.current, 'tap')
     return { kind: 'logged', offsetSeconds }
   }, [])
 
@@ -270,12 +272,12 @@ export default function useTrainingClock(
   useEffect(() => {
     if (location.index === announcedIndex.current) return
     announcedIndex.current = location.index
-    Vibration.vibrate(20)
+    playTrainingHaptic(hapticRef.current, 'step')
   }, [location.index])
 
   useEffect(() => {
     if (!done) return
-    Vibration.vibrate(40)
+    playTrainingHaptic(hapticRef.current, 'done')
   }, [done])
 
   const persist = async () => {
@@ -335,7 +337,7 @@ export default function useTrainingClock(
     saveFailed,
     remainingSeconds: location.remaining,
     elapsedTotalSeconds,
-    remainingTotalSeconds,
+    totalSeconds,
     roundCount: rounds.length,
     previous,
     current,
