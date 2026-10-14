@@ -30,6 +30,17 @@ export async function recordCompletedSession(
         planSession: schema.sessions.planSession,
         createdAt: schema.sessions.createdAt,
       }).from(schema.sessions)
+      if (session.source === 'watch') {
+        // createdAt is stored in whole seconds, so a replay matches that second.
+        const completedSecond = Math.floor(session.createdAt.getTime() / 1000)
+        const replay = logged.some((item) => (
+          Math.floor(item.createdAt.getTime() / 1000) === completedSecond
+        ))
+        if (replay) {
+          skipped = true
+          return
+        }
+      }
       const startedMs = planStartedAt?.getTime() ?? 0
       const sameSlot = session.planWeek == null || session.planSession == null
         ? []

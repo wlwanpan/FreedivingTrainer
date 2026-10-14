@@ -8,7 +8,7 @@
     "ios": "expo run:ios",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "npx tsx --test utils/watch_tables.test.ts utils/watch_completion.test.ts",
+    "test": "npx tsx --test utils/watch_tables.test.ts utils/watch_completion.test.ts utils/watch_sync.test.ts",
     "android": "expo run:android"
   },
   "dependencies": {

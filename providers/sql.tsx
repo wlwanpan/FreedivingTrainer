@@ -43,6 +43,7 @@ export const DefaultSettings: Setting = {
   trainingPlanStartedAt: null,
   customPlan: null,
   wearable: null,
+  watchSyncedAt: null,
   createdAt: null,
   updatedAt: null,
 }
