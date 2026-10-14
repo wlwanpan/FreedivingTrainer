@@ -78,7 +78,7 @@ export default function SettingsScreen() {
         <SCard>
           <SCardTitle>Training</SCardTitle>
           <SGroup>Animation</SGroup>
-          <SNote>Bubbles, fish, and card movement during a table.</SNote>
+          <SNote>Bubbles and card movement during a table.</SNote>
           <SChoiceRow>
             <SettingsChoice
               label='On'

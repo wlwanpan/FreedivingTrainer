@@ -99,6 +99,7 @@ export default function TrainScreen() {
         elapsedTotalSeconds={training.elapsedTotalSeconds}
         totalSeconds={training.totalSeconds}
         roundCount={training.roundCount}
+        heartRateBpm={training.heartRateBpm}
         paused={training.paused}
         done={training.done}
         saving={training.saving}

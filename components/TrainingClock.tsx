@@ -5,12 +5,14 @@ import TrainingGestureInfo from '@/components/TrainingGestureInfo'
 import TrainingGestureTutorial from '@/components/TrainingGestureTutorial'
 import TrainingKeepAwake from '@/components/TrainingKeepAwake'
 import TrainingStep, { trainingCardSize, trainingStepY } from '@/components/TrainingStep'
+import TrainingTelemetry from '@/components/TrainingTelemetry'
 import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes, Layout } from '@/design/styles'
 import { TrainStep } from '@/hooks/useTrainingClock'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
+import { useWarningModal } from '@/providers/warning_modal'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { contractionLabel, contractionsInRound, ContractionTap, LoggedContraction, sessionResultNote } from '@/utils/contractions'
 import { playTrainingHaptic } from '@/utils/training_haptic'
@@ -31,6 +33,7 @@ type Props = {
   elapsedTotalSeconds: number
   totalSeconds: number
   roundCount: number
+  heartRateBpm: number | null
   paused: boolean
   done: boolean
   saving: boolean
@@ -54,6 +57,7 @@ export default function TrainingClock({
   elapsedTotalSeconds,
   totalSeconds,
   roundCount,
+  heartRateBpm,
   paused,
   done,
   saving,
@@ -69,6 +73,7 @@ export default function TrainingClock({
 }: Props) {
   const { settings, updatedAt } = useSQLContext()
   const updateSetting = useUpdateSetting()
+  const { showConfirmation } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
   const animated = settings.trainingAnimation
   const showIntro = updatedAt != null && !settings.trainingGesturesSeen
@@ -185,6 +190,25 @@ export default function TrainingClock({
     setInfoOpen(true)
   }
 
+  const requestCancel = async () => {
+    if (previous == null) {
+      onCancel()
+      return
+    }
+    const resume = !paused
+    if (resume) onTogglePause()
+    const leave = await showConfirmation(
+      'Leave training?',
+      'Current progress will be lost.',
+      { confirmTitle: 'Go Back' },
+    )
+    if (leave) {
+      onCancel()
+      return
+    }
+    if (resume) onTogglePause()
+  }
+
   const replayTutorial = () => {
     if (done) return
     const resume = !paused || infoHeld.current
@@ -209,7 +233,7 @@ export default function TrainingClock({
       <HeaderWithBtn
         headerText={done ? 'Complete' : title}
         leftText={done ? undefined : 'Cancel'}
-        leftOnClick={done ? undefined : onCancel}
+        leftOnClick={done ? undefined : () => { void requestCancel() }}
         right={done || tutorialOpen ? undefined : (
           <SInfo
             onPress={toggleInfo}
@@ -226,15 +250,14 @@ export default function TrainingClock({
           </SInfo>
         )}
       />
-      <STimeRow>
-        <STimePill
-          accessibilityLabel={`${formatSeconds(elapsedTotalSeconds)} elapsed of ${formatSeconds(totalSeconds)}`}
-        >
-          <STimeText>
-            {formatSeconds(elapsedTotalSeconds)} / {formatSeconds(totalSeconds)}
-          </STimeText>
-        </STimePill>
-      </STimeRow>
+      <TrainingTelemetry
+        elapsedTotalSeconds={elapsedTotalSeconds}
+        totalSeconds={totalSeconds}
+        roundIndex={current?.roundIndex ?? previous?.roundIndex ?? 0}
+        roundCount={roundCount}
+        heartRateBpm={heartRateBpm}
+        contractions={contractions}
+      />
       <SStage>
         <GestureDetector gesture={taps}>
           <SChain
@@ -333,25 +356,6 @@ function asideFor(step: TrainStep | null, contractions: LoggedContraction[]): st
 
 const Wrapper = styled.View`
   flex: 1;
-`
-
-const STimeRow = styled.View`
-  flex-shrink: 0;
-  align-items: center;
-  padding: 0 20px 8px;
-`
-
-const STimePill = styled.View`
-  padding: 6px 12px;
-  border-radius: 999px;
-  background-color: ${Colors.SeafoamMuted};
-`
-
-const STimeText = styled.Text`
-  font-size: ${FontSizes.Small};
-  font-weight: 800;
-  font-variant: tabular-nums;
-  color: ${Colors.Text};
 `
 
 const SStage = styled.View`

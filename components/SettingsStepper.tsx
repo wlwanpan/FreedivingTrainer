@@ -14,6 +14,7 @@ type Props = {
   min?: number
   max?: number
   editable?: boolean
+  last?: boolean
   onChange: (next: number) => void
 }
 
@@ -25,6 +26,7 @@ export default function SettingsStepper({
   min = 0,
   max = 3600,
   editable = false,
+  last = false,
   onChange,
 }: Props) {
   const { formatSeconds } = useFormatterContext()
@@ -77,7 +79,7 @@ export default function SettingsStepper({
   }
 
   return (
-    <Wrapper>
+    <Wrapper $last={last}>
       <SLabel>{label}</SLabel>
       <SControls>
         <SStep onPress={() => stepBy(-step)} disabled={!editing && value <= min}>
@@ -135,12 +137,12 @@ function parseClockDigits(raw: string): number | null {
   return Number(digits.slice(0, -2)) * 60 + Number(digits.slice(-2))
 }
 
-const Wrapper = styled.View`
+const Wrapper = styled.View<{ $last: boolean }>`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom-width: 1px;
+  border-bottom-width: ${(props) => props.$last ? 0 : 1}px;
   border-bottom-color: ${Colors.Hairline};
 `
 

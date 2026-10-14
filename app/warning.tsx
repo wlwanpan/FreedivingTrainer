@@ -8,10 +8,11 @@ import { styled } from 'styled-components/native'
 
 
 export default function WarningScreen() {
-  const { title, description, mode } = useLocalSearchParams<{
+  const { title, description, mode, confirmTitle } = useLocalSearchParams<{
     title: string
     description: string
     mode?: string
+    confirmTitle?: string
   }>()
   const router = useRouter()
   const insets = useSafeAreaInsets()
@@ -19,7 +20,8 @@ export default function WarningScreen() {
   const isConfirmDeletion = mode === 'confirm_deletion'
   const isConfirm = mode === 'confirm'
   const hasConfirmActions = isConfirmDeletion || isConfirm
-  const confirmButtonTitle = isConfirmDeletion ? 'Delete' : 'Confirm'
+  const confirmButtonTitle = confirmTitle
+    ?? (isConfirmDeletion ? 'Delete' : 'Confirm')
 
   useEffect(() => {
     return markWarningClosed

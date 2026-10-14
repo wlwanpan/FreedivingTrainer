@@ -231,7 +231,7 @@ export default function useTrainingClock(
 
   const logContraction = useCallback((): ContractionTap => {
     const touch = touchRef.current
-    const sample = touch != null && Date.now() - touch.at < 700 ? touch : {
+    const sample = touch != null ? touch : {
       kind: kindRef.current,
       roundIndex: roundRef.current,
       phaseSeconds: phaseSecondsRef.current,
@@ -339,6 +339,7 @@ export default function useTrainingClock(
     elapsedTotalSeconds,
     totalSeconds,
     roundCount: rounds.length,
+    heartRateBpm: heartRate.bpm,
     previous,
     current,
     next,
