@@ -97,7 +97,6 @@ final class WatchSession: NSObject, ObservableObject {
     private var planKey = ""
     private var queuedPlan: [String: Any]?
     private var pendingPlan: [String: Any]?
-    private var dismissSavedTask: Task<Void, Never>?
     private var sendingCompletions = Set<Int>()
     private var contextTimer: Timer?
     private var lastContextKey = ""
@@ -236,30 +235,17 @@ final class WatchSession: NSObject, ObservableObject {
         phases = []
         queuedPlan = nil
         pendingPlan = nil
-        dismissSavedTask?.cancel()
-        dismissSavedTask = nil
         stopHeartRate(save: false)
         publishTraining(false)
     }
 
     func dismissSaved() {
-        dismissSavedTask?.cancel()
-        dismissSavedTask = nil
         guard finished else { return }
         finished = false
         let message = pendingPlan
         pendingPlan = nil
         if let message {
             installPlan(message)
-        }
-    }
-
-    private func scheduleSavedDismissal() {
-        guard dismissSavedTask == nil else { return }
-        dismissSavedTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(2))
-            guard let self, !Task.isCancelled else { return }
-            self.dismissSaved()
         }
     }
 
@@ -309,9 +295,6 @@ final class WatchSession: NSObject, ObservableObject {
         }
         if finished {
             pendingPlan = message
-            if logged {
-                scheduleSavedDismissal()
-            }
             return
         }
         if changed {

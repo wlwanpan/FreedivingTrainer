@@ -277,31 +277,51 @@ private struct PlanScheduleList: View {
     let plan: WatchPlan
     let onBack: () -> Void
 
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
-                Button(action: onBack) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                        Text("Plan")
-                    }
-                    .font(.caption2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .buttonStyle(.plain)
-                if !plan.planName.isEmpty {
-                    Text(plan.planName)
-                        .font(.headline)
-                }
-                ForEach(plan.schedule) { week in
-                    weekCard(week)
-                }
-            }
-            .padding(.horizontal, 4)
+    private var focusWeek: Int {
+        if let next = plan.schedule.first(where: { week in
+            !week.locked && week.sessions.contains(where: { !$0.completed })
+        }) {
+            return next.week
         }
+        if plan.week > 0 { return plan.week }
+        return plan.schedule.first(where: \.current)?.week ?? plan.schedule.first?.week ?? 1
     }
 
-    private func weekCard(_ week: WatchListedWeek) -> some View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button(action: onBack) {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                    Text("Plan")
+                }
+                .font(.caption2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            if !plan.planName.isEmpty {
+                Text(plan.planName)
+                    .font(.headline)
+            }
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(plan.schedule) { week in
+                            weekCard(week, focused: week.week == focusWeek)
+                                .id(week.week)
+                        }
+                    }
+                }
+                .task(id: focusWeek) {
+                    try? await Task.sleep(for: .milliseconds(50))
+                    proxy.scrollTo(focusWeek, anchor: .top)
+                }
+            }
+        }
+        .padding(.horizontal, 4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func weekCard(_ week: WatchListedWeek, focused: Bool) -> some View {
         let complete = !week.sessions.isEmpty && week.sessions.allSatisfy(\.completed)
         return VStack(alignment: .leading, spacing: 6) {
             HStack {
@@ -312,7 +332,7 @@ private struct PlanScheduleList: View {
                 if complete {
                     Text("Complete")
                         .foregroundStyle(Color.accentColor)
-                } else if week.current {
+                } else if focused {
                     Text("This week")
                         .foregroundStyle(Color.accentColor)
                 }
@@ -366,7 +386,7 @@ private struct PlanScheduleList: View {
         .overlay {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(
-                    week.current ? Color.accentColor.opacity(0.9) : Color.primary.opacity(0.15),
+                    focused ? Color.accentColor.opacity(0.9) : Color.primary.opacity(0.15),
                     lineWidth: 1
                 )
         }
