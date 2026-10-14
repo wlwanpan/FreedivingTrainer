@@ -29,7 +29,7 @@ type Props = {
   next: TrainStep | null
   remainingSeconds: number
   elapsedTotalSeconds: number
-  remainingTotalSeconds: number
+  totalSeconds: number
   roundCount: number
   paused: boolean
   done: boolean
@@ -52,7 +52,7 @@ export default function TrainingClock({
   next,
   remainingSeconds,
   elapsedTotalSeconds,
-  remainingTotalSeconds,
+  totalSeconds,
   roundCount,
   paused,
   done,
@@ -228,10 +228,10 @@ export default function TrainingClock({
       />
       <STimeRow>
         <STimePill
-          accessibilityLabel={`${formatSeconds(elapsedTotalSeconds)} elapsed, ${formatSeconds(remainingTotalSeconds)} left`}
+          accessibilityLabel={`${formatSeconds(elapsedTotalSeconds)} elapsed of ${formatSeconds(totalSeconds)}`}
         >
           <STimeText>
-            {formatSeconds(elapsedTotalSeconds)} / {formatSeconds(remainingTotalSeconds)}
+            {formatSeconds(elapsedTotalSeconds)} / {formatSeconds(totalSeconds)}
           </STimeText>
         </STimePill>
       </STimeRow>
@@ -350,6 +350,7 @@ const STimePill = styled.View`
 const STimeText = styled.Text`
   font-size: ${FontSizes.Small};
   font-weight: 800;
+  font-variant: tabular-nums;
   color: ${Colors.Text};
 `
 

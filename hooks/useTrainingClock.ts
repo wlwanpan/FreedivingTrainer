@@ -142,7 +142,6 @@ export default function useTrainingClock(
   const location = locate(phases, elapsedSeconds)
   const totalSeconds = phases.reduce((sum, phase) => sum + phase.seconds, 0)
   const elapsedTotalSeconds = Math.min(totalSeconds, Math.max(0, elapsedSeconds))
-  const remainingTotalSeconds = Math.max(0, totalSeconds - elapsedTotalSeconds)
   const done = phases.length > 0 && location.done
   const heartRate = useSessionHeartRate(tableType != null && !done)
   const stepAt = (index: number): TrainStep | null => {
@@ -338,7 +337,7 @@ export default function useTrainingClock(
     saveFailed,
     remainingSeconds: location.remaining,
     elapsedTotalSeconds,
-    remainingTotalSeconds,
+    totalSeconds,
     roundCount: rounds.length,
     previous,
     current,
