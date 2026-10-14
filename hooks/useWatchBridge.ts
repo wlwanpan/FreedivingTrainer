@@ -163,6 +163,8 @@ export default function useWatchBridge() {
         planWeek: completed.planWeek,
         planSession: completed.planSession,
         startedAt: completed.startedAt == null ? null : new Date(completed.startedAt),
+        source: 'watch',
+        watchDetail: completed.watchDetail,
         createdAt,
         updatedAt: createdAt,
       }, planStartedRef.current)

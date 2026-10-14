@@ -277,6 +277,7 @@ export default function useTrainingClock(
       planWeek: slot?.week ?? null,
       planSession: slot?.index ?? null,
       startedAt: new Date(wallStartedAtRef.current),
+      source: 'phone',
       createdAt,
       updatedAt: createdAt,
     }, sql.settings.trainingPlanStartedAt)

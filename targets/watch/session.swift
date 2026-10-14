@@ -451,6 +451,8 @@ final class WatchSession: NSObject, ObservableObject {
             "roundsPlanned": plan.rounds.count,
             "startedAt": Int(wallStartedAt.timeIntervalSince1970 * 1000),
             "completedAt": Int(Date().timeIntervalSince1970 * 1000),
+            "source": "watch",
+            "watchDetail": "ios",
             "heartRates": samples,
         ]
         if plan.week > 0 && plan.sessionIndex > 0 {

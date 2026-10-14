@@ -36,6 +36,7 @@ describe('readWatchCompletion', () => {
     assert.equal(completed.roundsCompleted, 8)
     assert.equal(completed.planWeek, null)
     assert.equal(completed.planSession, null)
+    assert.equal(completed.watchDetail, 'ios')
     assert.equal(completed.heartRates[0]?.bpm, 68)
   })
 
@@ -49,6 +50,7 @@ describe('readWatchCompletion', () => {
       roundsPlanned: tables.o2.rounds.length,
       startedAt: 1_700_000_000_000,
       completedAt: 1_700_000_200_000,
+      watchDetail: 'ios',
     }, 'beginner:1:')
 
     assert.ok(completed)
@@ -57,5 +59,6 @@ describe('readWatchCompletion', () => {
     assert.equal(completed.restSeconds, 120)
     assert.equal(completed.planWeek, null)
     assert.equal(completed.planSession, null)
+    assert.equal(completed.watchDetail, 'ios')
   })
 })

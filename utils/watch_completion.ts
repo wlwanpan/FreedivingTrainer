@@ -1,3 +1,4 @@
+import { WatchDetail, WatchDetails } from '../constants/sessions'
 import { TableType, TableTypes } from '../constants/tables'
 
 export type WatchCompletedSession = {
@@ -10,6 +11,7 @@ export type WatchCompletedSession = {
   completedAt: number
   planWeek: number | null
   planSession: number | null
+  watchDetail: WatchDetail
   heartRates: { bpm: number; recordedAt: Date }[]
 }
 
@@ -24,6 +26,11 @@ function wholeNumber(value: unknown, min: number, max: number): number | null {
 function tableType(value: unknown): TableType | null {
   if (typeof value !== 'string') return null
   return (TableTypes as readonly string[]).includes(value) ? value as TableType : null
+}
+
+function readWatchDetail(value: unknown): WatchDetail {
+  if (typeof value !== 'string') return 'ios'
+  return (WatchDetails as readonly string[]).includes(value) ? value as WatchDetail : 'ios'
 }
 
 function readRates(value: unknown): { bpm: number; recordedAt: Date }[] {
@@ -73,6 +80,7 @@ export function readWatchCompletion(
     completedAt,
     planWeek: slotted ? week : null,
     planSession: slotted ? sessionIndex : null,
+    watchDetail: readWatchDetail(payload.watchDetail),
     heartRates: readRates(payload.heartRates),
   }
 }
