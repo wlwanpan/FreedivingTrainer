@@ -10,7 +10,7 @@ import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
 import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
-import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
+import useWearableStatus, { watchBlocksPhoneStart, wearableLabel } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
@@ -78,10 +78,18 @@ export default function HomeScreen() {
   return (
     <WrapperScreen skipBottomInset>
       <ScreenHeader
-        title='Dashboard'
+        title='Home'
         right={(
-          <SHeaderBtn onPress={() => router.push('/settings')} accessibilityLabel='Settings'>
-            <Ionicons name='person-outline' size={18} color={Colors.Seafoam} />
+          <SHeaderBtn
+            onPress={() => router.push('/wearable')}
+            accessibilityLabel={wearableLabel(wearable)}
+          >
+            <Ionicons
+              name={wearable.connected ? 'watch' : 'watch-outline'}
+              size={18}
+              color={wearable.connected ? Colors.Seafoam : Colors.TextDisabled}
+            />
+            <SWatchPip $connected={wearable.connected} />
           </SHeaderBtn>
         )}
       />
@@ -226,6 +234,18 @@ const SHeaderBtn = styled.Pressable`
   background-color: ${Colors.SeafoamMuted};
   border-width: 1px;
   border-color: ${Colors.HairlineStrong};
+`
+
+const SWatchPip = styled.View<{ $connected: boolean }>`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: ${(props) => props.$connected ? Colors.Seafoam : Colors.TextDisabled};
+  border-width: 1.5px;
+  border-color: ${Colors.SeafoamMuted};
 `
 
 const SPlan = styled.View`

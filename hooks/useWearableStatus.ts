@@ -1,5 +1,5 @@
 import { useSQLContext } from '@/providers/sql'
-import { syncStatusLabel } from '@/utils/watch_sync'
+import { formatSyncClock, syncStatusLabel } from '@/utils/watch_sync'
 import { useSyncExternalStore } from 'react'
 
 
@@ -11,6 +11,7 @@ export type WearableStatus = {
   paired: boolean
   heartRateActive: boolean
   watchTraining: boolean
+  syncedAt: number | null
   syncLabel: string | null
 }
 
@@ -88,6 +89,7 @@ export default function useWearableStatus(): WearableStatus {
     paired: live.paired,
     heartRateActive: live.heartRateActive,
     watchTraining: live.watchTraining,
+    syncedAt,
     syncLabel: syncStatusLabel({
       paired: live.paired,
       reachable: live.connected,
@@ -113,4 +115,11 @@ export function wearableLabel(status: WearableStatus): string {
 
 export function wearableLive(status: WearableStatus): boolean {
   return status.heartRateActive || status.watchTraining || (status.connected && status.kind != null)
+}
+
+export function lastSyncLabel(status: Pick<WearableStatus, 'syncedAt' | 'syncLabel'>): string {
+  if (status.syncedAt == null) {
+    return status.syncLabel === 'Syncing…' ? 'Syncing…' : 'Not synced yet'
+  }
+  return formatSyncClock(status.syncedAt, Date.now())
 }

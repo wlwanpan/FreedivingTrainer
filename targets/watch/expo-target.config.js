@@ -2,7 +2,7 @@
 module.exports = config => ({
   type: "watch",
   bundleIdentifier: ".watch",
-  icon: 'https://github.com/expo.png',
+  icon: '../../assets/images/icon.png',
   colors: { $accent: "#0D9488" },
   deploymentTarget: "9.4",
   frameworks: ["HealthKit"],

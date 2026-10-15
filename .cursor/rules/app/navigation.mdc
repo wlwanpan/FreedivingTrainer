@@ -18,4 +18,5 @@ File-based routing via Expo Router. `app/_layout.tsx` opens SQLite, runs migrati
 - `app/train.tsx` — live table. Slides in from the right and counts down each breathe-up, hold, and rest
 - `app/settings/` — table configuration and purchases
 - `app/paywall.tsx` — RevenueCat lifetime access
+- `app/wearable.tsx` — watch connection, last sync, and sessions synced from the watch. Opened from the Home watch icon
 - `app/warning.tsx` — warning and confirmation sheet
