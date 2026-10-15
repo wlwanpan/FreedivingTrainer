@@ -24,8 +24,8 @@ export default function LanguageScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom }}
       >
-        <SCard>
-          {options.map((option, index) => {
+        <SList>
+          {options.map((option) => {
             const selected = language === option.code
             return (
               <SOption
@@ -39,7 +39,7 @@ export default function LanguageScreen() {
                 accessibilityLabel={option.nativeName}
               >
                 {({ pressed }) => (
-                  <SRow $last={index === options.length - 1} $pressed={pressed}>
+                  <SRow $pressed={pressed}>
                     <SName>{option.nativeName}</SName>
                     {selected ? (
                       <Ionicons name='checkmark-circle' size={22} color={Colors.Seafoam} />
@@ -49,7 +49,7 @@ export default function LanguageScreen() {
               </SOption>
             )
           })}
-        </SCard>
+        </SList>
       </SScroll>
     </WrapperScreen>
   )
@@ -59,26 +59,25 @@ const SScroll = styled.ScrollView`
   flex: 1;
 `
 
-const SCard = styled.View`
+const SList = styled.View`
   margin: ${Space.md}px ${Space.screen}px 12px;
-  border-radius: ${Radii.Card}px;
-  background-color: ${Colors.Card};
-  border-width: 1px;
-  border-color: ${Colors.Hairline};
+  gap: ${Space.sm}px;
 `
 
 const SOption = styled.Pressable`
   min-height: ${Layout.MinControl}px;
 `
 
-const SRow = styled.View<{ $last: boolean; $pressed: boolean }>`
+const SRow = styled.View<{ $pressed: boolean }>`
   flex-direction: row;
   align-items: center;
   min-height: ${Layout.MinControl}px;
   padding: ${Space.md}px;
-  border-bottom-width: ${(props) => props.$last ? 0 : 1}px;
-  border-bottom-color: ${Colors.Hairline};
+  border-radius: ${Radii.Button}px;
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
   background-color: ${(props) => props.$pressed ? Colors.Hover : Colors.Card};
+  overflow: hidden;
 `
 
 const SName = styled.Text`

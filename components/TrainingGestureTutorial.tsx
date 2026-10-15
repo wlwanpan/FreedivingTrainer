@@ -89,7 +89,6 @@ export default function TrainingGestureTutorial({ onDismiss }: Props) {
           <SRipple style={[rippleBStyle, { borderColor: tone }]} />
           <SHand style={handStyle}>
             <SFinger>
-              <SNail />
               <SCrease />
             </SFinger>
           </SHand>
@@ -179,18 +178,10 @@ const SFinger = styled.View`
   elevation: 3;
 `
 
-const SNail = styled.View`
-  width: 26px;
-  height: 18px;
-  margin-top: 12px;
-  border-radius: 10px;
-  background-color: ${Colors.Aquamarine};
-`
-
 const SCrease = styled.View`
   width: 36px;
   height: 3px;
-  margin-top: 14px;
+  margin-top: 28px;
   border-radius: 2px;
   background-color: ${Colors.Hairline};
 `

@@ -131,8 +131,7 @@ struct ContentView: View {
                 }
                 if session.paused {
                     Button(L10n.t("resume"), action: session.togglePause)
-                        .buttonStyle(.borderedProminent)
-                        .tint(Pelagic.seafoam)
+                        .pelagicPrimaryButton()
                     Button(L10n.t("exit"), role: .destructive) { confirmExit = true }
                         .buttonStyle(.bordered)
                         .tint(Pelagic.alert)
@@ -150,8 +149,7 @@ struct ContentView: View {
                     .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
                 Button(L10n.t("okay"), action: session.dismissSaved)
-                    .buttonStyle(.borderedProminent)
-                    .tint(Pelagic.seafoam)
+                    .pelagicPrimaryButton()
             }
         }
         .padding()
@@ -172,8 +170,7 @@ struct ContentView: View {
                     Button(L10n.t("start")) {
                         session.startTable(table)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Pelagic.seafoam)
+                    .pelagicPrimaryButton()
                 }
             } else {
                 Text(title)
@@ -249,8 +246,7 @@ struct ContentView: View {
     private func phoneOrStart(start: @escaping () -> Void) -> some View {
         if !session.phoneTraining || !session.reachable {
             Button(L10n.t("start"), action: start)
-                .buttonStyle(.borderedProminent)
-                .tint(Pelagic.seafoam)
+                .pelagicPrimaryButton()
         }
     }
 
@@ -302,7 +298,30 @@ private struct PlanScheduleList: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(plan.schedule) { week in
+                        weekCard(week, focused: week.week == focusWeek)
+                            .id(week.week)
+                    }
+                }
+                .padding(.bottom, 8)
+            }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                scheduleHeader
+            }
+            .padding(.horizontal, 8)
+            .task(id: focusWeek) {
+                try? await Task.sleep(for: .milliseconds(50))
+                proxy.scrollTo(focusWeek, anchor: .top)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var scheduleHeader: some View {
+        VStack(alignment: .leading, spacing: 4) {
             Button(action: onBack) {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
@@ -310,7 +329,8 @@ private struct PlanScheduleList: View {
                 }
                 .font(.caption2)
                 .foregroundStyle(Pelagic.seafoam)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             if !plan.planName.isEmpty {
@@ -318,23 +338,10 @@ private struct PlanScheduleList: View {
                     .font(.headline)
                     .foregroundStyle(Pelagic.text)
             }
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(plan.schedule) { week in
-                            weekCard(week, focused: week.week == focusWeek)
-                                .id(week.week)
-                        }
-                    }
-                }
-                .task(id: focusWeek) {
-                    try? await Task.sleep(for: .milliseconds(50))
-                    proxy.scrollTo(focusWeek, anchor: .top)
-                }
-            }
         }
-        .padding(.horizontal, 4)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 6)
+        .background(Pelagic.canvas)
     }
 
     private func weekCard(_ week: WatchListedWeek, focused: Bool) -> some View {

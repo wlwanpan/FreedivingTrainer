@@ -177,7 +177,7 @@ export default function HomeScreen() {
           ) : null}
         </SSectionRow>
         {latest.length === 0 ? (
-          <EmptyListPlaceholder message={t('home.empty')} />
+          <EmptyListPlaceholder message={t('home.empty')} card />
         ) : (
           latest.map((session) => (
             <SessionListItem key={session.id} session={session} />

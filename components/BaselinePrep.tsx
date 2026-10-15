@@ -8,11 +8,10 @@ import { styled } from 'styled-components/native'
 
 type Props = {
   onStart: () => void
-  onEnterTimes: () => void
   onBack: () => void
 }
 
-export default function BaselinePrep({ onStart, onEnterTimes, onBack }: Props) {
+export default function BaselinePrep({ onStart, onBack }: Props) {
   const { t } = useI18n()
   return (
     <Wrapper>
@@ -38,11 +37,6 @@ export default function BaselinePrep({ onStart, onEnterTimes, onBack }: Props) {
       </SBody>
       <Footer>
         <Button title={t('baseline.startHold')} onPress={onStart} />
-        <Button
-          title={t('baseline.enterTimes')}
-          onPress={onEnterTimes}
-          variant='ghost'
-        />
       </Footer>
     </Wrapper>
   )

@@ -354,13 +354,6 @@ export default function TrainingClock({
             {feedback ? <SPill><SPillText>{feedback.text}</SPillText></SPill> : null}
           </SNotices>
         ) : null}
-        {tutorialOpen ? <TrainingGestureTutorial onDismiss={dismissTutorial} /> : null}
-        {infoOpen ? (
-          <TrainingGestureInfo
-            onClose={closeInfo}
-            onReplay={replayTutorial}
-          />
-        ) : null}
       </SStage>
       {done ? (
         <Footer>
@@ -371,6 +364,13 @@ export default function TrainingClock({
             onPress={saved ? onClose : onRetry}
           />
         </Footer>
+      ) : null}
+      {tutorialOpen ? <TrainingGestureTutorial onDismiss={dismissTutorial} /> : null}
+      {infoOpen ? (
+        <TrainingGestureInfo
+          onClose={closeInfo}
+          onReplay={replayTutorial}
+        />
       ) : null}
     </Wrapper>
   )
@@ -387,6 +387,7 @@ function asideFor(
 
 const Wrapper = styled.View`
   flex: 1;
+  position: relative;
 `
 
 const SStage = styled.View`

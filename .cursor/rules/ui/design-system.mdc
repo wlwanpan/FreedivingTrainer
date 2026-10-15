@@ -50,3 +50,4 @@ Soft zen shadows, not heavy drop shadows. Card edge `1px solid #E1EDF1`. Glass `
 - **Table rows:** active seafoam, done `#94A3B8`, upcoming translucent cyan
 - **Breath ring:** track `#E1EDF1`, fill lagoon or aquamarine
 - **Duration steppers:** mist panel, `+0:05` / `-0:05` tap zones
+- **Single-choice pickers:** stacked rows at `Radii.Button` with `Space.sm` gap (see `selection-lists.mdc`). Grouped multi-row cards clip with `overflow: hidden`.

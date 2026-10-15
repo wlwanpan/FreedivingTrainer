@@ -36,13 +36,16 @@ export type BaselineOutcome = {
 
 const CONTROL_DELAY_MS = 400
 
-export default function useBaselineTest(finishToHome: boolean) {
+export default function useBaselineTest(
+  finishToHome: boolean,
+  initialStage: BaselineStage = 'prep',
+) {
   const sql = useSQLContext()
   const { t, language } = useI18n()
   const router = useRouter()
   const { showConfirmation, showWarning } = useWarningModal()
   const outline = useTrainingOutline()
-  const [stage, setStage] = useState<BaselineStage>('prep')
+  const [stage, setStage] = useState<BaselineStage>(initialStage)
   const [now, setNow] = useState(() => Date.now())
   const [startedAt, setStartedAt] = useState<number | null>(null)
   const [contractionAt, setContractionAt] = useState<number | null>(null)
@@ -266,7 +269,6 @@ export default function useBaselineTest(finishToHome: boolean) {
       contractionSeconds: sql.settings.baselineContractionSeconds,
     },
     start,
-    openManual: () => setStage('manual'),
     submitManual,
     markContraction,
     finish,

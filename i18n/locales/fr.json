@@ -155,6 +155,9 @@
   },
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
+    "welcomeTitle": "Bienvenue",
+    "welcomeCopy": "Des tables d’apnée statique CO2 et O2 calibrées sur votre apnée maximale. Commençons par trouver votre baseline, puis choisissez un plan d’entraînement.",
+    "continue": "Continuer",
     "title": "Trouvez votre baseline",
     "copy": "Une apnée statique maximale dimensionne vos tables. Marquez la première contraction, puis tenez jusqu’au besoin de respirer. Ensuite, choisissez un plan ou construisez le vôtre. Gardez CO2 et O2 sur des jours différents.",
     "co2Copy": "L’apnée reste fixe. Le repos commence long et diminue à chaque tour.",
@@ -410,7 +413,7 @@
     "thenHold": "Puis continuez",
     "thenCopy": "Continuez jusqu’au besoin de respirer. Ce temps total est le maximum dont les tables sont tirées.",
     "startHold": "Démarrer l’apnée",
-    "enterTimes": "Saisir les temps",
+    "enterTimes": "Saisir manuellement",
     "enterTitle": "Saisir les temps",
     "enterCopy": "Utilisez une apnée max et une première contraction déjà connues. Les tables sont dimensionnées à partir de ces deux temps.",
     "maximumHold": "Apnée maximale",

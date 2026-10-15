@@ -155,6 +155,9 @@
   },
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
+    "welcomeTitle": "Welcome",
+    "welcomeCopy": "CO2 and O2 static-apnea tables sized from your maximum hold. First we will find your baseline, then you can choose a training plan.",
+    "continue": "Continue",
     "title": "Find your baseline",
     "copy": "One maximum static hold sizes your tables. Mark the first contraction, then keep holding until you need to breathe. After that, choose a plan or build your own. Keep CO2 and O2 on different days.",
     "co2Copy": "The hold stays fixed. Rest starts long and steps down each round.",
@@ -410,7 +413,7 @@
     "thenHold": "Then keep holding",
     "thenCopy": "Continue until you must breathe. That total time is the maximum the tables are built from.",
     "startHold": "Start hold",
-    "enterTimes": "Enter times",
+    "enterTimes": "Enter manually",
     "enterTitle": "Enter times",
     "enterCopy": "Use a max hold and first contraction you already know. The tables are sized from these two times.",
     "maximumHold": "Maximum hold",

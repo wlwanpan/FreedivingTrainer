@@ -155,6 +155,9 @@
   },
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
+    "welcomeTitle": "Bienvenido",
+    "welcomeCopy": "Tablas de apnea estática CO2 y O2 ajustadas a tu apnea máxima. Primero encontraremos tu línea base; después podrás elegir un plan de entrenamiento.",
+    "continue": "Continuar",
     "title": "Encuentra tu línea base",
     "copy": "Una apnea estática máxima dimensiona tus tablas. Marca la primera contracción y sigue hasta que necesites respirar. Después, elige un plan o crea el tuyo. Mantén CO2 y O2 en días distintos.",
     "co2Copy": "La apnea se mantiene fija. El descanso empieza largo y baja en cada ronda.",
@@ -410,7 +413,7 @@
     "thenHold": "Luego sigue aguantando",
     "thenCopy": "Sigue hasta que debas respirar. Ese tiempo total es el máximo del que se construyen las tablas.",
     "startHold": "Empezar apnea",
-    "enterTimes": "Introducir tiempos",
+    "enterTimes": "Introducir manualmente",
     "enterTitle": "Introducir tiempos",
     "enterCopy": "Usa una apnea máxima y una primera contracción que ya conozcas. Las tablas se dimensionan con esos dos tiempos.",
     "maximumHold": "Apnea máxima",
