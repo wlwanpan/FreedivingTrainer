@@ -48,9 +48,6 @@ export default function AddWearableScreen() {
           last
         />
       </SCard>
-      <SNote>
-        Finish a table on a connected watch to see it on Wearables.
-      </SNote>
     </WrapperScreen>
   )
 }
@@ -78,12 +75,4 @@ const SCard = styled.View`
   border-width: 1px;
   border-color: ${Colors.Hairline};
   overflow: hidden;
-`
-
-const SNote = styled.Text`
-  margin: 0 ${Space.screen}px 16px;
-  font-family: ${Fonts.Body};
-  font-size: ${FontSizes.Small};
-  line-height: 20px;
-  color: ${Colors.TextMuted};
 `
