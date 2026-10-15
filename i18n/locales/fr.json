@@ -188,6 +188,11 @@
     "watchBanner": "Table démarrée sur Apple Watch",
     "start": "Démarrer"
   },
+  "prepare": {
+    "duration": "Durée totale de la séance",
+    "steps": "Étapes au total",
+    "metaA11y": "{duration} de durée totale. {count} étapes au total."
+  },
   "training": {
     "title": "Entraînement",
     "emptyTitle": "Pas encore de plan",
@@ -221,6 +226,7 @@
     "cueHold": "Restez immobile. Détendez visage, nuque et épaules.",
     "cueRest": "Inspirez de souples respirations abdominales. Relâchez nuque, mâchoire et épaules.",
     "noCompletedStep": "Aucune étape terminée pour l’instant",
+    "noCompletedRounds": "Aucun tour terminé pour l’instant",
     "phaseCompleted": "{phase} terminé",
     "ordinalRound": "Tour {ordinal}",
     "duration": "Durée : {time}",

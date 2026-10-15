@@ -174,8 +174,10 @@ export default function TrainingStep({
       {role === 'placeholder' ? (
         <SGhost
           style={[animatedStyle, { width: card.width, borderRadius: Radii.Card }]}
-          accessibilityLabel={t('training.noCompletedStep')}
-        />
+          accessibilityLabel={t('training.noCompletedRounds')}
+        >
+          <SGhostText>{t('training.noCompletedRounds')}</SGhostText>
+        </SGhost>
       ) : (
       <SCard style={[animatedStyle, { width: card.width, borderRadius: Radii.Card }]}>
         <SClip style={{ borderRadius: Radii.Card }}>
@@ -304,10 +306,22 @@ const SCard = styled(Animated.View)`
 
 const SGhost = styled(Animated.View)`
   align-self: center;
+  align-items: center;
+  justify-content: center;
+  padding: 0 ${Space.md}px;
   background-color: transparent;
   border-width: 2px;
   border-color: ${Colors.TextDisabled};
   border-style: dotted;
+`
+
+const SGhostText = styled.Text`
+  font-family: ${Fonts.Body};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-align: center;
+  color: ${Colors.TextDisabled};
 `
 
 const SClip = styled.View`

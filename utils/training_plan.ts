@@ -461,7 +461,12 @@ export function planDetail(input: {
   return `${head} ${t('plan.detailAdvanced')}`
 }
 
-export function sessionRounds(session: WeekSession): TableRound[] {
+export type TableSpec = Pick<
+  WeekSession,
+  'tableType' | 'holdSeconds' | 'holdStepSeconds' | 'restStartSeconds' | 'restStepSeconds' | 'rounds'
+>
+
+export function sessionRounds(session: TableSpec): TableRound[] {
   if (session.tableType === 'o2') {
     return buildO2Table({
       co2Rounds: 1,
@@ -484,6 +489,28 @@ export function sessionRounds(session: WeekSession): TableRound[] {
     o2HoldStepSeconds: 0,
     o2RestSeconds: 0,
   })
+}
+
+export function sessionOutline(session: TableSpec, breatheUpSeconds: number): {
+  rounds: TableRound[]
+  totalSeconds: number
+  stepCount: number
+} {
+  const rounds = sessionRounds(session)
+  const breathe = Math.max(0, breatheUpSeconds)
+  let stepCount = breathe > 0 ? 1 : 0
+  let totalSeconds = breathe
+  for (const round of rounds) {
+    if (round.holdSeconds > 0) {
+      stepCount += 1
+      totalSeconds += round.holdSeconds
+    }
+    if (round.restSeconds > 0) {
+      stepCount += 1
+      totalSeconds += round.restSeconds
+    }
+  }
+  return { rounds, totalSeconds, stepCount }
 }
 
 export function beginnerBaseHold(baselineSeconds: number, contractionSeconds: number | null): number {

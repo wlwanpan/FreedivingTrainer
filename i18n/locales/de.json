@@ -188,6 +188,11 @@
     "watchBanner": "Tabelle auf Apple Watch gestartet",
     "start": "Start"
   },
+  "prepare": {
+    "duration": "Gesamtdauer der Einheit",
+    "steps": "Schritte insgesamt",
+    "metaA11y": "{duration} Gesamtdauer. {count} Schritte insgesamt."
+  },
   "training": {
     "title": "Training",
     "emptyTitle": "Noch kein Plan",
@@ -221,6 +226,7 @@
     "cueHold": "Bleib ruhig. Weiche Gesicht, Nacken und Schultern.",
     "cueRest": "Atme weiche Bauchatmung. Entspanne Nacken, Kiefer und Schultern.",
     "noCompletedStep": "Noch kein abgeschlossener Schritt",
+    "noCompletedRounds": "Noch keine abgeschlossene Runde",
     "phaseCompleted": "{phase} abgeschlossen",
     "ordinalRound": "{ordinal} Runde",
     "duration": "Dauer: {time}",

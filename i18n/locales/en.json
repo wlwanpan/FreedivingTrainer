@@ -188,6 +188,11 @@
     "watchBanner": "Table started on Apple Watch",
     "start": "Start"
   },
+  "prepare": {
+    "duration": "Total session duration",
+    "steps": "Total steps",
+    "metaA11y": "{duration} total session duration. {count} total steps."
+  },
   "training": {
     "title": "Training",
     "emptyTitle": "No plan yet",
@@ -221,6 +226,7 @@
     "cueHold": "Stay still. Soften your face, neck, and shoulders.",
     "cueRest": "Inhale soft abdominal breaths. Relax your neck, jaw, and shoulders.",
     "noCompletedStep": "No completed step yet",
+    "noCompletedRounds": "No completed rounds yet",
     "phaseCompleted": "{phase} completed",
     "ordinalRound": "{ordinal} Round",
     "duration": "Duration: {time}",
