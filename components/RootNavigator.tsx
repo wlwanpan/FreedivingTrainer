@@ -63,6 +63,13 @@ export default function RootNavigator() {
         }}
       />
       <Stack.Screen
+        name='language'
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
         name='train'
         options={{
           animation: 'slide_from_right',

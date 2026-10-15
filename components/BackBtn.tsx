@@ -1,8 +1,7 @@
-import { Colors, Layout } from '@/design/styles'
+import GlassIconButton from '@/components/GlassIconButton'
+import { Colors } from '@/design/styles'
 import { useI18n } from '@/providers/i18n'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { Pressable } from 'react-native'
-import { styled } from 'styled-components/native'
 
 
 type Props = {
@@ -13,26 +12,16 @@ type Props = {
 export default function BackBtn({ onPress, disabled }: Props) {
   const { t } = useI18n()
   return (
-    <SButton
+    <GlassIconButton
       onPress={onPress}
       disabled={disabled}
-      accessibilityRole='button'
       accessibilityLabel={t('common.back')}
     >
-      {({ pressed }) => (
-        <Ionicons
-          name='chevron-back-outline'
-          size={28}
-          color={pressed || disabled ? Colors.TextMuted : Colors.Text}
-        />
-      )}
-    </SButton>
+      <Ionicons
+        name='chevron-back'
+        size={22}
+        color={disabled ? Colors.TextDisabled : Colors.Seafoam}
+      />
+    </GlassIconButton>
   )
 }
-
-const SButton = styled(Pressable)`
-  flex-shrink: 0;
-  min-width: ${Layout.MinControl}px;
-  min-height: ${Layout.MinControl}px;
-  justify-content: center;
-`

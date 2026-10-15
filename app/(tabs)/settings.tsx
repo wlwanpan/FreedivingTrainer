@@ -7,16 +7,18 @@ import WearableStatus from '@/components/WearableStatus'
 import WrapperScreen from '@/components/WrapperScreen'
 import { DateFormats } from '@/constants/dates'
 import { useBottomControlInset } from '@/design/chrome'
-import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
+import { languageNativeName } from '@/i18n/languages'
 import { useFormatterContext } from '@/providers/formatter'
-import { formatDay as formatDayValue } from '@/utils/date'
 import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
+import { formatDay as formatDayValue } from '@/utils/date'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -31,7 +33,7 @@ export default function SettingsScreen() {
   const router = useRouter()
   const { settings, eraseAllData } = useSQLContext()
   const subscription = useSubscriptionContext()
-  const { t, language, setLanguage, options } = useI18n()
+  const { t, language } = useI18n()
   const { formatSeconds } = useFormatterContext()
   const { showWarning, showConfirmDeletion } = useWarningModal()
   const updateSetting = useUpdateSetting()
@@ -268,17 +270,18 @@ export default function SettingsScreen() {
           <SCardTitle>{t('settings.system')}</SCardTitle>
           <SGroup>{t('language.label')}</SGroup>
           <SNote>{t('language.note')}</SNote>
-          <SLangRow>
-            {options.map((option) => (
-              <SLangChoice key={option.code}>
-                <SettingsChoice
-                  label={option.nativeName}
-                  selected={language === option.code}
-                  onPress={() => setLanguage(option.code)}
-                />
-              </SLangChoice>
-            ))}
-          </SLangRow>
+          <SLangLink
+            onPress={() => router.push('/language')}
+            accessibilityRole='button'
+            accessibilityLabel={t('language.openA11y', { language: languageNativeName(language) })}
+          >
+            {({ pressed }) => (
+              <SLangInner $pressed={pressed}>
+                <SLangValue>{languageNativeName(language)}</SLangValue>
+                <Ionicons name='chevron-forward' size={18} color={Colors.TextMuted} />
+              </SLangInner>
+            )}
+          </SLangLink>
 
           <SGroup>{t('settings.date')}</SGroup>
           <SChoiceRow>
@@ -358,18 +361,27 @@ const SChoiceRow = styled.View`
   margin-bottom: 4px;
 `
 
-const SLangRow = styled.View`
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+const SLangLink = styled.Pressable`
+  min-height: ${Layout.MinControl}px;
   margin-bottom: 4px;
 `
 
-const SLangChoice = styled.View`
-  flex-grow: 1;
-  flex-basis: 30%;
-  min-width: 96px;
+const SLangInner = styled.View<{ $pressed: boolean }>`
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  min-height: ${Layout.MinControl}px;
+  padding: 0 4px;
+  border-radius: ${Radii.Control}px;
+  background-color: ${(props) => props.$pressed ? Colors.Hover : 'transparent'};
+`
+
+const SLangValue = styled.Text`
+  flex: 1;
+  font-family: ${Fonts.BodySemi};
+  font-size: ${FontSizes.Medium};
+  font-weight: 600;
+  color: ${Colors.Text};
 `
 
 const SAppVersion = styled.Text`

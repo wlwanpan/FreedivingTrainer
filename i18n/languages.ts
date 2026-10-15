@@ -19,3 +19,7 @@ export function isLanguage(value: unknown): value is Language {
 export function parseLanguage(value: unknown): Language | null {
   return isLanguage(value) ? value : null
 }
+
+export function languageNativeName(code: Language): string {
+  return LanguageOptions.find((option) => option.code === code)?.nativeName ?? LanguageOptions[0].nativeName
+}

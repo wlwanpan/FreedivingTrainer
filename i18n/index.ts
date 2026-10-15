@@ -3,6 +3,7 @@ export { detectDeviceLanguage } from './device'
 export {
   DefaultLanguage,
   isLanguage,
+  languageNativeName,
   LanguageOptions,
   Languages,
   parseLanguage,

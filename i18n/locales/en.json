@@ -102,7 +102,8 @@
   },
   "language": {
     "label": "Language",
-    "note": "Used on iPhone and Apple Watch."
+    "note": "Used on iPhone and Apple Watch.",
+    "openA11y": "Language, {language}"
   },
   "settings": {
     "title": "Settings",
