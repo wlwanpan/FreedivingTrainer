@@ -28,16 +28,18 @@ const Wrapper = styled.View`
   flex-direction: row;
   margin: ${Space.sm}px ${Space.screen}px ${Space.xs}px;
   padding: 4px;
-  border-radius: ${Radii.Button}px;
-  background-color: ${Colors.SegmentTrack};
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
 `
 
 const SOption = styled.Pressable<{ $selected: boolean }>`
   flex: 1;
   padding: 10px;
-  border-radius: 20px;
+  border-radius: 12px;
   align-items: center;
-  background-color: ${(props) => props.$selected ? Colors.SegmentSelected : 'transparent'};
+  background-color: ${(props) => props.$selected ? Colors.SegmentTrack : 'transparent'};
 `
 
 const SLabel = styled.Text<{ $selected: boolean }>`

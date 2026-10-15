@@ -4,7 +4,7 @@ import SettingsStepper from '@/components/SettingsStepper'
 import TableRoundRow from '@/components/TableRoundRow'
 import TableTypeSwitch from '@/components/TableTypeSwitch'
 import WrapperScreen from '@/components/WrapperScreen'
-import { TableType, TableTypeDescription, TableTypeLabel } from '@/constants/tables'
+import { TableType, TableTypeDescription, TableTypeLabel, TableTypeTerm } from '@/constants/tables'
 import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
@@ -58,7 +58,15 @@ export default function TableScreen() {
         </SBanner>
       ) : null}
       <TableTypeSwitch value={tableType} onChange={setTableType} />
-      <SCopy>{TableTypeDescription[tableType]}</SCopy>
+      <SCopy>
+        {TableTypeTerm[tableType] ? (
+          <>
+            <STerm>{TableTypeTerm[tableType]}</STerm>
+            {': '}
+          </>
+        ) : null}
+        {TableTypeDescription[tableType]}
+      </SCopy>
       <SScroll
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps='handled'
@@ -192,6 +200,11 @@ const SCopy = styled.Text`
   font-size: ${FontSizes.Small};
   line-height: 20px;
   color: ${Colors.TextMuted};
+`
+
+const STerm = styled.Text`
+  font-family: ${Fonts.BodySemi};
+  font-weight: 700;
 `
 
 const SScroll = styled.ScrollView`

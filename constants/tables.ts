@@ -11,9 +11,14 @@ export const TableTypeLabel: Record<TableType, string> = {
   walk: 'Dry walk',
 }
 
+export const TableTypeTerm: Partial<Record<TableType, string>> = {
+  co2: 'Hypercapnia',
+  o2: 'Hypoxia',
+}
+
 export const TableTypeDescription: Record<TableType, string> = {
-  co2: 'Hold stays fixed. Rest gets shorter.',
-  o2: 'Hold gets longer. Rest stays fixed.',
+  co2: 'trains CO2 tolerance, the urge to breathe. Hold stays fixed; rest gets shorter.',
+  o2: 'trains low-oxygen tolerance. Hold gets longer; rest stays fixed.',
   'one-breath': 'Hold stays short. Rest is one breath.',
   walk: 'Walk during each hold. Recover standing still.',
 }
