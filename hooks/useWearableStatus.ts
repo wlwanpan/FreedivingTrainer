@@ -81,7 +81,7 @@ export default function useWearableStatus(): WearableStatus {
   const { settings } = useSQLContext()
   const live = useSyncExternalStore(subscribeWearableLive, () => wearableLiveState, () => idleLive)
   const preference = wearableKind(settings.wearable)
-  const kind = live.connected || live.heartRateActive ? 'apple-watch' : preference
+  const kind = live.connected || live.heartRateActive || live.paired ? 'apple-watch' : preference
   const syncedAt = live.syncedAt ?? settings.watchSyncedAt?.getTime() ?? null
   return {
     kind,
@@ -110,7 +110,7 @@ export function wearableLabel(status: WearableStatus): string {
   if (status.kind === 'garmin') {
     return status.connected ? 'Garmin: Connected' : 'Garmin: Not connected'
   }
-  return 'Apple Watch: Not connected'
+  return 'No device connected'
 }
 
 export function wearableLive(status: WearableStatus): boolean {
