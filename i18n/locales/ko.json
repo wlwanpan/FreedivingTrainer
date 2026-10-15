@@ -112,6 +112,8 @@
     "animationNote": "테이블 중 거품과 카드 움직임입니다.",
     "haptic": "햅틱",
     "hapticNote": "iPhone과 Apple Watch에서 단계가 바뀔 때 진동합니다.",
+    "sound": "소리",
+    "soundNote": "iPhone과 Apple Watch에서 단계가 바뀔 때 짧은 신호음이 납니다.",
     "preparation": "준비",
     "breatheUp": "호흡 준비",
     "baseline": "베이스라인",

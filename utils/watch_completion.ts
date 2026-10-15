@@ -33,13 +33,22 @@ function readWatchDetail(value: unknown): WatchDetail {
   return (WatchDetails as readonly string[]).includes(value) ? value as WatchDetail : 'ios'
 }
 
+function readRateAt(record: Record<string, unknown>): number | null {
+  const raw = record.at ?? record.recordedAt
+  const parsed = typeof raw === 'number' ? raw : Number(raw)
+  if (!Number.isFinite(parsed) || parsed <= 0) return null
+  const rounded = Math.round(parsed)
+  if (rounded < 1 || rounded > Number.MAX_SAFE_INTEGER) return null
+  return rounded
+}
+
 function readRates(value: unknown): { bpm: number; recordedAt: Date }[] {
   if (!Array.isArray(value)) return []
   return value.flatMap((item) => {
     if (item == null || typeof item !== 'object') return []
     const record = item as Record<string, unknown>
     const bpm = wholeNumber(record.bpm, 30, 230)
-    const at = wholeNumber(record.at, 1, Number.MAX_SAFE_INTEGER)
+    const at = readRateAt(record)
     if (bpm == null || at == null) return []
     return [{ bpm, recordedAt: new Date(at) }]
   })

@@ -8,6 +8,7 @@ import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
 import { recordCompletedSession } from '@/hooks/recordCompletedSession'
 import { sessionRounds } from '@/utils/training_plan'
+import { attachCompletionHeartRates } from '@/utils/watch_heart_rates'
 import { dayStamp, readWatchCompletion } from '@/utils/watch_completion'
 import {
   initialWatchSyncState,
@@ -40,6 +41,7 @@ export default function useWatchBridge() {
     settings,
     sessions,
     updatedAt,
+    heartRates,
     insertHeartRates,
     updateSettings,
   } = useSQLContext()
@@ -57,12 +59,14 @@ export default function useWatchBridge() {
     ))
   }
   const sessionsRef = useRef(sessions)
+  const heartRatesRef = useRef(heartRates)
   const insertHeartRatesRef = useRef(insertHeartRates)
   const warnRef = useRef<(description: string) => void>(() => {})
   const settingsRef = useRef(settings)
   const updateSettingsRef = useRef(updateSettings)
   const syncStateRef = useRef(initialWatchSyncState)
   sessionsRef.current = sessions
+  heartRatesRef.current = heartRates
   insertHeartRatesRef.current = insertHeartRates
   warnRef.current = (description: string) => showWarning(t('errors.sql'), description)
   settingsRef.current = settings
@@ -118,6 +122,7 @@ export default function useWatchBridge() {
     tables,
     language,
     trainingHaptic: settings.trainingHaptic,
+    trainingSound: settings.trainingSound,
     phoneTraining: phoneTrainingContext(phoneTraining),
   }
   const context = subscription.freeLimitReached
@@ -209,6 +214,19 @@ export default function useWatchBridge() {
         }
       })
     }
+    const persistHeartRates = async (
+      completed: NonNullable<ReturnType<typeof readWatchCompletion>>,
+      sessionId?: number,
+    ) => {
+      const rates = await attachCompletionHeartRates({
+        completed,
+        sessions: sessionsRef.current,
+        existingSamples: heartRatesRef.current,
+        insertHeartRates: (samples) => insertHeartRatesRef.current(samples),
+        sessionId,
+      })
+      if (rates.error) warnRef.current(rates.error.message)
+    }
     const saveCompletion = async (payload: Record<string, unknown>): Promise<boolean> => {
       const completed = readWatchCompletion(payload, activePlanKeyRef.current)
       if (completed == null) return false
@@ -228,6 +246,7 @@ export default function useWatchBridge() {
       if (duplicate) {
         savedRef.current.add(completed.completedAt)
         rememberSyncRef.current(completed.completedAt)
+        await persistHeartRates(completed)
         return true
       }
       savedRef.current.add(completed.completedAt)
@@ -250,6 +269,7 @@ export default function useWatchBridge() {
       const sessionId = result.insertionID
       if (result.skipped) {
         rememberSyncRef.current(completed.completedAt)
+        await persistHeartRates(completed)
         return true
       }
       if (sessionId == null) {
@@ -259,12 +279,7 @@ export default function useWatchBridge() {
       }
       rememberSyncRef.current(completed.completedAt)
       if (result.error) warnRef.current(result.error.message)
-      if (completed.heartRates.length === 0) return true
-      const rates = await insertHeartRatesRef.current(completed.heartRates.map((sample) => ({
-        ...sample,
-        sessionId,
-      })))
-      if (rates.error) warnRef.current(rates.error.message)
+      await persistHeartRates(completed, sessionId)
       return true
     }
     const subscriptions = [

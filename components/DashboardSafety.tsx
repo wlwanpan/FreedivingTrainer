@@ -1,13 +1,32 @@
-import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
+import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { useI18n } from '@/providers/i18n'
+import { useSQLContext } from '@/providers/sql'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { styled } from 'styled-components/native'
 
 
 export default function DashboardSafety() {
   const { t } = useI18n()
+  const { settings } = useSQLContext()
+  const updateSetting = useUpdateSetting()
+
+  if (settings.safetyRuleDismissed) return null
+
+  const dismiss = () => {
+    if (settings.id === 0) return
+    void updateSetting({ safetyRuleDismissed: true })
+  }
+
   return (
     <Wrapper accessibilityRole='alert'>
+      <SClose
+        onPress={dismiss}
+        accessibilityRole='button'
+        accessibilityLabel={t('common.close')}
+      >
+        <Ionicons name='close' size={22} color={Colors.TextMuted} />
+      </SClose>
       <SMark>
         <Ionicons name='warning' size={18} color={Colors.Alert} />
       </SMark>
@@ -23,6 +42,7 @@ export default function DashboardSafety() {
 }
 
 const Wrapper = styled.View`
+  position: relative;
   flex-direction: row;
   align-items: flex-start;
   gap: 14px;
@@ -32,6 +52,17 @@ const Wrapper = styled.View`
   background-color: ${Colors.AlertMuted};
   border-width: 1px;
   border-color: ${Colors.Alert};
+`
+
+const SClose = styled.Pressable`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  width: ${Layout.MinControl}px;
+  height: ${Layout.MinControl}px;
+  align-items: center;
+  justify-content: center;
 `
 
 const SMark = styled.View`
@@ -47,6 +78,7 @@ const SMark = styled.View`
 
 const SCopy = styled.View`
   flex: 1;
+  padding-right: ${Layout.MinControl - 16}px;
 `
 
 const SKicker = styled.Text`
