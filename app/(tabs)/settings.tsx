@@ -257,17 +257,22 @@ export default function SettingsScreen() {
 
         <SCard>
           <SCardTitle>{t('settings.purchases')}</SCardTitle>
+          {subscription.hasLifetimeAccess ? (
+            <SNote>{t('settings.lifetimeActive')}</SNote>
+          ) : null}
           <FreeSessionsBanner />
-          <Button
-            title={subscription.hasLifetimeAccess ? t('settings.lifetimeActive') : t('settings.unlockLifetime')}
-            onPress={() => router.push('/paywall')}
-            disabled={subscription.hasLifetimeAccess}
-            style={{ marginTop: subscription.loading || subscription.hasLifetimeAccess ? 12 : 0 }}
-          />
+          {subscription.hasLifetimeAccess ? null : (
+            <Button
+              title={t('settings.unlockLifetime')}
+              onPress={() => router.push('/paywall')}
+              style={{ marginTop: subscription.loading ? 12 : 0 }}
+            />
+          )}
           <Button
             title={t('settings.restore')}
             onPress={() => { void restore() }}
             loading={restoreInFlight}
+            disabled={subscription.hasLifetimeAccess}
             variant='ghost'
           />
         </SCard>
