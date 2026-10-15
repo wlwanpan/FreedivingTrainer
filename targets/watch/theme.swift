@@ -39,4 +39,10 @@ extension View {
     func pelagicCard(emphasized: Bool = false) -> some View {
         modifier(PelagicCard(emphasized: emphasized))
     }
+
+    func pelagicPrimaryButton() -> some View {
+        buttonStyle(.borderedProminent)
+            .tint(Pelagic.seafoam)
+            .foregroundStyle(Pelagic.onSeafoam)
+    }
 }

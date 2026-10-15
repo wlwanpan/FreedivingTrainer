@@ -131,8 +131,7 @@ struct ContentView: View {
                 }
                 if session.paused {
                     Button(L10n.t("resume"), action: session.togglePause)
-                        .buttonStyle(.borderedProminent)
-                        .tint(Pelagic.seafoam)
+                        .pelagicPrimaryButton()
                     Button(L10n.t("exit"), role: .destructive) { confirmExit = true }
                         .buttonStyle(.bordered)
                         .tint(Pelagic.alert)
@@ -150,8 +149,7 @@ struct ContentView: View {
                     .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
                 Button(L10n.t("okay"), action: session.dismissSaved)
-                    .buttonStyle(.borderedProminent)
-                    .tint(Pelagic.seafoam)
+                    .pelagicPrimaryButton()
             }
         }
         .padding()
@@ -172,8 +170,7 @@ struct ContentView: View {
                     Button(L10n.t("start")) {
                         session.startTable(table)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Pelagic.seafoam)
+                    .pelagicPrimaryButton()
                 }
             } else {
                 Text(title)
@@ -249,8 +246,7 @@ struct ContentView: View {
     private func phoneOrStart(start: @escaping () -> Void) -> some View {
         if !session.phoneTraining || !session.reachable {
             Button(L10n.t("start"), action: start)
-                .buttonStyle(.borderedProminent)
-                .tint(Pelagic.seafoam)
+                .pelagicPrimaryButton()
         }
     }
 
@@ -303,21 +299,7 @@ private struct PlanScheduleList: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button(action: onBack) {
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.left")
-                    Text(L10n.t("plan"))
-                }
-                .font(.caption2)
-                .foregroundStyle(Pelagic.seafoam)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-            if !plan.planName.isEmpty {
-                Text(plan.planName)
-                    .font(.headline)
-                    .foregroundStyle(Pelagic.text)
-            }
+            scheduleHeader
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 8) {
@@ -333,8 +315,32 @@ private struct PlanScheduleList: View {
                 }
             }
         }
-        .padding(.horizontal, 4)
+        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private var scheduleHeader: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Button(action: onBack) {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                    Text(L10n.t("plan"))
+                }
+                .font(.caption2)
+                .foregroundStyle(Pelagic.seafoam)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if !plan.planName.isEmpty {
+                Text(plan.planName)
+                    .font(.headline)
+                    .foregroundStyle(Pelagic.text)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Pelagic.canvas)
+        .zIndex(1)
     }
 
     private func weekCard(_ week: WatchListedWeek, focused: Bool) -> some View {

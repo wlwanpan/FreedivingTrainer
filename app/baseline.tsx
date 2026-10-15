@@ -12,17 +12,18 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 
 export default function BaselineScreen() {
   const router = useRouter()
-  const { entry } = useLocalSearchParams<{ entry?: string | string[] }>()
+  const { entry, start } = useLocalSearchParams<{ entry?: string | string[]; start?: string | string[] }>()
   const entryValue = Array.isArray(entry) ? entry[0] : entry
+  const startValue = Array.isArray(start) ? start[0] : start
+  const initialStage = startValue === 'manual' ? 'manual' : 'prep'
   const { settings } = useSQLContext()
-  const test = useBaselineTest(entryValue === 'onboarding')
+  const test = useBaselineTest(entryValue === 'onboarding', initialStage)
 
   return (
     <WrapperScreen skipBottomInset>
       {test.stage === 'prep' ? (
         <BaselinePrep
           onStart={test.start}
-          onEnterTimes={test.openManual}
           onBack={() => router.back()}
         />
       ) : null}
@@ -30,7 +31,13 @@ export default function BaselineScreen() {
         <BaselineManual
           initialMaxHoldSeconds={test.manualDefaults.maxHoldSeconds}
           initialContractionSeconds={test.manualDefaults.contractionSeconds}
-          onBack={test.cancel}
+          onBack={() => {
+            if (startValue === 'manual') {
+              router.back()
+              return
+            }
+            test.cancel()
+          }}
           onSubmit={test.submitManual}
         />
       ) : null}

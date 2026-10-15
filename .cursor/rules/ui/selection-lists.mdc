@@ -1,0 +1,51 @@
+---
+description: Rounded single-choice rows and grouped inset lists
+globs: app/**, components/**
+alwaysApply: false
+---
+
+# Selection lists
+
+Single-choice pickers (language, device type, and similar) use **separate rounded rows** that match primary button shape — not one flat grouped table.
+
+## Stacked picker rows
+
+- Each row: `Radii.Button` (16), `1px` `Colors.Hairline`, `Colors.Card` fill, `Layout.MinControl` min height, `Space.md` horizontal padding.
+- Stack with `Space.sm` gap inside screen margin `Space.screen`.
+- Press state: `Colors.Hover` on the row. Selected state: seafoam `checkmark-circle` trailing icon (same as other pickers).
+- Set `overflow: hidden` on the row so press fill clips to the radius.
+
+```tsx
+// ✅ GOOD — language / single-choice picker
+<SList>
+  {options.map((option) => (
+    <SOption key={option.code} onPress={() => select(option.code)}>
+      {({ pressed }) => (
+        <SRow $pressed={pressed}>
+          <SName>{option.nativeName}</SName>
+          {selected ? <Ionicons name='checkmark-circle' color={Colors.Seafoam} /> : null}
+        </SRow>
+      )}
+    </SOption>
+  ))}
+</SList>
+```
+
+## Grouped inset cards
+
+When several rows share one white card (settings sections, wearable list), wrap them in `SCard` with `Radii.Card`, hairline border, and **`overflow: hidden`** so row backgrounds clip to the card corners.
+
+```tsx
+// ❌ BAD — square corners when rows paint Card fill to the edges
+const SCard = styled.View`
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+`
+
+// ✅ GOOD
+const SCard = styled.View`
+  border-radius: ${Radii.Card}px;
+  background-color: ${Colors.Card};
+  overflow: hidden;
+`
+```

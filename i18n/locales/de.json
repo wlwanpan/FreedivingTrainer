@@ -155,6 +155,9 @@
   },
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
+    "welcomeTitle": "Willkommen",
+    "welcomeCopy": "CO2- und O2-Statik-Tabellen, abgestimmt auf deine maximale Haltzeit. Zuerst finden wir deine Baseline, danach wählst du einen Trainingsplan.",
+    "continue": "Weiter",
     "title": "Finde deine Baseline",
     "copy": "Ein maximaler statischer Halt legt deine Tabellen fest. Markiere die erste Kontraktion und halte, bis du atmen musst. Danach wähle einen Plan oder erstelle deinen eigenen. Halte CO2 und O2 an unterschiedlichen Tagen.",
     "co2Copy": "Die Haltzeit bleibt fest. Die Pause startet lang und sinkt jede Runde.",
@@ -410,7 +413,7 @@
     "thenHold": "Dann weiter halten",
     "thenCopy": "Halte, bis du atmen musst. Diese Gesamtzeit ist das Maximum, aus dem die Tabellen gebaut werden.",
     "startHold": "Halt starten",
-    "enterTimes": "Zeiten eingeben",
+    "enterTimes": "Manuell eingeben",
     "enterTitle": "Zeiten eingeben",
     "enterCopy": "Nutze einen Max-Halt und eine erste Kontraktion, die du schon kennst. Die Tabellen werden aus diesen zwei Zeiten berechnet.",
     "maximumHold": "Maximaler Halt",
