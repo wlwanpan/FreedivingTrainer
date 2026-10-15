@@ -300,7 +300,17 @@
     "syncing": "동기화 중…",
     "synced": "동기화됨 {time}",
     "lastSyncAt": "마지막 동기화 {time}",
-    "notSynced": "아직 동기화되지 않음"
+    "notSynced": "아직 동기화되지 않음",
+    "noDevice": "연결된 기기 없음",
+    "addA11y": "기기 추가 및 연결",
+    "addDevice": "기기 추가",
+    "supported": "지원 시계",
+    "garminComing": "Garmin 시계는 여기에서 연결됩니다.",
+    "appleConnectedDetail": "연결됨. 테이블과 심박수를 동기화합니다.",
+    "applePaired": "Watch 앱이 설치됨. 열어 연결하세요.",
+    "appleInstall": "Watch 앱을 설치한 다음 여기에서 연결하세요.",
+    "comingSoon": "곧 제공",
+    "comingSoonA11y": "{title}, 곧 제공"
   },
   "plan": {
     "changeTitle": "플랜을 바꿀까요?",

@@ -300,7 +300,17 @@
     "syncing": "Sincronizando…",
     "synced": "Sincronizado {time}",
     "lastSyncAt": "Última sincronización {time}",
-    "notSynced": "Aún no sincronizado"
+    "notSynced": "Aún no sincronizado",
+    "noDevice": "Ningún dispositivo conectado",
+    "addA11y": "Añadir y conectar más dispositivos",
+    "addDevice": "Añadir dispositivo",
+    "supported": "Relojes compatibles",
+    "garminComing": "Los relojes Garmin se conectarán aquí.",
+    "appleConnectedDetail": "Conectado. Sincroniza tablas y frecuencia cardíaca.",
+    "applePaired": "App del reloj instalada. Ábrela para conectar.",
+    "appleInstall": "Instala la app del reloj y conéctala desde aquí.",
+    "comingSoon": "Próximamente",
+    "comingSoonA11y": "{title}, próximamente"
   },
   "plan": {
     "changeTitle": "¿Cambiar de plan?",

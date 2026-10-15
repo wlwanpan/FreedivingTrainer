@@ -300,7 +300,17 @@
     "syncing": "Synchronisation…",
     "synced": "Synchronisé {time}",
     "lastSyncAt": "Dernière synchro {time}",
-    "notSynced": "Pas encore synchronisé"
+    "notSynced": "Pas encore synchronisé",
+    "noDevice": "Aucun appareil connecté",
+    "addA11y": "Ajouter et connecter d’autres appareils",
+    "addDevice": "Ajouter un appareil",
+    "supported": "Montres prises en charge",
+    "garminComing": "Les montres Garmin se connecteront ici.",
+    "appleConnectedDetail": "Connectée. Synchronise les tables et la fréquence cardiaque.",
+    "applePaired": "App Watch installée. Ouvrez-la pour vous connecter.",
+    "appleInstall": "Installez l’app Watch, puis connectez-vous ici.",
+    "comingSoon": "Bientôt",
+    "comingSoonA11y": "{title}, bientôt"
   },
   "plan": {
     "changeTitle": "Changer de plan ?",

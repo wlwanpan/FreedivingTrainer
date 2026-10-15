@@ -2,10 +2,11 @@ import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import SessionListItem from '@/components/SessionListItem'
 import WrapperScreen from '@/components/WrapperScreen'
-import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useWearableStatus, { lastSyncLabel, wearableLabel, wearableLive } from '@/hooks/useWearableStatus'
 import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
 import { styled } from 'styled-components/native'
 
@@ -30,6 +31,21 @@ export default function WearableScreen() {
         headerText={t('wearable.title')}
         leftText={t('common.close')}
         leftOnClick={() => router.back()}
+        right={(
+          <SAdd
+            onPress={() => router.push('/wearable/add')}
+            accessibilityRole='button'
+            accessibilityLabel={t('wearable.addA11y')}
+          >
+            {({ pressed }) => (
+              <Ionicons
+                name='add'
+                size={22}
+                color={pressed ? Colors.TextMuted : Colors.Seafoam}
+              />
+            )}
+          </SAdd>
+        )}
       />
       <SCard>
         <SCardTitle>{t('wearable.status')}</SCardTitle>
@@ -56,6 +72,18 @@ export default function WearableScreen() {
     </WrapperScreen>
   )
 }
+
+const SAdd = styled.Pressable`
+  flex-shrink: 0;
+  width: ${Layout.MinControl}px;
+  height: ${Layout.MinControl}px;
+  border-radius: ${Layout.MinControl / 2}px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${Colors.SeafoamMuted};
+  border-width: 1px;
+  border-color: ${Colors.HairlineStrong};
+`
 
 const SCard = styled.View`
   margin: 8px ${Space.screen}px 12px;

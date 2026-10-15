@@ -85,7 +85,7 @@ export default function useWearableStatus(): WearableStatus {
   const { t } = useI18n()
   const live = useSyncExternalStore(subscribeWearableLive, () => wearableLiveState, () => idleLive)
   const preference = wearableKind(settings.wearable)
-  const kind = live.connected || live.heartRateActive ? 'apple-watch' : preference
+  const kind = live.connected || live.heartRateActive || live.paired ? 'apple-watch' : preference
   const syncedAt = live.syncedAt ?? settings.watchSyncedAt?.getTime() ?? null
   return {
     kind,
@@ -114,7 +114,7 @@ export function wearableLabel(status: WearableStatus, t: Translate = englishTran
   if (status.kind === 'garmin') {
     return status.connected ? t('wearable.garminConnected') : t('wearable.garminDisconnected')
   }
-  return t('wearable.appleDisconnected')
+  return t('wearable.noDevice')
 }
 
 export function wearableLive(status: WearableStatus): boolean {

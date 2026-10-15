@@ -300,7 +300,17 @@
     "syncing": "Syncing…",
     "synced": "Synced {time}",
     "lastSyncAt": "Last sync {time}",
-    "notSynced": "Not synced yet"
+    "notSynced": "Not synced yet",
+    "noDevice": "No device connected",
+    "addA11y": "Add and connect more devices",
+    "addDevice": "Add device",
+    "supported": "Supported watches",
+    "garminComing": "Garmin watches will connect here.",
+    "appleConnectedDetail": "Connected. Syncs tables and heart rate.",
+    "applePaired": "Watch app installed. Open it to connect.",
+    "appleInstall": "Install the watch app, then connect from here.",
+    "comingSoon": "Coming soon",
+    "comingSoonA11y": "{title}, coming soon"
   },
   "plan": {
     "changeTitle": "Change plan?",
