@@ -5,6 +5,7 @@ import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
 import PlanProgress from '@/components/PlanProgress'
 import ScreenHeader from '@/components/ScreenHeader'
 import SessionListItem from '@/components/SessionListItem'
+import WatchHeaderButton from '@/components/WatchHeaderButton'
 import WrapperScreen from '@/components/WrapperScreen'
 import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
@@ -80,17 +81,11 @@ export default function HomeScreen() {
       <ScreenHeader
         title='Home'
         right={(
-          <SHeaderBtn
-            onPress={() => router.push('/wearable')}
+          <WatchHeaderButton
+            connected={wearable.connected}
             accessibilityLabel={wearableLabel(wearable)}
-          >
-            <Ionicons
-              name={wearable.connected ? 'watch' : 'watch-outline'}
-              size={18}
-              color={wearable.connected ? Colors.Seafoam : Colors.TextDisabled}
-            />
-            <SWatchPip $connected={wearable.connected} />
-          </SHeaderBtn>
+            onPress={() => router.push('/wearable')}
+          />
         )}
       />
       <SScroll
@@ -223,29 +218,6 @@ function holdChip(
 
 const SScroll = styled.ScrollView`
   flex: 1;
-`
-
-const SHeaderBtn = styled.Pressable`
-  width: ${Layout.MinControl}px;
-  height: ${Layout.MinControl}px;
-  border-radius: ${Layout.MinControl / 2}px;
-  align-items: center;
-  justify-content: center;
-  background-color: ${Colors.SeafoamMuted};
-  border-width: 1px;
-  border-color: ${Colors.HairlineStrong};
-`
-
-const SWatchPip = styled.View<{ $connected: boolean }>`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  background-color: ${(props) => props.$connected ? Colors.Seafoam : Colors.TextDisabled};
-  border-width: 1.5px;
-  border-color: ${Colors.SeafoamMuted};
 `
 
 const SPlan = styled.View`
