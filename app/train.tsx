@@ -3,7 +3,7 @@ import WrapperScreen from '@/components/WrapperScreen'
 import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
 import useTrainingClock, { TrainPlanSlot, TrainTable } from '@/hooks/useTrainingClock'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 
 function parseTableType(value: string | string[] | undefined): TableType | null {
@@ -78,11 +78,19 @@ export default function TrainScreen() {
   const title = parseLabel(params.name) ?? (tableType == null ? '' : TableTypeLabel[tableType])
   const training = useTrainingClock(tableType, parseTrainTable(params), parseSlot(params), title)
 
+  const leave = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back()
+      return
+    }
+    router.replace('/')
+  }, [router])
+
   useEffect(() => {
     if (tableType == null || !training.ready) {
-      router.back()
+      leave()
     }
-  }, [tableType, training.ready, router])
+  }, [leave, tableType, training.ready])
 
   if (tableType == null || !training.ready) {
     return null
@@ -107,8 +115,8 @@ export default function TrainScreen() {
         saved={training.saved}
         saveFailed={training.saveFailed}
         contractions={training.contractions}
-        onCancel={() => router.back()}
-        onClose={() => router.back()}
+        onCancel={leave}
+        onClose={leave}
         onRetry={training.retry}
         onTogglePause={training.togglePause}
         onRememberTap={training.rememberTap}

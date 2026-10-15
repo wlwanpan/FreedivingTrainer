@@ -1,6 +1,5 @@
 import AnalyticsOverview from '@/components/AnalyticsOverview'
 import Button from '@/components/Button'
-import DashboardBreathe from '@/components/DashboardBreathe'
 import DashboardSafety from '@/components/DashboardSafety'
 import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
 import PlanProgress from '@/components/PlanProgress'
@@ -163,7 +162,6 @@ export default function HomeScreen() {
             )}
           </PlanProgress>
         )}
-        <DashboardBreathe />
         <SSectionRow>
           <SSection>Latest sessions</SSection>
           {sessions.length > 0 ? (

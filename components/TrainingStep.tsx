@@ -83,9 +83,10 @@ export function trainingCardHeight(role: TrainingStepRole, card: TrainingCardSiz
 }
 
 export function trainingStepY(role: TrainingStepRole, chainHeight: number, card: TrainingCardSize): number {
-  const current = Math.max(0, (chainHeight - card.current) / 2)
+  const minCurrent = TrainingStepLayout.edge + card.rail + TrainingStepLayout.gap
+  const current = Math.max(minCurrent, (chainHeight - card.current) / 2)
   if (role === 'done' || role === 'placeholder') {
-    return Math.max(TrainingStepLayout.edge, current - TrainingStepLayout.gap - card.rail)
+    return current - TrainingStepLayout.gap - card.rail
   }
   if (role === 'next') {
     return current + card.current + TrainingStepLayout.gap
