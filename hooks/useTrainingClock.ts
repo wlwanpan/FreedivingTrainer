@@ -12,6 +12,7 @@ import {
 import { todayDate } from '@/utils/date'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
 import { playTrainingHaptic } from '@/utils/training_haptic'
+import { playTrainingSound } from '@/utils/training_sound'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppState } from 'react-native'
 import { publishPhoneTraining } from './phoneTraining'
@@ -131,6 +132,8 @@ export default function useTrainingClock(
   const announcedIndex = useRef(0)
   const hapticRef = useRef(sql.settings.trainingHaptic)
   hapticRef.current = sql.settings.trainingHaptic
+  const soundRef = useRef(sql.settings.trainingSound)
+  soundRef.current = sql.settings.trainingSound
   const saveStarted = useRef(false)
   const [now, setNow] = useState(startedAtRef.current)
   const [paused, setPaused] = useState(intro)
@@ -274,11 +277,13 @@ export default function useTrainingClock(
     if (location.index === announcedIndex.current) return
     announcedIndex.current = location.index
     playTrainingHaptic(hapticRef.current, 'step')
+    playTrainingSound(soundRef.current)
   }, [location.index])
 
   useEffect(() => {
     if (!done) return
     playTrainingHaptic(hapticRef.current, 'done')
+    playTrainingSound(soundRef.current)
   }, [done])
 
   const persist = async () => {

@@ -103,9 +103,11 @@ final class WatchSession: NSObject, ObservableObject {
     private var contextTimer: Timer?
     private var lastContextKey = ""
     private var hapticEnabled = true
+    private var soundEnabled = true
 
     private static let pendingDefaultsKey = "pendingSessionCompletions"
     private static let hapticDefaultsKey = "trainingHapticEnabled"
+    private static let soundDefaultsKey = "trainingSoundEnabled"
     private static let languageDefaultsKey = "preferredLanguage"
 
     var readyDetail: String {
@@ -140,9 +142,13 @@ final class WatchSession: NSObject, ObservableObject {
 
     override init() {
         super.init()
+        prepareHeartRateAccess()
         pendingSync = !Self.storedCompletions().isEmpty
         if UserDefaults.standard.object(forKey: Self.hapticDefaultsKey) != nil {
             hapticEnabled = UserDefaults.standard.bool(forKey: Self.hapticDefaultsKey)
+        }
+        if UserDefaults.standard.object(forKey: Self.soundDefaultsKey) != nil {
+            soundEnabled = UserDefaults.standard.bool(forKey: Self.soundDefaultsKey)
         }
         if let stored = UserDefaults.standard.string(forKey: Self.languageDefaultsKey) {
             applyLanguageValue(stored)
@@ -200,9 +206,10 @@ final class WatchSession: NSObject, ObservableObject {
         publishTraining(true)
     }
 
-    private func playHaptic(_ type: WKHapticType) {
-        guard hapticEnabled else { return }
-        WKInterfaceDevice.current().play(type)
+    private func playTransitionFeedback(complete: Bool) {
+        guard hapticEnabled || soundEnabled else { return }
+        let hapticType: WKHapticType = complete ? .success : .start
+        WKInterfaceDevice.current().play(hapticType)
     }
 
     func togglePause() {
@@ -303,8 +310,15 @@ final class WatchSession: NSObject, ObservableObject {
         UserDefaults.standard.set(hapticEnabled, forKey: Self.hapticDefaultsKey)
     }
 
+    private func applySound(_ message: [String: Any]) {
+        if message["trainingSound"] == nil { return }
+        soundEnabled = flag(message["trainingSound"])
+        UserDefaults.standard.set(soundEnabled, forKey: Self.soundDefaultsKey)
+    }
+
     private func applyPlan(_ message: [String: Any]) {
         applyHaptic(message)
+        applySound(message)
         applyPhoneTraining(message)
         installTables(message)
         let key = textValue(message["planKey"]) ?? ""
@@ -432,7 +446,7 @@ final class WatchSession: NSObject, ObservableObject {
                 remaining = phase.seconds - cursor
                 if phase.title != phaseTitle {
                     if !phaseTitle.isEmpty {
-                        playHaptic(.start)
+                        playTransitionFeedback(complete: false)
                     }
                     phaseTitle = phase.title
                 }
@@ -465,7 +479,7 @@ final class WatchSession: NSObject, ObservableObject {
         captureSamples = false
         stopHeartRate()
         publishTraining(false)
-        playHaptic(.success)
+        playTransitionFeedback(complete: true)
         if let queued = queuedPlan {
             queuedPlan = nil
             finished = false
@@ -582,6 +596,13 @@ final class WatchSession: NSObject, ObservableObject {
         }
         storePending(payload)
         deliver(payload)
+    }
+
+    private func prepareHeartRateAccess() {
+        guard HKHealthStore.isHealthDataAvailable() else { return }
+        let share: Set<HKSampleType> = [HKQuantityType.workoutType()]
+        let read: Set<HKObjectType> = [HKQuantityType(.heartRate)]
+        healthStore.requestAuthorization(toShare: share, read: read) { _, _ in }
     }
 
     private func startHeartRate() {

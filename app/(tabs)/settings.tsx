@@ -111,6 +111,21 @@ export default function SettingsScreen() {
             />
           </SChoiceRow>
 
+          <SGroup>{t('settings.sound')}</SGroup>
+          <SNote>{t('settings.soundNote')}</SNote>
+          <SChoiceRow>
+            <SettingsChoice
+              label={t('common.on')}
+              selected={settings.trainingSound}
+              onPress={() => { void updateSetting({ trainingSound: true }) }}
+            />
+            <SettingsChoice
+              label={t('common.off')}
+              selected={!settings.trainingSound}
+              onPress={() => { void updateSetting({ trainingSound: false }) }}
+            />
+          </SChoiceRow>
+
           <SGroup>{t('settings.preparation')}</SGroup>
           <SettingsStepper
             label={t('settings.breatheUp')}

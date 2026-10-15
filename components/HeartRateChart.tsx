@@ -46,7 +46,7 @@ export default function HeartRateChart() {
   const font = useMemo(() => matchFont({ fontFamily: 'Helvetica', fontSize: 12 }), [])
   const { session, points } = latestSessionSamples(heartRates, sessions)
 
-  if (points.length === 0 || session == null) {
+  if (points.length === 0) {
     return (
       <Wrapper>
         <STitle>{t('charts.heartRate')}</STitle>
@@ -55,12 +55,16 @@ export default function HeartRateChart() {
     )
   }
 
+  const caption = session == null
+    ? ''
+    : `${formatDay(session.day)} · ${tableTypeLabel(session.tableType, t)}`
+
   return (
     <Chart
       points={points}
       font={font}
       title={t('charts.heartRate')}
-      caption={`${formatDay(session.day)} · ${tableTypeLabel(session.tableType, t)}`}
+      caption={caption}
     />
   )
 }
@@ -89,7 +93,7 @@ function Chart({
   return (
     <Wrapper>
       <STitle>{title}</STitle>
-      <SCaption>{caption}</SCaption>
+      {caption === '' ? null : <SCaption>{caption}</SCaption>}
       <SChart>
         <CartesianChart
           data={points}

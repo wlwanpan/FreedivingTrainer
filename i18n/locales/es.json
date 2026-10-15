@@ -112,6 +112,8 @@
     "animationNote": "Burbujas y movimiento de tarjetas durante una tabla.",
     "haptic": "Háptico",
     "hapticNote": "Una vibración cuando cambia un paso en tu iPhone y Apple Watch.",
+    "sound": "Sonido",
+    "soundNote": "Una señal breve cuando cambia un paso en tu iPhone y Apple Watch.",
     "preparation": "Preparación",
     "breatheUp": "Ventilación",
     "baseline": "Línea base",

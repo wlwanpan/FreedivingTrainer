@@ -112,6 +112,8 @@
     "animationNote": "Bubbles and card movement during a table.",
     "haptic": "Haptic",
     "hapticNote": "A tap when a step changes on your iPhone and Apple Watch.",
+    "sound": "Sound",
+    "soundNote": "A short cue when a step changes on your iPhone and Apple Watch.",
     "preparation": "Preparation",
     "breatheUp": "Breathe-up",
     "baseline": "Baseline",

@@ -112,6 +112,8 @@
     "animationNote": "Bulles et mouvement des cartes pendant une table.",
     "haptic": "Retour haptique",
     "hapticNote": "Une vibration à chaque changement d’étape sur iPhone et Apple Watch.",
+    "sound": "Son",
+    "soundNote": "Un signal bref à chaque changement d’étape sur iPhone et Apple Watch.",
     "preparation": "Préparation",
     "breatheUp": "Ventilation",
     "baseline": "Baseline",

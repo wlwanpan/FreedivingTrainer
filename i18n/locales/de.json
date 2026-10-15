@@ -112,6 +112,8 @@
     "animationNote": "Blasen und Kartenbewegung während einer Tabelle.",
     "haptic": "Haptik",
     "hapticNote": "Ein Tipp, wenn ein Schritt auf iPhone und Apple Watch wechselt.",
+    "sound": "Ton",
+    "soundNote": "Ein kurzes Signal beim Schrittwechsel auf iPhone und Apple Watch.",
     "preparation": "Vorbereitung",
     "breatheUp": "Atmung",
     "baseline": "Baseline",

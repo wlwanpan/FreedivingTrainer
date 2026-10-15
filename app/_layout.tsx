@@ -1,6 +1,8 @@
 import RootNavigator from '@/components/RootNavigator'
 import WatchBridge from '@/components/WatchBridge'
-import { DATABASE_NAME, drizzleDb } from '@/db/client'
+import { DATABASE_NAME, expoDb } from '@/db/client'
+import { applyMigrations } from '@/db/migrate'
+import { repairSettingsSchema } from '@/db/repair'
 import { useAppFonts } from '@/design/fonts'
 import { Colors } from '@/design/styles'
 import FormatterContextProvider from '@/providers/formatter'
@@ -9,13 +11,12 @@ import SQLContextProvider from '@/providers/sql'
 import SubscriptionProvider from '@/providers/subscription'
 import WarningModalProvider from '@/providers/warning_modal'
 import migrations from '@/drizzle/migrations'
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator'
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin'
 import * as SplashScreen from 'expo-splash-screen'
 import { SQLiteProvider, openDatabaseSync } from 'expo-sqlite'
 import { StatusBar } from 'expo-status-bar'
 import * as SystemUI from 'expo-system-ui'
-import { Suspense, useEffect, useMemo } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
@@ -32,10 +33,21 @@ export default function RootLayout() {
   }), [])
 
   useDrizzleStudio(studioDb)
-  const { success, error } = useMigrations(drizzleDb, migrations)
-  if (error) {
-    console.error('Migration error:', error)
-  }
+  repairSettingsSchema(expoDb)
+  const [migrated, setMigrated] = useState<{ success: boolean, error?: Error }>({ success: false })
+  const success = migrated.success
+  const error = migrated.error
+
+  useEffect(() => {
+    try {
+      applyMigrations(expoDb, migrations)
+      setMigrated({ success: true })
+    } catch (caught) {
+      const migrationError = caught instanceof Error ? caught : new Error(String(caught))
+      console.error('Migration error:', migrationError)
+      setMigrated({ success: false, error: migrationError })
+    }
+  }, [])
 
   useEffect(() => {
     if (fontsReady && (error || success)) {
