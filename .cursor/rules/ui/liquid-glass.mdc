@@ -1,0 +1,42 @@
+---
+description: Use liquid glass on buttons and interactive controls when the device supports it
+globs: components/**, hooks/**, design/**, app/**
+alwaysApply: false
+---
+
+# Liquid glass controls
+
+Buttons, icon buttons, chips, steppers, segmented controls, and other tappable chrome use iOS liquid glass when the device can render it. Fall back to the existing mist/solid styles otherwise. Put the effect in shared controls — screens should not wrap ad-hoc `Pressable`s in `GlassView`.
+
+## When to use glass
+
+Use `expo-glass-effect` only after all of these are true:
+
+- `isLiquidGlassAvailable()`
+- `isGlassEffectAPIAvailable()`
+- Reduce Transparency is off (`AccessibilityInfo.isReduceTransparencyEnabled()`)
+
+Keep that check in one hook (for example `useLiquidGlass`). Catch native-module errors and treat them as unavailable.
+
+`isInteractive` belongs on actual controls, not cards or backgrounds. `colorScheme` is `'light'`. Tint with tokens (`Colors.SeafoamMuted`, `Colors.Seafoam` for primary).
+
+## Implementation
+
+On glass, drop the solid fill and hairline; keep size, radius, and label color. Do not set `overflow: 'hidden'` on `GlassView` or an ancestor. Do not animate `opacity` on `GlassView`.
+
+```tsx
+// ❌ BAD — opaque chrome that never uses glass
+<SIconBtn onPress={onPress}>
+  <Ionicons name='watch' />
+</SIconBtn>
+
+// ✅ GOOD — interactive glass when available, mist button otherwise
+if (liquid) {
+  return (
+    <GlassView isInteractive glassEffectStyle='regular' colorScheme='light' tintColor={Colors.SeafoamMuted}>
+      <SIconBtn $glass onPress={onPress}>{icon}</SIconBtn>
+    </GlassView>
+  )
+}
+return <SIconBtn onPress={onPress}>{icon}</SIconBtn>
+```
