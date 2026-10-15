@@ -4,7 +4,9 @@ import TableRoundRow from '@/components/TableRoundRow'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes } from '@/design/styles'
 import { BaselineOutcome } from '@/hooks/useBaselineTest'
+import { Translate } from '@/i18n/types'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { MIN_BASELINE_SECONDS } from '@/utils/baseline'
 import { buildCo2Table, buildO2Table } from '@/utils/table'
 import { styled } from 'styled-components/native'
@@ -18,21 +20,25 @@ type Props = {
 }
 
 export default function BaselineResult({ outcome, saving, onUse, onRetake }: Props) {
+  const { t } = useI18n()
   const { formatSeconds } = useFormatterContext()
   const plan = outcome.plan
 
   if (outcome.tooShort || plan == null) {
     return (
       <Wrapper>
-        <HeaderWithBtn headerText='Baseline' />
+        <HeaderWithBtn headerText={t('baseline.title')} />
         <SBody>
-          <STitle>Too short to size a table</STitle>
+          <STitle>{t('baseline.tooShort')}</STitle>
           <SBodyCopy>
-            {`That hold was ${formatSeconds(outcome.maxHoldSeconds)}. Stay with it for at least ${formatSeconds(MIN_BASELINE_SECONDS)} so the CO2 hold can sit at half of a real maximum.`}
+            {t('baseline.tooShortCopy', {
+              time: formatSeconds(outcome.maxHoldSeconds),
+              minimum: formatSeconds(MIN_BASELINE_SECONDS),
+            })}
           </SBodyCopy>
         </SBody>
         <Footer>
-          <Button title='Try again' onPress={onRetake} />
+          <Button title={t('common.tryAgain')} onPress={onRetake} />
         </Footer>
       </Wrapper>
     )
@@ -47,47 +53,56 @@ export default function BaselineResult({ outcome, saving, onUse, onRetake }: Pro
 
   return (
     <Wrapper>
-      <HeaderWithBtn headerText='Your tables' />
+      <HeaderWithBtn headerText={t('baseline.yourTables')} />
       <SScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 16 }}
       >
         <SStats>
           <SStat>
-            <SStatLabel>Maximum</SStatLabel>
+            <SStatLabel>{t('baseline.maximum')}</SStatLabel>
             <SStatValue>{formatSeconds(outcome.maxHoldSeconds)}</SStatValue>
           </SStat>
           <SStat>
-            <SStatLabel>Contraction</SStatLabel>
+            <SStatLabel>{t('baseline.contraction')}</SStatLabel>
             <SStatValue>
               {outcome.contractionSeconds == null ? '—' : formatSeconds(outcome.contractionSeconds)}
             </SStatValue>
           </SStat>
         </SStats>
-        <SCopy>{co2Explanation(outcome, percent, formatSeconds)}</SCopy>
+        <SCopy>{co2Explanation(outcome, percent, formatSeconds, t)}</SCopy>
 
-        <SSection>CO2</SSection>
+        <SSection>{t('tables.co2')}</SSection>
         <SCopy>
-          {`Hold ${formatSeconds(plan.co2HoldSeconds)} every round. Rest starts at ${formatSeconds(plan.co2RestStartSeconds)} and drops by ${formatSeconds(plan.co2RestStepSeconds)}, down to ${formatSeconds(closingRest)}.`}
+          {t('baseline.co2Hold', {
+            hold: formatSeconds(plan.co2HoldSeconds),
+            start: formatSeconds(plan.co2RestStartSeconds),
+            step: formatSeconds(plan.co2RestStepSeconds),
+            end: formatSeconds(closingRest),
+          })}
         </SCopy>
         {co2Rounds.map((round) => (
           <TableRoundRow key={`co2-${round.index}`} round={round} />
         ))}
 
-        <SSection>O2</SSection>
+        <SSection>{t('tables.o2')}</SSection>
         <SCopy>
           {o2First && o2Last
-            ? `Holds climb from ${formatSeconds(o2First.holdSeconds)} to ${formatSeconds(o2Last.holdSeconds)}. Rest stays ${formatSeconds(plan.o2RestSeconds)}.`
-            : 'Holds get longer each round. Rest stays fixed.'}
+            ? t('baseline.o2Climb', {
+              first: formatSeconds(o2First.holdSeconds),
+              last: formatSeconds(o2Last.holdSeconds),
+              rest: formatSeconds(plan.o2RestSeconds),
+            })
+            : t('baseline.o2Default')}
         </SCopy>
         {o2Rounds.map((round) => (
           <TableRoundRow key={`o2-${round.index}`} round={round} />
         ))}
       </SScroll>
       <Footer>
-        <Button title='Choose a plan' onPress={onUse} loading={saving} />
+        <Button title={t('baseline.choosePlan')} onPress={onUse} loading={saving} />
         <Button
-          title='Retake test'
+          title={t('plan.retake')}
           onPress={onRetake}
           disabled={saving}
           variant='ghost'
@@ -101,21 +116,25 @@ function co2Explanation(
   outcome: BaselineOutcome,
   percent: number,
   formatSeconds: (seconds: number) => string,
+  t: Translate,
 ): string {
   const plan = outcome.plan
   if (plan == null) return ''
-  const hold = `${formatSeconds(plan.co2HoldSeconds)} (${percent}% of your maximum)`
+  const hold = t('baseline.percentHold', {
+    time: formatSeconds(plan.co2HoldSeconds),
+    percent,
+  })
   if (outcome.contractionSeconds == null || plan.co2HoldReason === 'midpoint') {
-    return `No contraction marked. The CO2 hold is ${hold}.`
+    return t('baseline.explainMidpoint', { hold })
   }
   const at = formatSeconds(outcome.contractionSeconds)
   if (plan.co2HoldReason === 'contraction') {
-    return `First contraction at ${at}, inside 50–60% of your maximum. The CO2 hold is ${hold}.`
+    return t('baseline.explainContraction', { at, hold })
   }
   if (plan.co2HoldReason === 'below-band') {
-    return `First contraction at ${at}, before the halfway point. The CO2 hold stays at ${hold}.`
+    return t('baseline.explainBelow', { at, hold })
   }
-  return `First contraction at ${at}, after 60% of your maximum. The CO2 hold stays at ${hold}.`
+  return t('baseline.explainAbove', { at, hold })
 }
 
 const Wrapper = styled.View`

@@ -1,3 +1,4 @@
+import { useI18n } from '@/providers/i18n'
 import { formatDay as formatDayValue } from '@/utils/date'
 import { formatDuration } from '@/utils/duration'
 import { createContext, ReactNode, useCallback, useContext } from 'react'
@@ -25,10 +26,11 @@ type Props = {
 
 export default function FormatterContextProvider({ children }: Props) {
   const { settings } = useSQLContext()
+  const { t } = useI18n()
 
   const formatDay = useCallback((day: string) => {
-    return formatDayValue(day, settings.dateFormat)
-  }, [settings.dateFormat])
+    return formatDayValue(day, settings.dateFormat, t)
+  }, [settings.dateFormat, t])
 
   const formatSeconds = useCallback((seconds: number) => {
     return formatDuration(seconds)

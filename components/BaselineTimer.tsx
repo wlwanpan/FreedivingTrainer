@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import { Footer } from '@/design/styled'
 import { Colors, Fonts, FontSizes } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import { formatDuration } from '@/utils/duration'
 import { styled } from 'styled-components/native'
 
@@ -23,11 +24,12 @@ export default function BaselineTimer({
   onFinish,
   onCancel,
 }: Props) {
+  const { t } = useI18n()
   const marked = contractionSeconds != null
 
   return (
     <Wrapper>
-      <HeaderWithBtn headerText='Hold' leftText='Cancel' leftOnClick={onCancel} />
+      <HeaderWithBtn headerText={t('common.hold')} leftText={t('common.cancel')} leftOnClick={onCancel} />
       <SClock>
         <STime
           style={{ fontVariant: ['tabular-nums'] }}
@@ -38,19 +40,19 @@ export default function BaselineTimer({
         </STime>
         <SStatus>
           {marked
-            ? `Contraction at ${formatDuration(contractionSeconds)}. Hold until you need to breathe.`
-            : 'Tap the first button at the first contraction.'}
+            ? t('baseline.timerMarked', { time: formatDuration(contractionSeconds) })
+            : t('baseline.timerCue')}
         </SStatus>
       </SClock>
       <Footer>
         <Button
-          title={marked ? 'Undo contraction' : 'First contraction'}
+          title={marked ? t('baseline.undoContraction') : t('baseline.firstContraction')}
           onPress={onContraction}
           disabled={!controlsReady}
           variant={marked ? 'muted' : 'primary'}
         />
         <Button
-          title='I need to breathe'
+          title={t('baseline.needBreathe')}
           onPress={onFinish}
           disabled={!controlsReady}
           variant='danger'

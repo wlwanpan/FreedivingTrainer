@@ -1,3 +1,6 @@
+import { englishTranslate } from '@/i18n/translate'
+import { Translate } from '@/i18n/types'
+
 export const WatchTrainingStaleMs = 45_000
 
 export type PhoneTraining = {
@@ -38,8 +41,6 @@ export type WatchSyncResult = {
   insert: boolean
   stamp: number | null
 }
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 function wholeNumber(value: unknown, min: number, max: number): number | null {
   const parsed = typeof value === 'number' ? value : Number(value)
@@ -142,12 +143,12 @@ export function reduceWatchSync(state: WatchSyncState, event: WatchSyncEvent): W
   }, event.now)
 }
 
-export function formatSyncClock(at: number, now: number): string {
+export function formatSyncClock(at: number, now: number, t: Translate = englishTranslate): string {
   const date = new Date(at)
   const current = new Date(now)
   const hours = date.getHours()
   const minutes = String(date.getMinutes()).padStart(2, '0')
-  const suffix = hours >= 12 ? 'PM' : 'AM'
+  const suffix = hours >= 12 ? t('calendar.pm') : t('calendar.am')
   const hour = hours % 12 || 12
   const time = `${hour}:${minutes} ${suffix}`
   const sameDay = date.getFullYear() === current.getFullYear()
@@ -159,9 +160,12 @@ export function formatSyncClock(at: number, now: number): string {
   const isYesterday = date.getFullYear() === yesterday.getFullYear()
     && date.getMonth() === yesterday.getMonth()
     && date.getDate() === yesterday.getDate()
-  if (isYesterday) return `Yesterday ${time}`
-  const month = MONTHS[date.getMonth()] ?? ''
-  return `${month} ${date.getDate()}, ${time}`
+  if (isYesterday) return t('calendar.yesterdayTime', { time })
+  return t('calendar.monthDayTime', {
+    month: t(`calendar.monthShort.${date.getMonth()}`),
+    day: date.getDate(),
+    time,
+  })
 }
 
 export function syncStatusLabel(input: {
@@ -171,12 +175,12 @@ export function syncStatusLabel(input: {
   contextPublished: boolean
   syncedAt: number | null
   now: number
-}): string | null {
+}, t: Translate = englishTranslate): string | null {
   const ready = input.reachable && input.pendingCount === 0 && input.contextPublished
-  if (input.reachable && !ready) return 'Syncing…'
-  if (ready && input.syncedAt != null) return `Synced ${formatSyncClock(input.syncedAt, input.now)}`
-  if (input.reachable) return 'Syncing…'
-  if (input.syncedAt != null) return `Last sync ${formatSyncClock(input.syncedAt, input.now)}`
-  if (input.paired) return 'Not synced yet'
+  if (input.reachable && !ready) return t('wearable.syncing')
+  if (ready && input.syncedAt != null) return t('wearable.synced', { time: formatSyncClock(input.syncedAt, input.now, t) })
+  if (input.reachable) return t('wearable.syncing')
+  if (input.syncedAt != null) return t('wearable.lastSyncAt', { time: formatSyncClock(input.syncedAt, input.now, t) })
+  if (input.paired) return t('wearable.notSynced')
   return null
 }

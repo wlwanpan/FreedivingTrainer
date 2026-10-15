@@ -1,10 +1,6 @@
 import { DefaultDateFormat } from '@/constants/dates'
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
+import { englishTranslate } from '@/i18n/translate'
+import { Translate } from '@/i18n/types'
 
 export function todayDate(): string {
   const now = new Date()
@@ -17,8 +13,8 @@ export function dayStamp(year: number, month: number, date: number): string {
   return `${year}-${mm}-${dd}`
 }
 
-export function formatMonthYear(year: number, month: number): string {
-  return `${MONTH_NAMES[month] ?? ''} ${year}`.trim()
+export function formatMonthYear(year: number, month: number, t: Translate = englishTranslate): string {
+  return t('calendar.monthYear', { month: t(`calendar.monthFull.${month}`), year })
 }
 
 export function shiftMonth(year: number, month: number, delta: number): { year: number; month: number } {
@@ -32,14 +28,22 @@ export function monthFromDay(day: string): { year: number; month: number } | nul
   return { year: Number(match[1]), month: Number(match[2]) - 1 }
 }
 
-export function formatDay(day: string, format: string = DefaultDateFormat): string {
+export function formatDay(
+  day: string,
+  format: string = DefaultDateFormat,
+  t: Translate = englishTranslate,
+): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day)
   if (!match || format !== 'MMM D, YYYY') {
     return day
   }
-  const month = MONTHS[Number(match[2]) - 1]
-  if (!month) {
+  const monthIndex = Number(match[2]) - 1
+  if (monthIndex < 0 || monthIndex > 11) {
     return day
   }
-  return `${month} ${Number(match[3])}, ${match[1]}`
+  return t('calendar.longDate', {
+    month: t(`calendar.monthShort.${monthIndex}`),
+    day: Number(match[3]),
+    year: match[1],
+  })
 }

@@ -1,6 +1,8 @@
 import TrainingClock from '@/components/TrainingClock'
 import WrapperScreen from '@/components/WrapperScreen'
-import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
+import { TableType, TableTypes } from '@/constants/tables'
+import { tableTypeLabel } from '@/i18n/labels'
+import { useI18n } from '@/providers/i18n'
 import useTrainingClock, { TrainPlanSlot, TrainTable } from '@/hooks/useTrainingClock'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useCallback, useEffect } from 'react'
@@ -63,6 +65,7 @@ function parseTrainTable(params: {
 
 export default function TrainScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const params = useLocalSearchParams<{
     type?: string | string[]
     name?: string | string[]
@@ -75,7 +78,7 @@ export default function TrainScreen() {
     session?: string | string[]
   }>()
   const tableType = parseTableType(params.type)
-  const title = parseLabel(params.name) ?? (tableType == null ? '' : TableTypeLabel[tableType])
+  const title = parseLabel(params.name) ?? (tableType == null ? '' : tableTypeLabel(tableType, t))
   const training = useTrainingClock(tableType, parseTrainTable(params), parseSlot(params), title)
 
   const leave = useCallback(() => {

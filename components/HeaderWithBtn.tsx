@@ -9,6 +9,7 @@ import HeaderTextBtn from './HeaderTextBtn'
 type Props = {
   headerText?: string
   leftText?: string
+  leftBack?: boolean
   rightText?: string
   leftOnClick?: () => void
   rightOnClick?: () => void
@@ -21,6 +22,7 @@ type Props = {
 export default function HeaderWithBtn({
   headerText,
   leftText,
+  leftBack,
   rightText,
   leftOnClick,
   rightOnClick,
@@ -29,7 +31,7 @@ export default function HeaderWithBtn({
   disabledRight,
   children,
 }: Props) {
-  const leftBtn = leftText === 'Back' ? (
+  const leftBtn = leftBack ? (
     <BackBtn onPress={leftOnClick} disabled={disabled} />
   ) : leftText ? (
     <HeaderTextBtn text={leftText} onClick={leftOnClick} disabled={disabled} />

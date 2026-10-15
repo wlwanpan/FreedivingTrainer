@@ -7,7 +7,9 @@ import { useBottomControlInset } from '@/design/chrome'
 import { Colors, Fonts, FontSizes, Layout, Space } from '@/design/styles'
 import { Session } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
+import { planCopy } from '@/i18n/labels'
 import { groupSessionsByPlanWeek, trainedDays } from '@/utils/session_log'
 import { trainingPlanFromSettings } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
@@ -17,6 +19,7 @@ import { styled } from 'styled-components/native'
 
 export default function SessionsScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const { sessions, settings } = useSQLContext()
   const { formatDay } = useFormatterContext()
   const paddingBottom = useBottomControlInset(false)
@@ -25,14 +28,15 @@ export default function SessionsScreen() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const groups = groupSessionsByPlanWeek(
     sessions,
-    plan?.name ?? null,
+    plan == null ? null : planCopy(plan.id, 'name', t),
     settings.trainingPlanStartedAt,
+    t,
   )
   const daySessions = selectedDay == null ? [] : sessionsOnDay(sessions, selectedDay)
 
   return (
     <WrapperScreen skipBottomInset>
-      <HeaderWithBtn headerText='Sessions' leftText='Back' leftOnClick={() => router.back()} />
+      <HeaderWithBtn headerText={t('log.title')} leftBack leftOnClick={() => router.back()} />
       <SScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom }}
@@ -49,13 +53,13 @@ export default function SessionsScreen() {
               <SShowAll
                 onPress={() => setSelectedDay(null)}
                 accessibilityRole='button'
-                accessibilityLabel='Show all sessions'
+                accessibilityLabel={t('log.showAllA11y')}
               >
-                <SShowAllText>Show all</SShowAllText>
+                <SShowAllText>{t('log.showAll')}</SShowAllText>
               </SShowAll>
             </SSectionRow>
             {daySessions.length === 0 ? (
-              <EmptyListPlaceholder message='No sessions on this date.' />
+              <EmptyListPlaceholder message={t('log.emptyDay')} />
             ) : (
               daySessions.map((session) => (
                 <SessionListItem key={session.id} session={session} />
@@ -63,7 +67,7 @@ export default function SessionsScreen() {
             )}
           </SGroup>
         ) : groups.length === 0 ? (
-          <EmptyListPlaceholder message='Finish a table to see it here.' />
+          <EmptyListPlaceholder message={t('log.empty')} />
         ) : (
           groups.map((group) => (
             <SGroup key={group.key}>

@@ -1,3 +1,5 @@
+import { tRuntime } from '@/i18n/runtime'
+
 const TABLE_DISPLAY_NAMES: Record<string, string> = {
   settings: 'settings',
   sessions: 'session',
@@ -12,5 +14,8 @@ export function parseSQLiteError(message: string): string | null {
   }
   const [, tableName, fieldName] = match
   const displayName = TABLE_DISPLAY_NAMES[tableName] ?? tableName
-  return `A ${displayName} with the same ${fieldName.replace(/_/g, ' ')} already exists.`
+  return tRuntime('sql.unique', {
+    table: displayName,
+    field: fieldName.replace(/_/g, ' '),
+  })
 }

@@ -1,5 +1,7 @@
-import { ManualTableTypes, TableType, TableTypeLabel } from '@/constants/tables'
+import { ManualTableTypes, TableType } from '@/constants/tables'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
+import { tableTypeLabel } from '@/i18n/labels'
+import { useI18n } from '@/providers/i18n'
 import { styled } from 'styled-components/native'
 
 
@@ -9,6 +11,7 @@ type Props = {
 }
 
 export default function TableTypeSwitch({ value, onChange }: Props) {
+  const { t } = useI18n()
   return (
     <Wrapper>
       {ManualTableTypes.map((type) => (
@@ -17,7 +20,7 @@ export default function TableTypeSwitch({ value, onChange }: Props) {
           $selected={value === type}
           onPress={() => onChange(type)}
         >
-          <SLabel $selected={value === type}>{TableTypeLabel[type]}</SLabel>
+          <SLabel $selected={value === type}>{tableTypeLabel(type, t)}</SLabel>
         </SOption>
       ))}
     </Wrapper>

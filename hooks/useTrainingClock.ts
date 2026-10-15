@@ -1,5 +1,5 @@
-import { ErrorTitles } from '@/constants/errors'
 import { TableType } from '@/constants/tables'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import {
@@ -114,6 +114,7 @@ export default function useTrainingClock(
   name = '',
 ) {
   const sql = useSQLContext()
+  const { t } = useI18n()
   const { showWarning } = useWarningModal()
   const plannedRounds = useTablePlan(tableType ?? 'co2')
   const rounds = table != null && tableType != null
@@ -307,7 +308,7 @@ export default function useTrainingClock(
     setSaving(false)
     if (res.error) {
       setSaveFailed(true)
-      showWarning(ErrorTitles.Sql, res.error.message)
+      showWarning(t('errors.sql'), res.error.message)
       return
     }
     if (res.insertionID != null) heartRate.attach(res.insertionID)

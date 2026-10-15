@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import { styled } from 'styled-components/native'
 
 
@@ -12,32 +13,33 @@ type Props = {
 }
 
 export default function BaselinePrep({ onStart, onEnterTimes, onBack }: Props) {
+  const { t } = useI18n()
   return (
     <Wrapper>
-      <HeaderWithBtn headerText='Baseline' leftText='Back' leftOnClick={onBack} />
+      <HeaderWithBtn headerText={t('baseline.title')} leftBack leftOnClick={onBack} />
       <SBody showsVerticalScrollIndicator={false}>
-        <STitle>One maximum hold</STitle>
+        <STitle>{t('baseline.oneHold')}</STitle>
         <SCopy>
-          Sit or lie down. Breathe calmly, take one full inhale, then start. Leave the screen on. This is a dry static.
+          {t('baseline.copy')}
         </SCopy>
-        <SWarning>Stay out of the water. Stop if you feel unwell.</SWarning>
+        <SWarning>{t('baseline.warning')}</SWarning>
         <SCard>
-          <SCardTitle>First contraction</SCardTitle>
+          <SCardTitle>{t('baseline.firstContraction')}</SCardTitle>
           <SCardCopy>
-            Tap when the first urge to breathe arrives. That is usually a contraction in the diaphragm. Before it, the hold is the relaxation phase: it still feels easy. The contraction starts the struggle phase, when the urge to breathe takes over. Beginner CO2 tables use this time so each hold stays in the relaxation phase.
+            {t('baseline.firstCopy')}
           </SCardCopy>
         </SCard>
         <SCard>
-          <SCardTitle>Then keep holding</SCardTitle>
+          <SCardTitle>{t('baseline.thenHold')}</SCardTitle>
           <SCardCopy>
-            Continue until you must breathe. That total time is the maximum the tables are built from.
+            {t('baseline.thenCopy')}
           </SCardCopy>
         </SCard>
       </SBody>
       <Footer>
-        <Button title='Start hold' onPress={onStart} />
+        <Button title={t('baseline.startHold')} onPress={onStart} />
         <Button
-          title='Enter times'
+          title={t('baseline.enterTimes')}
           onPress={onEnterTimes}
           variant='ghost'
         />

@@ -2,13 +2,14 @@ import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import PlanProgress from '@/components/PlanProgress'
 import WrapperScreen from '@/components/WrapperScreen'
-import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
+import { holdLabel } from '@/i18n/labels'
 import { Footer } from '@/design/styled'
 import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useTrainingOutline from '@/hooks/useTrainingOutline'
 import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
@@ -23,6 +24,7 @@ export default function TrainingScreen() {
   const subscription = useSubscriptionContext()
   const { showWarning } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
+  const { t } = useI18n()
   const outline = useTrainingOutline()
   const watchBusy = watchBlocksPhoneStart(useWearableStatus())
   const paddingBottom = useBottomControlInset(false)
@@ -34,7 +36,7 @@ export default function TrainingScreen() {
       return
     }
     if (sessionRounds(session).length === 0) {
-      showWarning(ErrorTitles.Input, 'Add at least one round before training.')
+      showWarning(t('errors.input'), t('home.addRound'))
       return
     }
     router.push({
@@ -55,20 +57,20 @@ export default function TrainingScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <HeaderWithBtn headerText='Training' leftText='Back' leftOnClick={() => router.back()} />
+      <HeaderWithBtn headerText={t('training.title')} leftBack leftOnClick={() => router.back()} />
       {outline == null ? (
         <>
           <SEmpty>
-            <SEmptyTitle>No plan yet</SEmptyTitle>
+            <SEmptyTitle>{t('training.emptyTitle')}</SEmptyTitle>
             <SEmptyCopy>
               {settings.baselineMaxHoldSeconds == null
-                ? 'A baseline test sizes the plan you choose.'
-                : 'Choose a plan, or build your own. Keep CO2 and O2 on different days.'}
+                ? t('training.emptyNeedBaseline')
+                : t('training.emptyChoose')}
             </SEmptyCopy>
           </SEmpty>
           <Footer>
             <Button
-              title={settings.baselineMaxHoldSeconds == null ? 'Take baseline test' : 'Choose a plan'}
+              title={settings.baselineMaxHoldSeconds == null ? t('settings.takeBaseline') : t('baseline.choosePlan')}
               onPress={() => router.push(settings.baselineMaxHoldSeconds == null ? '/baseline' : '/plan')}
             />
           </Footer>
@@ -85,14 +87,14 @@ export default function TrainingScreen() {
           {outline.schedule.map((entry) => (
             <SWeek key={entry.week} $current={entry.current}>
               <SWeekHeader>
-                <SWeekTitle>{`Week ${entry.week}`}</SWeekTitle>
+                <SWeekTitle>{t('training.week', { week: entry.week })}</SWeekTitle>
                 {entry.sessions.length > 0 && entry.sessions.every((session) => session.completed) ? (
-                  <SBadge>Complete</SBadge>
-                ) : entry.current ? <SBadge>This week</SBadge> : null}
-                {entry.locked ? <SLockedBadge>Locked</SLockedBadge> : null}
+                  <SBadge>{t('common.complete')}</SBadge>
+                ) : entry.current ? <SBadge>{t('training.thisWeek')}</SBadge> : null}
+                {entry.locked ? <SLockedBadge>{t('training.locked')}</SLockedBadge> : null}
               </SWeekHeader>
               {entry.locked ? (
-                <SLockNote>{`Finish week ${outline.week} to start these.`}</SLockNote>
+                <SLockNote>{t('training.lockNote', { week: outline.week })}</SLockNote>
               ) : null}
               {entry.sessions.map((session) => (
                 <STraining
@@ -104,13 +106,13 @@ export default function TrainingScreen() {
                   <STrainingBody>
                     <SNameRow>
                       <STrainingName $locked={entry.locked}>{session.name}</STrainingName>
-                      {session.completed ? <SDone>Done</SDone> : null}
+                      {session.completed ? <SDone>{t('training.done')}</SDone> : null}
                     </SNameRow>
-                    <STrainingMeta $locked={entry.locked}>{sessionSummary(session, formatSeconds)}</STrainingMeta>
+                    <STrainingMeta $locked={entry.locked}>{sessionSummary(session, formatSeconds, t)}</STrainingMeta>
                     <STrainingNote>{session.note}</STrainingNote>
                   </STrainingBody>
                   <SStart $locked={entry.locked || watchBusy}>
-                    {entry.locked ? 'Locked' : watchBusy ? 'On Watch' : 'Start'}
+                    {entry.locked ? t('training.locked') : watchBusy ? t('training.onWatch') : t('training.start')}
                   </SStart>
                 </STraining>
               ))}
@@ -125,11 +127,12 @@ export default function TrainingScreen() {
 function sessionSummary(
   session: WeekSession,
   formatSeconds: (seconds: number) => string,
+  t: ReturnType<typeof useI18n>['t'],
 ): string {
-  const hold = session.tableType === 'o2'
-    ? `Holds from ${formatSeconds(session.holdSeconds)}`
-    : `Hold ${formatSeconds(session.holdSeconds)}`
-  return `${hold} · ${session.rounds} rounds`
+  return t('training.holdRounds', {
+    hold: holdLabel(session.tableType, formatSeconds(session.holdSeconds), t),
+    count: session.rounds,
+  })
 }
 
 const SScroll = styled.ScrollView`

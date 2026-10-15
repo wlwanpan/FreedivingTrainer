@@ -4,6 +4,7 @@ import SessionListItem from '@/components/SessionListItem'
 import WrapperScreen from '@/components/WrapperScreen'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import useWearableStatus, { lastSyncLabel, wearableLabel, wearableLive } from '@/hooks/useWearableStatus'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useRouter } from 'expo-router'
 import { styled } from 'styled-components/native'
@@ -11,6 +12,7 @@ import { styled } from 'styled-components/native'
 
 export default function WearableScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const { sessions } = useSQLContext()
   const wearable = useWearableStatus()
   const live = wearableLive(wearable)
@@ -25,27 +27,27 @@ export default function WearableScreen() {
   return (
     <WrapperScreen scrollable sheet>
       <HeaderWithBtn
-        headerText='Wearables'
-        leftText='Close'
+        headerText={t('wearable.title')}
+        leftText={t('common.close')}
         leftOnClick={() => router.back()}
       />
       <SCard>
-        <SCardTitle>Status</SCardTitle>
+        <SCardTitle>{t('wearable.status')}</SCardTitle>
         <SStatusRow>
           <SDot $live={live} />
-          <SStatus $live={live}>{wearableLabel(wearable)}</SStatus>
+          <SStatus $live={live}>{wearableLabel(wearable, t)}</SStatus>
         </SStatusRow>
         <SFact>
-          <SFactLabel>Last sync</SFactLabel>
-          <SFactValue>{lastSyncLabel(wearable)}</SFactValue>
+          <SFactLabel>{t('wearable.lastSync')}</SFactLabel>
+          <SFactValue>{lastSyncLabel(wearable, t)}</SFactValue>
         </SFact>
-        {wearable.syncLabel === 'Syncing…' && wearable.syncedAt != null ? (
-          <SNote>Syncing with your watch…</SNote>
+        {wearable.syncLabel === t('wearable.syncing') && wearable.syncedAt != null ? (
+          <SNote>{t('wearable.syncingWatch')}</SNote>
         ) : null}
       </SCard>
-      <SSection>Sessions from watch</SSection>
+      <SSection>{t('wearable.sessionsFromWatch')}</SSection>
       {watchSessions.length === 0 ? (
-        <EmptyListPlaceholder message='Finish a table on your watch to see it here.' />
+        <EmptyListPlaceholder message={t('wearable.empty')} />
       ) : (
         watchSessions.map((session) => (
           <SessionListItem key={session.id} session={session} />
