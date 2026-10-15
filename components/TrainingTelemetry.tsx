@@ -1,5 +1,6 @@
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { averageFirstContractionSeconds, LoggedContraction } from '@/utils/contractions'
 import { styled } from 'styled-components/native'
@@ -22,37 +23,46 @@ export default function TrainingTelemetry({
   heartRateBpm,
   contractions,
 }: Props) {
+  const { t } = useI18n()
   const { sessions } = useSQLContext()
   const { formatSeconds } = useFormatterContext()
-  const heartRate = heartRateBpm == null ? 'unavailable' : String(heartRateBpm)
+  const unavailable = t('common.unavailable')
+  const heartRate = heartRateBpm == null ? unavailable : String(heartRateBpm)
   const avgContraction = averageFirstContractionSeconds(sessions, contractions)
 
   return (
     <Wrapper
-      accessibilityLabel={`${formatSeconds(elapsedTotalSeconds)} elapsed of ${formatSeconds(totalSeconds)}. Average first contraction ${avgContraction == null ? 'unavailable' : formatSeconds(avgContraction)}. Round ${roundIndex} of ${roundCount}. Heart rate ${heartRateBpm == null ? 'unavailable' : `${heartRateBpm} bpm`}.`}
+      accessibilityLabel={t('telemetry.a11y', {
+        elapsed: formatSeconds(elapsedTotalSeconds),
+        total: formatSeconds(totalSeconds),
+        contraction: avgContraction == null ? unavailable : formatSeconds(avgContraction),
+        round: roundIndex,
+        rounds: roundCount,
+        heart: heartRateBpm == null ? unavailable : `${heartRateBpm} bpm`,
+      })}
     >
       <SRow>
         <SFlexTile>
           <SValue>
             {formatSeconds(elapsedTotalSeconds)} / {formatSeconds(totalSeconds)}
           </SValue>
-          <SLabel>Time</SLabel>
+          <SLabel>{t('telemetry.time')}</SLabel>
         </SFlexTile>
         <SFlexTile>
           <SValue $muted={avgContraction == null}>
             {avgContraction == null ? '—' : formatSeconds(avgContraction)}
           </SValue>
-          <SLabel>Avg contraction</SLabel>
+          <SLabel>{t('telemetry.avgContraction')}</SLabel>
         </SFlexTile>
       </SRow>
       <SRow>
         <SFlexTile>
           <SValue>{`${roundIndex} / ${roundCount}`}</SValue>
-          <SLabel>Round</SLabel>
+          <SLabel>{t('telemetry.round')}</SLabel>
         </SFlexTile>
         <SFlexTile>
           <SValue $muted={heartRateBpm == null}>{heartRate}</SValue>
-          <SLabel>Heart rate</SLabel>
+          <SLabel>{t('telemetry.heartRate')}</SLabel>
         </SFlexTile>
       </SRow>
     </Wrapper>

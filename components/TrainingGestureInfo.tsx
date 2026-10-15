@@ -1,6 +1,6 @@
 import Button from '@/components/Button'
 import { Colors, FontSizes, Layout } from '@/design/styles'
-import { TrainingGestureCopy } from '@/utils/training_gestures'
+import { useI18n } from '@/providers/i18n'
 import { styled } from 'styled-components/native'
 
 
@@ -10,27 +10,28 @@ type Props = {
 }
 
 export default function TrainingGestureInfo({ onClose, onReplay }: Props) {
+  const { t } = useI18n()
   return (
     <Wrapper onPress={onClose} accessibilityViewIsModal>
       <SCard onPress={() => {}}>
-        <STitle>Gestures</STitle>
+        <STitle>{t('gestures.title')}</STitle>
         <SRow>
           <SMark><SMarkText>1</SMarkText></SMark>
           <SCopy>
-            <SRowTitle>{TrainingGestureCopy.singleTitle}</SRowTitle>
-            <SRowBody>{TrainingGestureCopy.singleBody}</SRowBody>
+            <SRowTitle>{t('gestures.singleTitle')}</SRowTitle>
+            <SRowBody>{t('gestures.singleBody')}</SRowBody>
           </SCopy>
         </SRow>
         <SRow>
           <SMark><SMarkText>2</SMarkText></SMark>
           <SCopy>
-            <SRowTitle>{TrainingGestureCopy.doubleTitle}</SRowTitle>
-            <SRowBody>{TrainingGestureCopy.doubleBody}</SRowBody>
+            <SRowTitle>{t('gestures.doubleTitle')}</SRowTitle>
+            <SRowBody>{t('gestures.doubleBody')}</SRowBody>
           </SCopy>
         </SRow>
-        <Button title='Got it' onPress={onClose} />
+        <Button title={t('common.gotIt')} onPress={onClose} />
         <SReplay onPress={onReplay} accessibilityRole='button'>
-          <SReplayText>Watch the tutorial</SReplayText>
+          <SReplayText>{t('gestures.tutorial')}</SReplayText>
         </SReplay>
       </SCard>
     </Wrapper>

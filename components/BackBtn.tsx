@@ -1,4 +1,5 @@
 import { Colors, Layout } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { Pressable } from 'react-native'
 import { styled } from 'styled-components/native'
@@ -10,8 +11,14 @@ type Props = {
 }
 
 export default function BackBtn({ onPress, disabled }: Props) {
+  const { t } = useI18n()
   return (
-    <SButton onPress={onPress} disabled={disabled}>
+    <SButton
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole='button'
+      accessibilityLabel={t('common.back')}
+    >
       {({ pressed }) => (
         <Ionicons
           name='chevron-back-outline'

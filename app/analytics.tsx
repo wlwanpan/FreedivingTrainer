@@ -3,11 +3,13 @@ import HeaderWithBtn from '@/components/HeaderWithBtn'
 import HeartRateChart from '@/components/HeartRateChart'
 import HoldHistoryChart from '@/components/HoldHistoryChart'
 import WrapperScreen from '@/components/WrapperScreen'
-import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
+import { TableType, TableTypes } from '@/constants/tables'
+import { tableTypeLabel } from '@/i18n/labels'
 import { useBottomControlInset } from '@/design/chrome'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { Session } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useRouter } from 'expo-router'
 import { styled } from 'styled-components/native'
@@ -15,6 +17,7 @@ import { styled } from 'styled-components/native'
 
 export default function AnalyticsScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const { sessions } = useSQLContext()
   const { formatSeconds } = useFormatterContext()
   const paddingBottom = useBottomControlInset(false)
@@ -22,7 +25,7 @@ export default function AnalyticsScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <HeaderWithBtn headerText='Analytics' leftText='Back' leftOnClick={() => router.back()} />
+      <HeaderWithBtn headerText={t('analytics.title')} leftBack leftOnClick={() => router.back()} />
       <SScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom }}
@@ -30,16 +33,18 @@ export default function AnalyticsScreen() {
         <AnalyticsOverview />
         <HoldHistoryChart />
         <HeartRateChart />
-        <SSection>Sessions</SSection>
+        <SSection>{t('analytics.sessions')}</SSection>
         {totals.length === 0 ? (
-          <SEmpty>Finish a table to see it here.</SEmpty>
+          <SEmpty>{t('analytics.empty')}</SEmpty>
         ) : (
           <SCard>
             {totals.map((row, index) => (
               <SRow key={row.type} $last={index === totals.length - 1}>
-                <SName>{TableTypeLabel[row.type]}</SName>
+                <SName>{tableTypeLabel(row.type, t)}</SName>
                 <SMeta>
-                  {`${row.count} ${row.count === 1 ? 'session' : 'sessions'} · ${formatSeconds(row.apnea)}`}
+                  {row.count === 1
+                    ? t('analytics.sessionCount', { count: row.count, duration: formatSeconds(row.apnea) })
+                    : t('analytics.sessionCountPlural', { count: row.count, duration: formatSeconds(row.apnea) })}
                 </SMeta>
               </SRow>
             ))}

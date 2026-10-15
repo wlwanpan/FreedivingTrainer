@@ -2,6 +2,7 @@ import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import WrapperScreen from '@/components/WrapperScreen'
 import { Colors, Fonts, FontSizes } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -16,23 +17,9 @@ function goToDashboard(router: ReturnType<typeof useRouter>) {
   router.replace('/')
 }
 
-const VALUE_PROPS: { title: string; description: string }[] = [
-  {
-    title: 'Unlimited tables',
-    description: 'Log every CO2 and O2 session after the free limit.',
-  },
-  {
-    title: 'Both table types',
-    description: 'Keep training CO2 tolerance and O2 holds.',
-  },
-  {
-    title: 'On this device',
-    description: 'Your sessions stay in the on-device database.',
-  },
-]
-
 export default function PaywallScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const subscription = useSubscriptionContext()
   const [purchaseInFlight, setPurchaseInFlight] = useState(false)
   const [restoreInFlight, setRestoreInFlight] = useState(false)
@@ -46,10 +33,18 @@ export default function PaywallScreen() {
   }, [subscription.hasLifetimeAccess, router])
 
   const usageLine = subscription.hasLifetimeAccess
-    ? 'Lifetime access is active.'
+    ? t('paywall.active')
     : subscription.freeLimitReached
-      ? `You've used all ${subscription.freeSessionLimit} free tables.`
-      : `${subscription.sessionsRemaining} of ${subscription.freeSessionLimit} free tables left.`
+      ? t('paywall.usedAll', { limit: subscription.freeSessionLimit })
+      : t('paywall.remaining', {
+        remaining: subscription.sessionsRemaining,
+        limit: subscription.freeSessionLimit,
+      })
+  const valueProps = [
+    { title: t('paywall.unlimitedTitle'), description: t('paywall.unlimitedCopy') },
+    { title: t('paywall.bothTitle'), description: t('paywall.bothCopy') },
+    { title: t('paywall.deviceTitle'), description: t('paywall.deviceCopy') },
+  ]
 
   const handlePurchase = async (pkg: PurchasesPackage) => {
     setPurchaseInFlight(true)
@@ -67,25 +62,25 @@ export default function PaywallScreen() {
     <WrapperScreen scrollable sheet>
       {dismissable && (
         <HeaderWithBtn
-          headerText='Lifetime access'
-          leftText='Close'
+          headerText={t('paywall.title')}
+          leftText={t('common.close')}
           leftOnClick={() => router.back()}
         />
       )}
       <SBody>
-        <STitle>Train without a cap</STitle>
+        <STitle>{t('paywall.headline')}</STitle>
         <SUsage>{usageLine}</SUsage>
-        {VALUE_PROPS.map((item) => (
+        {valueProps.map((item) => (
           <SProp key={item.title}>
             <SPropTitle>{item.title}</SPropTitle>
             <SPropCopy>{item.description}</SPropCopy>
           </SProp>
         ))}
         {!subscription.configured && (
-          <SNote>Add REVENUECAT_IOS_API_KEY to enable App Store purchases.</SNote>
+          <SNote>{t('paywall.needKey')}</SNote>
         )}
         {subscription.configured && packages.length === 0 && (
-          <SNote>No packages are available yet. Check the RevenueCat offering.</SNote>
+          <SNote>{t('paywall.noPackages')}</SNote>
         )}
         {packages.map((pkg) => (
           <Button
@@ -96,7 +91,7 @@ export default function PaywallScreen() {
           />
         ))}
         <Button
-          title='Restore purchase'
+          title={t('paywall.restore')}
           onPress={() => { void handleRestore() }}
           loading={restoreInFlight}
           disabled={!subscription.configured}

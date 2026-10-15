@@ -1,4 +1,6 @@
-import { TableTypeLabel } from '../constants/tables'
+import { englishTranslate } from '@/i18n/translate'
+import { Translate } from '@/i18n/types'
+import { tableTypeLabel } from '@/i18n/labels'
 import { buildCo2Table, buildO2Table, TableRound } from './table'
 
 export type WatchTableSettings = {
@@ -34,18 +36,21 @@ function tableRounds(rounds: TableRound[]): WatchTablePayload['rounds'] {
   }))
 }
 
-export function watchTablesFromSettings(settings: WatchTableSettings): WatchTablesPayload {
+export function watchTablesFromSettings(
+  settings: WatchTableSettings,
+  t: Translate = englishTranslate,
+): WatchTablesPayload {
   return {
     breatheUpSeconds: settings.breatheUpSeconds,
     co2: {
-      name: TableTypeLabel.co2,
+      name: tableTypeLabel('co2', t),
       tableType: 'co2',
       holdSeconds: settings.co2HoldSeconds,
       restSeconds: settings.co2RestStartSeconds,
       rounds: tableRounds(buildCo2Table(settings)),
     },
     o2: {
-      name: TableTypeLabel.o2,
+      name: tableTypeLabel('o2', t),
       tableType: 'o2',
       holdSeconds: settings.o2HoldStartSeconds,
       restSeconds: settings.o2RestSeconds,

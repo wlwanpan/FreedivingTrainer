@@ -1,5 +1,6 @@
 import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { TableRound } from '@/utils/table'
 import { styled } from 'styled-components/native'
 
@@ -11,17 +12,18 @@ type Props = {
 }
 
 export default function TableRoundRow({ round, inCard = false, last = false }: Props) {
+  const { t } = useI18n()
   const { formatSeconds } = useFormatterContext()
 
   return (
     <Wrapper $inCard={inCard} $last={last}>
-      <SIndex>Round {round.index}</SIndex>
+      <SIndex>{t('tableRound.round', { n: round.index })}</SIndex>
       <SDetail>
-        <SHold>Hold</SHold>
+        <SHold>{t('common.hold')}</SHold>
         {` ${formatSeconds(round.holdSeconds)}`}
       </SDetail>
       <SDetail>
-        <SRest>Rest</SRest>
+        <SRest>{t('common.rest')}</SRest>
         {` ${formatSeconds(round.restSeconds)}`}
       </SDetail>
     </Wrapper>

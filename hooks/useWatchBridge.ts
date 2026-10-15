@@ -1,5 +1,5 @@
-import { ErrorTitles } from '@/constants/errors'
 import { publishWearableLive } from '@/hooks/useWearableStatus'
+import { useI18n } from '@/providers/i18n'
 import { ensureWatchSession, WatchConnectivity } from '@/hooks/watchConnectivity'
 import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
 import { readPhoneTraining, subscribePhoneTraining } from '@/hooks/phoneTraining'
@@ -44,6 +44,7 @@ export default function useWatchBridge() {
     updateSettings,
   } = useSQLContext()
   const subscription = useSubscriptionContext()
+  const { t, language } = useI18n()
   const { showWarning } = useWarningModal()
   const outline = useTrainingOutline()
   const phoneTraining = useSyncExternalStore(subscribePhoneTraining, readPhoneTraining, () => null)
@@ -57,13 +58,13 @@ export default function useWatchBridge() {
   }
   const sessionsRef = useRef(sessions)
   const insertHeartRatesRef = useRef(insertHeartRates)
-  const warnRef = useRef(showWarning)
+  const warnRef = useRef<(description: string) => void>(() => {})
   const settingsRef = useRef(settings)
   const updateSettingsRef = useRef(updateSettings)
   const syncStateRef = useRef(initialWatchSyncState)
   sessionsRef.current = sessions
   insertHeartRatesRef.current = insertHeartRates
-  warnRef.current = showWarning
+  warnRef.current = (description: string) => showWarning(t('errors.sql'), description)
   settingsRef.current = settings
   updateSettingsRef.current = updateSettings
 
@@ -107,7 +108,7 @@ export default function useWatchBridge() {
     planKeyRef.current = planKey
   }
   const sync = syncRef.current
-  const tables = watchTablesFromSettings(settings)
+  const tables = watchTablesFromSettings(settings, t)
   const shared = {
     type: 'nextSession' as const,
     loggedCount: sessions.length,
@@ -115,6 +116,7 @@ export default function useWatchBridge() {
     sync,
     syncedAt,
     tables,
+    language,
     trainingHaptic: settings.trainingHaptic,
     phoneTraining: phoneTrainingContext(phoneTraining),
   }
@@ -252,17 +254,17 @@ export default function useWatchBridge() {
       }
       if (sessionId == null) {
         savedRef.current.delete(completed.completedAt)
-        if (result.error) warnRef.current(ErrorTitles.Sql, result.error.message)
+        if (result.error) warnRef.current(result.error.message)
         return false
       }
       rememberSyncRef.current(completed.completedAt)
-      if (result.error) warnRef.current(ErrorTitles.Sql, result.error.message)
+      if (result.error) warnRef.current(result.error.message)
       if (completed.heartRates.length === 0) return true
       const rates = await insertHeartRatesRef.current(completed.heartRates.map((sample) => ({
         ...sample,
         sessionId,
       })))
-      if (rates.error) warnRef.current(ErrorTitles.Sql, rates.error.message)
+      if (rates.error) warnRef.current(rates.error.message)
       return true
     }
     const subscriptions = [

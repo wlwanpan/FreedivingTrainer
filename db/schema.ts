@@ -6,6 +6,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 export const settings = sqliteTable('settings', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   dateFormat: text('date_format').notNull().default('YYYY-MM-DD'),
+  language: text('language'),
   breatheUpSeconds: integer('breathe_up_seconds').notNull().default(60),
   trainingAnimation: integer('training_animation', { mode: 'boolean' }).notNull().default(true),
   trainingHaptic: integer('training_haptic', { mode: 'boolean' }).notNull().default(true),

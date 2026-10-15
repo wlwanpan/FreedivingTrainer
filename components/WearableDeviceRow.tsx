@@ -1,4 +1,5 @@
 import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { ComponentProps } from 'react'
 import { ActivityIndicator } from 'react-native'
@@ -26,6 +27,7 @@ export default function WearableDeviceRow({
   last = false,
   onPress,
 }: Props) {
+  const { t } = useI18n()
   const disabled = comingSoon || loading
 
   return (
@@ -34,7 +36,7 @@ export default function WearableDeviceRow({
       disabled={disabled}
       accessibilityRole='button'
       accessibilityState={{ disabled: comingSoon, selected }}
-      accessibilityLabel={comingSoon ? `${title}, coming soon` : title}
+      accessibilityLabel={comingSoon ? t('wearable.comingSoonA11y', { title }) : title}
     >
       {({ pressed }) => (
         <SRow $last={last} $pressed={pressed && !disabled}>
@@ -53,7 +55,7 @@ export default function WearableDeviceRow({
             <ActivityIndicator size='small' color={Colors.Seafoam} />
           ) : comingSoon ? (
             <SSoon>
-              <SSoonLabel>Coming soon</SSoonLabel>
+              <SSoonLabel>{t('wearable.comingSoon')}</SSoonLabel>
             </SSoon>
           ) : selected ? (
             <Ionicons name='checkmark-circle' size={22} color={Colors.Seafoam} />

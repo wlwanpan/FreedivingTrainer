@@ -1,3 +1,5 @@
+import { englishTranslate } from '@/i18n/translate'
+import { Translate } from '@/i18n/types'
 import { Session } from '../db/schema'
 
 
@@ -15,6 +17,7 @@ export function groupSessionsByPlanWeek(
   sessions: readonly Session[],
   planName: string | null,
   planStartedAt: Date | null,
+  t: Translate = englishTranslate,
 ): SessionLogGroup[] {
   const startedMs = planStartedAt?.getTime() ?? null
   const buckets = new Map<string, SessionLogGroup>()
@@ -25,7 +28,7 @@ export function groupSessionsByPlanWeek(
   })
 
   for (const session of sorted) {
-    const { key, title } = groupForSession(session, planName, startedMs)
+    const { key, title } = groupForSession(session, planName, startedMs, t)
     const group = buckets.get(key) ?? { key, title, sessions: [] }
     group.sessions.push(session)
     buckets.set(key, group)
@@ -43,22 +46,25 @@ function groupForSession(
   session: Session,
   planName: string | null,
   startedMs: number | null,
+  t: Translate,
 ): { key: string; title: string } {
   if (session.planWeek == null) {
-    return { key: 'other', title: 'Other sessions' }
+    return { key: 'other', title: t('sessions.other') }
   }
   const week = session.planWeek
   const inCurrentPlan = startedMs != null && session.createdAt.getTime() >= startedMs
   if (inCurrentPlan) {
     return {
       key: `plan:${week}`,
-      title: planName != null ? `${planName} · Week ${week}` : `Week ${week}`,
+      title: planName != null
+        ? t('sessions.planWeek', { plan: planName, week })
+        : t('sessions.week', { week }),
     }
   }
   if (startedMs != null) {
-    return { key: `earlier:${week}`, title: `Earlier plan · Week ${week}` }
+    return { key: `earlier:${week}`, title: t('sessions.earlierPlan', { week }) }
   }
-  return { key: `week:${week}`, title: `Week ${week}` }
+  return { key: `week:${week}`, title: t('sessions.week', { week }) }
 }
 
 function groupRank(key: string): [number, number] {

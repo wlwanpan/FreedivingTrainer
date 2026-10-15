@@ -1,19 +1,21 @@
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { styled } from 'styled-components/native'
 
 
 export default function DashboardSafety() {
+  const { t } = useI18n()
   return (
     <Wrapper accessibilityRole='alert'>
       <SMark>
         <Ionicons name='warning' size={18} color={Colors.Alert} />
       </SMark>
       <SCopy>
-        <SKicker>Safety rule</SKicker>
-        <SHeadline>Dry land only</SHeadline>
+        <SKicker>{t('safety.kicker')}</SKicker>
+        <SHeadline>{t('safety.headline')}</SHeadline>
         <SBody>
-          Tables must only be performed on dry land. Never train in water without a certified, attentive spotter.
+          {t('safety.body')}
         </SBody>
       </SCopy>
     </Wrapper>

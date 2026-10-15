@@ -11,13 +11,14 @@ import { Footer } from '@/design/styled'
 import { Colors, FontSizes, Layout } from '@/design/styles'
 import { TrainStep } from '@/hooks/useTrainingClock'
 import { registerTrainingResume } from '@/hooks/trainingPause'
+import { Translate } from '@/i18n/types'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { contractionLabel, contractionsInRound, ContractionTap, LoggedContraction, sessionResultNote } from '@/utils/contractions'
 import { playTrainingHaptic } from '@/utils/training_haptic'
-import { TrainingGestureCopy } from '@/utils/training_gestures'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -75,6 +76,7 @@ export default function TrainingClock({
   onRememberTap,
   onLogContraction,
 }: Props) {
+  const { t } = useI18n()
   const { settings, updatedAt } = useSQLContext()
   const updateSetting = useUpdateSetting()
   const { showConfirmation } = useWarningModal()
@@ -123,10 +125,10 @@ export default function TrainingClock({
   onContractionRef.current = () => {
     const result = onLogContraction()
     if (result.kind === 'logged') {
-      showFeedback(`Contraction · ${formatSeconds(result.offsetSeconds)}`)
+      showFeedback(t('training.contractionLogged', { time: formatSeconds(result.offsetSeconds) }))
       return
     }
-    if (result.kind === 'hold-only') showFeedback(TrainingGestureCopy.holdOnly)
+    if (result.kind === 'hold-only') showFeedback(t('gestures.holdOnly'))
   }
 
   const gesturesActive = !done && !tutorialOpen && !infoOpen
@@ -216,9 +218,9 @@ export default function TrainingClock({
     const resume = !paused
     if (resume) onTogglePause()
     const leave = await showConfirmation(
-      'Leave training?',
-      'Current progress will be lost.',
-      { confirmTitle: 'Leave' },
+      t('training.leaveTitle'),
+      t('training.leaveBody'),
+      { confirmTitle: t('training.leaveConfirm') },
     )
     if (leave) {
       onCancel()
@@ -241,22 +243,22 @@ export default function TrainingClock({
     const height = event.nativeEvent.layout.height
     setChainHeight((currentHeight) => (currentHeight === height ? currentHeight : height))
   }
-  const note = sessionResultNote(contractions.length, saveFailed)
-  const previousAside = asideFor(previous, contractions)
-  const currentAside = asideFor(current, contractions)
+  const note = sessionResultNote(contractions.length, saveFailed, t)
+  const previousAside = asideFor(previous, contractions, t)
+  const currentAside = asideFor(current, contractions, t)
 
   return (
     <Wrapper>
       {done ? null : <TrainingKeepAwake />}
       <HeaderWithBtn
-        headerText={done ? 'Complete' : title}
-        leftText={done ? undefined : 'Cancel'}
+        headerText={done ? t('training.complete') : title}
+        leftText={done ? undefined : t('training.cancel')}
         leftOnClick={done ? undefined : () => { void requestCancel() }}
         right={done || tutorialOpen ? undefined : (
           <SInfo
             onPress={toggleInfo}
             accessibilityRole='button'
-            accessibilityLabel='Training gestures'
+            accessibilityLabel={t('training.gesturesA11y')}
           >
             {({ pressed }) => (
               <Ionicons
@@ -281,7 +283,7 @@ export default function TrainingClock({
           <SChain
             collapsable={false}
             onLayout={onChainLayout}
-            accessibilityLabel='Training timer. Tap once during a hold to log a contraction. Double tap to pause or resume.'
+            accessibilityLabel={t('training.timerA11y')}
           >
             {animated ? <TrainingBackdrop paused={paused || tutorialOpen} /> : null}
             {chainHeight > 0 && previous ? (
@@ -363,7 +365,7 @@ export default function TrainingClock({
       {done ? (
         <Footer>
           <Button
-            title={saveFailed ? 'Try again' : 'Done'}
+            title={saveFailed ? t('common.tryAgain') : t('common.done')}
             loading={saving}
             disabled={!saved && !saveFailed}
             onPress={saved ? onClose : onRetry}
@@ -374,9 +376,13 @@ export default function TrainingClock({
   )
 }
 
-function asideFor(step: TrainStep | null, contractions: LoggedContraction[]): string | undefined {
+function asideFor(
+  step: TrainStep | null,
+  contractions: LoggedContraction[],
+  t: Translate,
+): string | undefined {
   const count = contractionsInRound(contractions, step?.roundIndex ?? null, step?.kind ?? null)
-  return count > 0 ? contractionLabel(count) : undefined
+  return count > 0 ? contractionLabel(count, t) : undefined
 }
 
 const Wrapper = styled.View`

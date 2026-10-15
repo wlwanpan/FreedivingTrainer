@@ -1,5 +1,6 @@
 import Button from '@/components/Button'
 import { Colors, Fonts, FontSizes } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import { useWarningModal } from '@/providers/warning_modal'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect } from 'react'
@@ -14,6 +15,7 @@ export default function WarningScreen() {
     mode?: string
     confirmTitle?: string
   }>()
+  const { t } = useI18n()
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { confirmResolverRef, markWarningClosed } = useWarningModal()
@@ -21,7 +23,7 @@ export default function WarningScreen() {
   const isConfirm = mode === 'confirm'
   const hasConfirmActions = isConfirmDeletion || isConfirm
   const confirmButtonTitle = confirmTitle
-    ?? (isConfirmDeletion ? 'Delete' : 'Confirm')
+    ?? (isConfirmDeletion ? t('common.delete') : t('common.confirm'))
 
   useEffect(() => {
     return markWarningClosed
@@ -57,13 +59,13 @@ export default function WarningScreen() {
               variant={isConfirmDeletion ? 'danger' : 'primary'}
             />
             <Button
-              title='Cancel'
+              title={t('common.cancel')}
               onPress={dismiss}
               variant='muted'
             />
           </SActions>
         ) : (
-          <Button title='Got it' onPress={dismiss} />
+          <Button title={t('common.gotIt')} onPress={dismiss} />
         )}
       </SCard>
     </Wrapper>

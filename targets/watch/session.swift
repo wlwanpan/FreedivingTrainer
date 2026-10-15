@@ -78,6 +78,7 @@ final class WatchSession: NSObject, ObservableObject {
     @Published var pendingSync = false
     @Published var phoneTraining = false
     @Published var phoneTrainingName = ""
+    @Published var language = "en"
 
     private var connectivity: WCSession?
     private let healthStore = HKHealthStore()
@@ -105,14 +106,15 @@ final class WatchSession: NSObject, ObservableObject {
 
     private static let pendingDefaultsKey = "pendingSessionCompletions"
     private static let hapticDefaultsKey = "trainingHapticEnabled"
+    private static let languageDefaultsKey = "preferredLanguage"
 
     var readyDetail: String {
         guard let plan else { return "" }
-        let hold = clock(plan.holdSeconds)
-        let prefix = plan.tableType == "o2" ? "Holds from \(hold)" : "Hold \(hold)"
-        let count = plan.rounds.count
-        let rounds = count == 1 ? "round" : "rounds"
-        return "\(prefix) · \(count) \(rounds)"
+        return L10n.holdDetail(
+            tableType: plan.tableType,
+            time: clock(plan.holdSeconds),
+            count: plan.rounds.count
+        )
     }
 
     var clockText: String {
@@ -122,7 +124,7 @@ final class WatchSession: NSObject, ObservableObject {
     var sessionDetail: String {
         var parts: [String] = []
         if !roundText.isEmpty { parts.append(roundText) }
-        if bpm > 0 { parts.append("\(bpm) bpm") }
+        if bpm > 0 { parts.append(L10n.t("bpm", ["bpm": "\(bpm)"])) }
         return parts.joined(separator: " · ")
     }
 
@@ -141,6 +143,9 @@ final class WatchSession: NSObject, ObservableObject {
         pendingSync = !Self.storedCompletions().isEmpty
         if UserDefaults.standard.object(forKey: Self.hapticDefaultsKey) != nil {
             hapticEnabled = UserDefaults.standard.bool(forKey: Self.hapticDefaultsKey)
+        }
+        if let stored = UserDefaults.standard.string(forKey: Self.languageDefaultsKey) {
+            applyLanguageValue(stored)
         }
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
@@ -261,6 +266,7 @@ final class WatchSession: NSObject, ObservableObject {
     }
 
     func handle(_ message: [String: Any]) {
+        applyLanguage(message)
         acknowledge(message["syncedAt"])
         if textValue(message["type"]) == "phoneTraining" {
             applyPhoneTraining(message)
@@ -276,6 +282,19 @@ final class WatchSession: NSObject, ObservableObject {
         } else if action == "stopSession", !running {
             stopHeartRate()
         }
+    }
+
+    private func applyLanguage(_ message: [String: Any]) {
+        applyLanguageValue(textValue(message["language"]))
+    }
+
+    private func applyLanguageValue(_ value: String?) {
+        L10n.apply(value)
+        let next = L10n.language
+        if language != next {
+            language = next
+        }
+        UserDefaults.standard.set(next, forKey: Self.languageDefaultsKey)
     }
 
     private func applyHaptic(_ message: [String: Any]) {
@@ -303,8 +322,8 @@ final class WatchSession: NSObject, ObservableObject {
                     stopTraining()
                     installPlan(message)
                     lostNotice = erased
-                        ? "All data was erased on your iPhone. This training is lost."
-                        : "Your plan changed on your iPhone. This training is lost."
+                        ? L10n.t("erased")
+                        : L10n.t("planChanged")
                 } else {
                     planKey = key
                 }
@@ -419,9 +438,9 @@ final class WatchSession: NSObject, ObservableObject {
                 }
                 if let round = phase.round {
                     let total = activePlan?.rounds.count ?? round
-                    roundText = "Round \(round) of \(total)"
+                    roundText = L10n.t("roundOf", ["n": "\(round)", "total": "\(total)"])
                 } else {
-                    roundText = "Breathe-up"
+                    roundText = L10n.t("breatheUp")
                 }
                 return
             }

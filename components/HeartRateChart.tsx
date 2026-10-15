@@ -1,7 +1,8 @@
-import { TableTypeLabel } from '@/constants/tables'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { HeartRateSample, Session } from '@/db/schema'
+import { tableTypeLabel } from '@/i18n/labels'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { matchFont } from '@shopify/react-native-skia'
 import { useMemo } from 'react'
@@ -39,6 +40,7 @@ function latestSessionSamples(samples: HeartRateSample[], sessions: Session[]): 
 }
 
 export default function HeartRateChart() {
+  const { t } = useI18n()
   const { heartRates, sessions } = useSQLContext()
   const { formatDay } = useFormatterContext()
   const font = useMemo(() => matchFont({ fontFamily: 'Helvetica', fontSize: 12 }), [])
@@ -47,27 +49,32 @@ export default function HeartRateChart() {
   if (points.length === 0 || session == null) {
     return (
       <Wrapper>
-        <STitle>Heart rate</STitle>
-        <SEmpty>Finish a table with your Apple Watch to see heart rate.</SEmpty>
+        <STitle>{t('charts.heartRate')}</STitle>
+        <SEmpty>{t('charts.heartEmpty')}</SEmpty>
       </Wrapper>
     )
   }
 
   return (
-    <Chart session={session} points={points} font={font} dayLabel={formatDay(session.day)} />
+    <Chart
+      points={points}
+      font={font}
+      title={t('charts.heartRate')}
+      caption={`${formatDay(session.day)} · ${tableTypeLabel(session.tableType, t)}`}
+    />
   )
 }
 
 function Chart({
-  session,
   points,
   font,
-  dayLabel,
+  title,
+  caption,
 }: {
-  session: Session
   points: Point[]
   font: ReturnType<typeof matchFont>
-  dayLabel: string
+  title: string
+  caption: string
 }) {
   const low = Math.min(...points.map((point) => point.bpm))
   const high = Math.max(...points.map((point) => point.bpm))
@@ -81,8 +88,8 @@ function Chart({
 
   return (
     <Wrapper>
-      <STitle>Heart rate</STitle>
-      <SCaption>{`${dayLabel} · ${TableTypeLabel[session.tableType]}`}</SCaption>
+      <STitle>{title}</STitle>
+      <SCaption>{caption}</SCaption>
       <SChart>
         <CartesianChart
           data={points}

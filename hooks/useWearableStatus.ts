@@ -1,5 +1,8 @@
+import { Translate } from '@/i18n/types'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { formatSyncClock, syncStatusLabel } from '@/utils/watch_sync'
+import { englishTranslate } from '@/i18n/translate'
 import { useSyncExternalStore } from 'react'
 
 
@@ -51,9 +54,9 @@ export function publishWatchTraining(running: boolean) {
   publishWearableLive({ watchTraining: running })
 }
 
-export function withWatchTrainingLoss(message: string): string {
+export function withWatchTrainingLoss(message: string, t: Translate = englishTranslate): string {
   if (!wearableLiveState.watchTraining) return message
-  return `${message} The training on your Apple Watch will be lost.`
+  return `${message} ${t('settings.eraseWatchLoss')}`
 }
 
 export function publishWearableLive(next: Partial<WearableLive>) {
@@ -79,6 +82,7 @@ function wearableKind(value: string | null | undefined): WearableKind | null {
 
 export default function useWearableStatus(): WearableStatus {
   const { settings } = useSQLContext()
+  const { t } = useI18n()
   const live = useSyncExternalStore(subscribeWearableLive, () => wearableLiveState, () => idleLive)
   const preference = wearableKind(settings.wearable)
   const kind = live.connected || live.heartRateActive || live.paired ? 'apple-watch' : preference
@@ -97,29 +101,32 @@ export default function useWearableStatus(): WearableStatus {
       contextPublished: live.contextPublished,
       syncedAt,
       now: Date.now(),
-    }),
+    }, t),
   }
 }
 
-export function wearableLabel(status: WearableStatus): string {
-  if (status.connected && status.watchTraining) return 'Training on Apple Watch'
-  if (status.heartRateActive) return 'Heart Rate Sensor: Active'
+export function wearableLabel(status: WearableStatus, t: Translate = englishTranslate): string {
+  if (status.connected && status.watchTraining) return t('wearable.trainingOnWatch')
+  if (status.heartRateActive) return t('wearable.hrActive')
   if (status.kind === 'apple-watch') {
-    return status.connected ? 'Apple Watch: Connected' : 'Apple Watch: Not connected'
+    return status.connected ? t('wearable.appleConnected') : t('wearable.appleDisconnected')
   }
   if (status.kind === 'garmin') {
-    return status.connected ? 'Garmin: Connected' : 'Garmin: Not connected'
+    return status.connected ? t('wearable.garminConnected') : t('wearable.garminDisconnected')
   }
-  return 'No device connected'
+  return t('wearable.noDevice')
 }
 
 export function wearableLive(status: WearableStatus): boolean {
   return status.heartRateActive || status.watchTraining || (status.connected && status.kind != null)
 }
 
-export function lastSyncLabel(status: Pick<WearableStatus, 'syncedAt' | 'syncLabel'>): string {
+export function lastSyncLabel(
+  status: Pick<WearableStatus, 'syncedAt' | 'syncLabel'>,
+  t: Translate = englishTranslate,
+): string {
   if (status.syncedAt == null) {
-    return status.syncLabel === 'Syncing…' ? 'Syncing…' : 'Not synced yet'
+    return status.syncLabel === t('wearable.syncing') ? t('wearable.syncing') : t('wearable.notSynced')
   }
-  return formatSyncClock(status.syncedAt, Date.now())
+  return formatSyncClock(status.syncedAt, Date.now(), t)
 }

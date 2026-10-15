@@ -1,6 +1,7 @@
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { BaselineTest, Setting } from '@/db/schema'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { matchFont } from '@shopify/react-native-skia'
 import { useMemo } from 'react'
@@ -41,6 +42,7 @@ function chartPoints(tests: BaselineTest[], settings: Setting): HoldPoint[] {
 }
 
 export default function HoldHistoryChart() {
+  const { t } = useI18n()
   const { settings, baselineTests } = useSQLContext()
   const { formatDay, formatSeconds } = useFormatterContext()
   const font = useMemo(() => matchFont({ fontFamily: 'Helvetica', fontSize: 12 }), [])
@@ -49,8 +51,8 @@ export default function HoldHistoryChart() {
   if (points.length === 0) {
     return (
       <Wrapper>
-        <STitle>Hold history</STitle>
-        <SEmpty>Take a baseline test to see breath-hold and first contraction over time.</SEmpty>
+        <STitle>{t('charts.holdHistory')}</STitle>
+        <SEmpty>{t('charts.holdEmpty')}</SEmpty>
       </Wrapper>
     )
   }
@@ -62,15 +64,15 @@ export default function HoldHistoryChart() {
 
   return (
     <Wrapper>
-      <STitle>Hold history</STitle>
+      <STitle>{t('charts.holdHistory')}</STitle>
       <SLegend>
         <SKey>
           <SSwatch style={{ backgroundColor: Colors.Seafoam }} />
-          <SKeyLabel>Breath-hold</SKeyLabel>
+          <SKeyLabel>{t('charts.breathHold')}</SKeyLabel>
         </SKey>
         <SKey>
           <SSwatch style={{ backgroundColor: Colors.Alert }} />
-          <SKeyLabel>First contraction</SKeyLabel>
+          <SKeyLabel>{t('charts.firstContraction')}</SKeyLabel>
         </SKey>
       </SLegend>
       <SChart>

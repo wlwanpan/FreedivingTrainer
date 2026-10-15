@@ -7,12 +7,13 @@ import ScreenHeader from '@/components/ScreenHeader'
 import SessionListItem from '@/components/SessionListItem'
 import WatchHeaderButton from '@/components/WatchHeaderButton'
 import WrapperScreen from '@/components/WrapperScreen'
-import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
+import { holdLabel, sessionDisplayName } from '@/i18n/labels'
 import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
 import useWearableStatus, { watchBlocksPhoneStart, wearableLabel } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   const subscription = useSubscriptionContext()
   const { showWarning } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
+  const { t } = useI18n()
   const outline = useTrainingOutline()
   const wearable = useWearableStatus()
   const watchBusy = watchBlocksPhoneStart(wearable)
@@ -57,7 +59,7 @@ export default function HomeScreen() {
       return
     }
     if (sessionRounds(session).length === 0) {
-      showWarning(ErrorTitles.Input, 'Add at least one round before training.')
+      showWarning(t('errors.input'), t('home.addRound'))
       return
     }
     router.push({
@@ -79,11 +81,11 @@ export default function HomeScreen() {
   return (
     <WrapperScreen skipBottomInset>
       <ScreenHeader
-        title='Home'
+        title={t('home.title')}
         right={(
           <WatchHeaderButton
             connected={wearable.connected}
-            accessibilityLabel={wearableLabel(wearable)}
+            accessibilityLabel={wearableLabel(wearable, t)}
             onPress={() => router.push('/wearable')}
           />
         )}
@@ -95,14 +97,14 @@ export default function HomeScreen() {
         <AnalyticsOverview onPress={() => router.push('/analytics')} />
         {outline == null ? (
           <SPlan>
-            <SPlanName>No plan yet</SPlanName>
+            <SPlanName>{t('home.noPlan')}</SPlanName>
             <SMeta>
               {settings.baselineMaxHoldSeconds == null
-                ? 'A baseline test sizes the plan you choose.'
-                : 'Choose a plan, or build your own.'}
+                ? t('home.noPlanNeedBaseline')
+                : t('home.noPlanChoose')}
             </SMeta>
             <Button
-              title={settings.baselineMaxHoldSeconds == null ? 'Take baseline test' : 'Choose a plan'}
+              title={settings.baselineMaxHoldSeconds == null ? t('settings.takeBaseline') : t('baseline.choosePlan')}
               onPress={() => router.push(settings.baselineMaxHoldSeconds == null ? '/baseline' : '/plan')}
             />
           </SPlan>
@@ -119,12 +121,12 @@ export default function HomeScreen() {
                     <Ionicons name='reload' size={18} color={Colors.Seafoam} />
                   </SDrillIcon>
                   <SDrillCopy>
-                    <SDrillKicker>Upcoming drill</SDrillKicker>
-                    <SDrillName>Retake baseline</SDrillName>
+                    <SDrillKicker>{t('home.upcomingDrill')}</SDrillKicker>
+                    <SDrillName>{t('home.retakeBaseline')}</SDrillName>
                   </SDrillCopy>
                 </SDrillHead>
-                <SDrillMeta>A new maximum hold readjusts the tables.</SDrillMeta>
-                <Button title='Start session' onPress={() => router.push('/baseline')} style={{ marginBottom: 0 }} />
+                <SDrillMeta>{t('home.retakeMeta')}</SDrillMeta>
+                <Button title={t('home.startSession')} onPress={() => router.push('/baseline')} style={{ marginBottom: 0 }} />
               </SDrill>
             ) : nextSession == null ? (
               <SDrill>
@@ -133,11 +135,11 @@ export default function HomeScreen() {
                     <Ionicons name='checkmark' size={18} color={Colors.Seafoam} />
                   </SDrillIcon>
                   <SDrillCopy>
-                    <SDrillKicker>This week</SDrillKicker>
-                    <SDrillName>Week complete</SDrillName>
+                    <SDrillKicker>{t('home.thisWeek')}</SDrillKicker>
+                    <SDrillName>{t('home.weekComplete')}</SDrillName>
                   </SDrillCopy>
                 </SDrillHead>
-                <SDrillMeta>{finishedSummary(outline, formatSeconds)}</SDrillMeta>
+                <SDrillMeta>{finishedSummary(outline, formatSeconds, t)}</SDrillMeta>
               </SDrill>
             ) : (
               <SDrill>
@@ -146,17 +148,17 @@ export default function HomeScreen() {
                     <Ionicons name='alarm-outline' size={18} color={Colors.Seafoam} />
                   </SDrillIcon>
                   <SDrillCopy>
-                    <SDrillKicker>Upcoming drill</SDrillKicker>
+                    <SDrillKicker>{t('home.upcomingDrill')}</SDrillKicker>
                     <SDrillName>{nextSession.name}</SDrillName>
                   </SDrillCopy>
                 </SDrillHead>
                 <SChips>
-                  <SChip>{holdChip(nextSession, formatSeconds)}</SChip>
-                  <SChip>{`Rest ${formatSeconds(nextSession.restStartSeconds)}`}</SChip>
-                  <SRounds>{`${nextSession.rounds} rounds total`}</SRounds>
+                  <SChip>{holdChip(nextSession, formatSeconds, t)}</SChip>
+                  <SChip>{t('home.restChip', { time: formatSeconds(nextSession.restStartSeconds) })}</SChip>
+                  <SRounds>{t('home.roundsTotal', { count: nextSession.rounds })}</SRounds>
                 </SChips>
                 <Button
-                  title={watchBusy ? 'On Watch' : 'Start session'}
+                  title={watchBusy ? t('home.onWatch') : t('home.startSession')}
                   disabled={watchBusy}
                   onPress={() => start(nextSession)}
                   style={{ marginBottom: 0 }}
@@ -166,16 +168,16 @@ export default function HomeScreen() {
           </PlanProgress>
         )}
         <SSectionRow>
-          <SSection>Latest sessions</SSection>
+          <SSection>{t('home.latestSessions')}</SSection>
           {sessions.length > 0 ? (
             <SSeeAll onPress={() => router.push('/sessions')}>
-              <SSeeAllText>See all</SSeeAllText>
+              <SSeeAllText>{t('home.seeAll')}</SSeeAllText>
               <Ionicons name='chevron-forward' size={15} color={Colors.Seafoam} />
             </SSeeAll>
           ) : null}
         </SSectionRow>
         {latest.length === 0 ? (
-          <EmptyListPlaceholder message='Finish a table to see it here.' />
+          <EmptyListPlaceholder message={t('home.empty')} />
         ) : (
           latest.map((session) => (
             <SessionListItem key={session.id} session={session} />
@@ -190,30 +192,32 @@ export default function HomeScreen() {
 function finishedSummary(
   outline: NonNullable<ReturnType<typeof useTrainingOutline>>,
   formatSeconds: (seconds: number) => string,
+  t: ReturnType<typeof useI18n>['t'],
 ): string {
   const current = outline.schedule.find((entry) => entry.current)
   const finished = current?.sessions.filter((session) => session.completed) ?? []
-  if (finished.length === 1) return sessionSummary(finished[0], formatSeconds)
-  return 'Every session this week is done.'
+  if (finished.length === 1) return sessionSummary(finished[0], formatSeconds, t)
+  return t('home.weekDone')
 }
 
 function sessionSummary(
   session: WeekSession,
   formatSeconds: (seconds: number) => string,
+  t: ReturnType<typeof useI18n>['t'],
 ): string {
-  const hold = session.tableType === 'o2'
-    ? `Holds from ${formatSeconds(session.holdSeconds)}`
-    : `Hold ${formatSeconds(session.holdSeconds)}`
-  return `${session.name} · ${hold} · ${session.rounds} rounds`
+  return t('home.sessionSummary', {
+    name: sessionDisplayName(session.name, t),
+    hold: holdLabel(session.tableType, formatSeconds(session.holdSeconds), t),
+    count: session.rounds,
+  })
 }
 
 function holdChip(
   session: WeekSession,
   formatSeconds: (seconds: number) => string,
+  t: ReturnType<typeof useI18n>['t'],
 ): string {
-  return session.tableType === 'o2'
-    ? `Holds from ${formatSeconds(session.holdSeconds)}`
-    : `Hold ${formatSeconds(session.holdSeconds)}`
+  return holdLabel(session.tableType, formatSeconds(session.holdSeconds), t)
 }
 
 const SScroll = styled.ScrollView`

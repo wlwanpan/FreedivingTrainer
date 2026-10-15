@@ -4,12 +4,15 @@ import WrapperScreen from '@/components/WrapperScreen'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import useWearableStatus from '@/hooks/useWearableStatus'
+import { Translate } from '@/i18n/types'
+import { useI18n } from '@/providers/i18n'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import { styled } from 'styled-components/native'
 
 
 export default function AddWearableScreen() {
+  const { t } = useI18n()
   const router = useRouter()
   const wearable = useWearableStatus()
   const updateSetting = useUpdateSetting()
@@ -26,23 +29,23 @@ export default function AddWearableScreen() {
   return (
     <WrapperScreen scrollable sheet>
       <HeaderWithBtn
-        headerText='Add device'
-        leftText='Back'
+        headerText={t('wearable.addDevice')}
+        leftBack
         leftOnClick={() => router.back()}
       />
-      <SSection>Supported watches</SSection>
+      <SSection>{t('wearable.supported')}</SSection>
       <SCard>
         <WearableDeviceRow
-          title='Apple Watch'
-          subtitle={appleWatchSubtitle(wearable.connected, wearable.paired)}
+          title={t('settings.appleWatch')}
+          subtitle={appleWatchSubtitle(wearable.connected, wearable.paired, t)}
           icon='watch'
           selected={wearable.kind === 'apple-watch'}
           loading={saving}
           onPress={() => { void selectAppleWatch() }}
         />
         <WearableDeviceRow
-          title='Garmin'
-          subtitle='Garmin watches will connect here.'
+          title={t('sessions.garmin')}
+          subtitle={t('wearable.garminComing')}
           icon='watch-outline'
           comingSoon
           last
@@ -52,10 +55,10 @@ export default function AddWearableScreen() {
   )
 }
 
-function appleWatchSubtitle(connected: boolean, paired: boolean): string {
-  if (connected) return 'Connected. Syncs tables and heart rate.'
-  if (paired) return 'Watch app installed. Open it to connect.'
-  return 'Install the watch app, then connect from here.'
+function appleWatchSubtitle(connected: boolean, paired: boolean, t: Translate): string {
+  if (connected) return t('wearable.appleConnectedDetail')
+  if (paired) return t('wearable.applePaired')
+  return t('wearable.appleInstall')
 }
 
 const SSection = styled.Text`

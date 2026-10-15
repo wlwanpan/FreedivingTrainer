@@ -1,3 +1,6 @@
+import { englishTranslate } from '@/i18n/translate'
+import { Translate } from '@/i18n/types'
+
 type PhaseKind = 'breathe' | 'hold' | 'rest'
 
 export type LoggedContraction = {
@@ -31,8 +34,8 @@ export function contractionOffset(phaseSeconds: number, remainingSeconds: number
   return Math.max(0, Math.min(phaseSeconds, Math.floor(elapsed)))
 }
 
-export function contractionLabel(count: number): string {
-  return count === 1 ? '1 contraction' : `${count} contractions`
+export function contractionLabel(count: number, t: Translate = englishTranslate): string {
+  return count === 1 ? t('contraction.one') : t('contraction.other', { count })
 }
 
 export function contractionsInRound(
@@ -44,11 +47,13 @@ export function contractionsInRound(
   return items.reduce((count, item) => count + (item.roundIndex === roundIndex ? 1 : 0), 0)
 }
 
-export function sessionResultNote(count: number, saveFailed: boolean): string {
-  const lead = count > 0 ? `${contractionLabel(count)} logged. ` : ''
-  const tail = saveFailed
-    ? 'The session did not save.'
-    : 'This session is saved on this device.'
+export function sessionResultNote(
+  count: number,
+  saveFailed: boolean,
+  t: Translate = englishTranslate,
+): string {
+  const lead = count > 0 ? t('contraction.lead', { label: contractionLabel(count, t) }) : ''
+  const tail = saveFailed ? t('contraction.failed') : t('contraction.saved')
   return `${lead}${tail}`
 }
 

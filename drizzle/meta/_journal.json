@@ -99,6 +99,13 @@
       "when": 1792011633690,
       "tag": "0013_furry_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1792084958256,
+      "tag": "0014_odd_silhouette",
+      "breakpoints": true
     }
   ]
 }

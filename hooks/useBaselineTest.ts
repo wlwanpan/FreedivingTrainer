@@ -1,5 +1,6 @@
-import { ErrorTitles } from '@/constants/errors'
 import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
+import { planCopy } from '@/i18n/labels'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import {
@@ -37,6 +38,7 @@ const CONTROL_DELAY_MS = 400
 
 export default function useBaselineTest(finishToHome: boolean) {
   const sql = useSQLContext()
+  const { t, language } = useI18n()
   const router = useRouter()
   const { showConfirmation, showWarning } = useWarningModal()
   const outline = useTrainingOutline()
@@ -171,8 +173,8 @@ export default function useBaselineTest(finishToHome: boolean) {
         ? null
         : currentPlanWeek(priorStart, nowDate, currentPlan.weeks)
       const confirmed = await showConfirmation(
-        'Change plan?',
-        withWatchTrainingLoss(planSwitchWarning(currentPlan.name, week)),
+        t('plan.changeTitle'),
+        withWatchTrainingLoss(planSwitchWarning(planCopy(currentPlan.id, 'name', t), week, t), t),
       )
       if (!confirmed) return
     }
@@ -201,7 +203,7 @@ export default function useBaselineTest(finishToHome: boolean) {
       })
       if (prior.error) {
         setSaving(false)
-        showWarning(ErrorTitles.Sql, prior.error.message)
+        showWarning(t('errors.sql'), prior.error.message)
         return
       }
     }
@@ -212,11 +214,12 @@ export default function useBaselineTest(finishToHome: boolean) {
     })
     if (recorded.error) {
       setSaving(false)
-      showWarning(ErrorTitles.Sql, recorded.error.message)
+      showWarning(t('errors.sql'), recorded.error.message)
       return
     }
     const res = await sql.updateSettings({
       ...sql.settings,
+      language: sql.settings.language ?? language,
       ...tableSettingsFromPlan(outcome.plan),
       ...(storedTable == null ? {} : {
         co2HoldSeconds: storedTable.holdSeconds,
@@ -241,7 +244,7 @@ export default function useBaselineTest(finishToHome: boolean) {
     })
     if (res.error) {
       setSaving(false)
-      showWarning(ErrorTitles.Sql, res.error.message)
+      showWarning(t('errors.sql'), res.error.message)
       return
     }
     if (finishToHome) {

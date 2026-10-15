@@ -50,6 +50,7 @@
       ],
       "expo-sqlite",
       "expo-font",
+      "expo-localization",
       [
         "@bacons/apple-targets",
         {

@@ -1,6 +1,6 @@
 import Button from '@/components/Button'
 import { Colors, FontSizes } from '@/design/styles'
-import { TrainingGestureCopy } from '@/utils/training_gestures'
+import { useI18n } from '@/providers/i18n'
 import { useEffect, useState } from 'react'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
 import { styled } from 'styled-components/native'
@@ -13,6 +13,7 @@ type Props = {
 const Travel = 46
 
 export default function TrainingGestureTutorial({ onDismiss }: Props) {
+  const { t } = useI18n()
   const [step, setStep] = useState(0)
   const press = useSharedValue(0)
   const rippleA = useSharedValue(1)
@@ -94,14 +95,14 @@ export default function TrainingGestureTutorial({ onDismiss }: Props) {
           </SHand>
         </SStage>
         <SCue $active={single}>
-          <SCueTitle $active={single}>{TrainingGestureCopy.singleTitle}</SCueTitle>
-          <SCueBody>{TrainingGestureCopy.singleBody}</SCueBody>
+          <SCueTitle $active={single}>{t('gestures.singleTitle')}</SCueTitle>
+          <SCueBody>{t('gestures.singleBody')}</SCueBody>
         </SCue>
         <SCue $active={!single}>
-          <SCueTitle $active={!single}>{TrainingGestureCopy.doubleTitle}</SCueTitle>
-          <SCueBody>{TrainingGestureCopy.doubleBody}</SCueBody>
+          <SCueTitle $active={!single}>{t('gestures.doubleTitle')}</SCueTitle>
+          <SCueBody>{t('gestures.doubleBody')}</SCueBody>
         </SCue>
-        <Button title='Got it' onPress={onDismiss} />
+        <Button title={t('common.gotIt')} onPress={onDismiss} />
       </SCard>
     </Wrapper>
   )

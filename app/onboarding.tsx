@@ -1,6 +1,7 @@
 import Button from '@/components/Button'
 import WrapperScreen from '@/components/WrapperScreen'
 import { Colors, Fonts, FontSizes, Radii } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useRouter } from 'expo-router'
 import { useEffect } from 'react'
@@ -9,6 +10,7 @@ import { styled } from 'styled-components/native'
 
 export default function OnboardingScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const sql = useSQLContext()
   const onboardedAt = sql.settings.createdAt?.getTime() ?? null
 
@@ -25,22 +27,22 @@ export default function OnboardingScreen() {
   return (
     <WrapperScreen>
       <SBody>
-        <SEyebrow>FreedivingTrainer</SEyebrow>
-        <STitle>Find your baseline</STitle>
+        <SEyebrow>{t('onboarding.eyebrow')}</SEyebrow>
+        <STitle>{t('onboarding.title')}</STitle>
         <SCopy>
-          One maximum static hold sizes your tables. Mark the first contraction, then keep holding until you need to breathe. After that, choose a plan or build your own. Keep CO2 and O2 on different days.
+          {t('onboarding.copy')}
         </SCopy>
         <SCard>
-          <SCardTitle>CO2</SCardTitle>
-          <SCardCopy>The hold stays fixed. Rest starts long and steps down each round.</SCardCopy>
+          <SCardTitle>{t('tables.co2')}</SCardTitle>
+          <SCardCopy>{t('onboarding.co2Copy')}</SCardCopy>
         </SCard>
         <SCard>
-          <SCardTitle>O2</SCardTitle>
-          <SCardCopy>Holds get longer each round. Rest stays fixed.</SCardCopy>
+          <SCardTitle>{t('tables.o2')}</SCardTitle>
+          <SCardCopy>{t('onboarding.o2Copy')}</SCardCopy>
         </SCard>
       </SBody>
       <SFooter>
-        <Button title='Start baseline test' onPress={startTest} />
+        <Button title={t('onboarding.start')} onPress={startTest} />
       </SFooter>
     </WrapperScreen>
   )

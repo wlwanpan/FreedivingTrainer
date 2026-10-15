@@ -1,11 +1,12 @@
-import { ErrorTitles } from '@/constants/errors'
 import { SettingInsert } from '@/db/schema'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 
 
 export default function useUpdateSetting() {
   const sql = useSQLContext()
+  const { t } = useI18n()
   const { showWarning } = useWarningModal()
 
   return async (patch: Partial<SettingInsert>) => {
@@ -15,7 +16,7 @@ export default function useUpdateSetting() {
       updatedAt: new Date(),
     })
     if (res.error) {
-      showWarning(ErrorTitles.Sql, res.error.message)
+      showWarning(t('errors.sql'), res.error.message)
     }
   }
 }

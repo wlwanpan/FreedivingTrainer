@@ -1,0 +1,16 @@
+---
+description: Every new on-screen word or phrase must be translation-supported
+globs: app/**, components/**, hooks/**, providers/**, utils/**, i18n/**, targets/watch/**
+alwaysApply: false
+---
+
+# Translations
+
+Every new word or phrase shown on iPhone or Apple Watch must be translation-supported.
+
+- Put copy in `i18n/locales/{en,fr,es,ko,de}.json` under the same key in every locale file. English is the default catalog.
+- Render with `t('namespace.key')` from `useI18n()` (or `tRuntime` outside React). Interpolate with `{var}` placeholders, never concatenate user-facing sentences.
+- Do not hardcode English (or any language) in screens, components, alerts, accessibility labels, or Watch UI.
+- Plan, table, and session identifiers stay English in storage. Translate at display time and when syncing names/notes to Apple Watch.
+- Watch chrome strings live in `targets/watch/l10n.swift` and must stay in sync with the `watch` keys in the JSON catalogs. Keep internal phase keys (`Hold`, `Rest`, `Breathe`) in English for logic; localize only the visible label.
+- Supported languages: English (`en`, default), French (`fr`), Spanish (`es`), Korean (`ko`), German (`de`). Region-first device detection lives in `i18n/detect.ts`.
