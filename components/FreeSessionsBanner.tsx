@@ -1,10 +1,12 @@
 import { Colors, Fonts, FontSizes } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useRouter } from 'expo-router'
 import { styled } from 'styled-components/native'
 
 
 export default function FreeSessionsBanner() {
+  const { t } = useI18n()
   const subscription = useSubscriptionContext()
   const router = useRouter()
 
@@ -15,7 +17,10 @@ export default function FreeSessionsBanner() {
   return (
     <Wrapper onPress={() => router.push('/paywall')}>
       <SText>
-        {subscription.sessionsRemaining} of {subscription.freeSessionLimit} free tables left
+        {t('subscription.freeLeft', {
+          remaining: subscription.sessionsRemaining,
+          limit: subscription.freeSessionLimit,
+        })}
       </SText>
     </Wrapper>
   )

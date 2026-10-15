@@ -1,5 +1,6 @@
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { TrainingOutline } from '@/hooks/useTrainingOutline'
+import { useI18n } from '@/providers/i18n'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { ReactNode } from 'react'
 import { styled } from 'styled-components/native'
@@ -13,6 +14,7 @@ type Props = {
 }
 
 export default function PlanProgress({ outline, onRetest, onPress, children }: Props) {
+  const { t } = useI18n()
   const [phase, focus] = splitLevel(outline.level)
   const percent = Math.round(outline.progress * 100)
   const current = outline.schedule.find((entry) => entry.current)
@@ -20,8 +22,8 @@ export default function PlanProgress({ outline, onRetest, onPress, children }: P
   const weekDone = current?.sessions.filter((session) => session.completed).length ?? 0
   const weekLeft = Math.max(0, weekTotal - weekDone)
   const weekLabel = outline.weekComplete
-    ? `Week ${outline.week} of ${outline.weeks} · Complete`
-    : `Week ${outline.week} of ${outline.weeks} · In progress`
+    ? t('plan.progressWeekComplete', { week: outline.week, weeks: outline.weeks })
+    : t('plan.progressWeekInProgress', { week: outline.week, weeks: outline.weeks })
 
   const overview = (
     <>
@@ -51,13 +53,15 @@ export default function PlanProgress({ outline, onRetest, onPress, children }: P
           <SDoneRow>
             <Ionicons name='checkmark-circle' size={14} color={Colors.Seafoam} />
             <SFrequency>
-              {`${weekDone} of ${weekTotal} sessions this week`}
+              {t('plan.sessionsThisWeek', { done: weekDone, total: weekTotal })}
             </SFrequency>
           </SDoneRow>
           <SRemain>
             {weekLeft === 0
-              ? 'Week complete'
-              : `${weekLeft} ${weekLeft === 1 ? 'session' : 'sessions'} remaining`}
+              ? t('plan.weekComplete')
+              : weekLeft === 1
+                ? t('plan.sessionRemaining', { count: weekLeft })
+                : t('plan.sessionsRemaining', { count: weekLeft })}
           </SRemain>
         </SWeekMeta>
       ) : (
@@ -73,7 +77,7 @@ export default function PlanProgress({ outline, onRetest, onPress, children }: P
       ) : overview}
       {outline.retestDue ? (
         <SLink onPress={onRetest}>
-          Retake your baseline this week so the intervals can move.
+          {t('plan.retestLink')}
         </SLink>
       ) : null}
       {children}

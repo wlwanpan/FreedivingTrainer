@@ -1,5 +1,6 @@
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { trainingOverview } from '@/utils/training_overview'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export default function AnalyticsOverview({ onPress }: Props) {
+  const { t } = useI18n()
   const { settings, sessions, baselineTests } = useSQLContext()
   const { formatSeconds } = useFormatterContext()
   const overview = trainingOverview(sessions, baselineTests, settings)
@@ -26,7 +28,7 @@ export default function AnalyticsOverview({ onPress }: Props) {
       <SHeader>
         <SHeaderLead>
           <Ionicons name='pulse-outline' size={16} color={Colors.Seafoam} />
-          <SHeaderLabel>Apnea telemetry</SHeaderLabel>
+          <SHeaderLabel>{t('analytics.apneaTelemetry')}</SHeaderLabel>
         </SHeaderLead>
         {onPress ? (
           <Ionicons name='chevron-forward' size={18} color={Colors.TextMuted} />
@@ -40,11 +42,11 @@ export default function AnalyticsOverview({ onPress }: Props) {
               {overview.trainedStreak > 1 ? (
                 <SStreak>
                   <Ionicons name='flame' size={12} color={Colors.Seafoam} />
-                  <SStreakText>{`+${overview.trainedStreak}d`}</SStreakText>
+                  <SStreakText>{t('analytics.streak', { count: overview.trainedStreak })}</SStreakText>
                 </SStreak>
               ) : null}
             </SValueRow>
-            <SLabel>Days trained</SLabel>
+            <SLabel>{t('analytics.daysTrained')}</SLabel>
           </STile>
         </SStat>
         <SStat>
@@ -53,7 +55,7 @@ export default function AnalyticsOverview({ onPress }: Props) {
               <SValue>{formatSeconds(overview.totalApneaSeconds)}</SValue>
               <Ionicons name='hourglass-outline' size={16} color={Colors.Aquamarine} />
             </SValueRow>
-            <SLabel>Total apnea</SLabel>
+            <SLabel>{t('analytics.totalApnea')}</SLabel>
           </STile>
         </SStat>
         <SStat>
@@ -62,7 +64,7 @@ export default function AnalyticsOverview({ onPress }: Props) {
               <SValue $accent>{bestApnea}</SValue>
               <Ionicons name='ribbon-outline' size={16} color={Colors.Seafoam} />
             </SValueRow>
-            <SLabel>Personal best</SLabel>
+            <SLabel>{t('analytics.personalBest')}</SLabel>
           </STile>
         </SStat>
         <SStat>
@@ -71,7 +73,7 @@ export default function AnalyticsOverview({ onPress }: Props) {
               <SValue $muted>{bestContraction}</SValue>
               <Ionicons name='resize-outline' size={16} color={Colors.TextMuted} />
             </SValueRow>
-            <SLabel>First contraction</SLabel>
+            <SLabel>{t('analytics.firstContraction')}</SLabel>
           </STile>
         </SStat>
       </SGrid>

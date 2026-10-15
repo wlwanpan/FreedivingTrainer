@@ -30,16 +30,17 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .foregroundStyle(Pelagic.text)
-        .alert("Exit training?", isPresented: $confirmExit) {
-            Button("Exit", role: .destructive) { session.exitPlan() }
-            Button("Cancel", role: .cancel) {}
+        .id(session.language)
+        .alert(L10n.t("exitTitle"), isPresented: $confirmExit) {
+            Button(L10n.t("exit"), role: .destructive) { session.exitPlan() }
+            Button(L10n.t("cancel"), role: .cancel) {}
         } message: {
-            Text("Session progress will be lost.")
+            Text(L10n.t("exitBody"))
         }
-        .alert("Training ended", isPresented: lostNoticePresented) {
-            Button("OK", role: .cancel) { session.lostNotice = nil }
+        .alert(L10n.t("endedTitle"), isPresented: lostNoticePresented) {
+            Button(L10n.t("ok"), role: .cancel) { session.lostNotice = nil }
         } message: {
-            Text(session.lostNotice ?? "This training is lost.")
+            Text(session.lostNotice ?? L10n.t("lostDefault"))
         }
     }
 
@@ -48,15 +49,15 @@ struct ContentView: View {
         if #available(watchOS 10.0, *) {
             TabView {
                 homePage
-                tableStartPage(session.co2Table, title: "CO2")
-                tableStartPage(session.o2Table, title: "O2")
+                tableStartPage(session.co2Table, title: L10n.t("co2"))
+                tableStartPage(session.o2Table, title: L10n.t("o2"))
             }
             .tabViewStyle(.verticalPage)
         } else {
             TabView {
                 homePage
-                tableStartPage(session.co2Table, title: "CO2")
-                tableStartPage(session.o2Table, title: "O2")
+                tableStartPage(session.co2Table, title: L10n.t("co2"))
+                tableStartPage(session.o2Table, title: L10n.t("o2"))
             }
         }
     }
@@ -64,7 +65,7 @@ struct ContentView: View {
     private var homePage: some View {
         VStack(spacing: 8) {
             if session.pendingSync {
-                Text("Waiting for your iPhone")
+                Text(L10n.t("waitingPhone"))
                     .font(.caption2)
                     .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
@@ -73,16 +74,16 @@ struct ContentView: View {
                 phoneTrainingNotice
             }
             if session.planComplete {
-                Text("Week complete")
+                Text(L10n.t("weekComplete"))
                     .font(.headline)
                     .foregroundStyle(Pelagic.text)
                     .multilineTextAlignment(.center)
-                Text("Saved on your iPhone")
+                Text(L10n.t("savedOnPhone"))
                     .font(.caption2)
                     .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
             } else if session.locked {
-                Text("Unlock lifetime access on your iPhone")
+                Text(L10n.t("unlockLifetime"))
                     .font(.caption)
                     .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
@@ -102,7 +103,7 @@ struct ContentView: View {
                     }
                 }
             } else {
-                Text("Choose a plan on your iPhone")
+                Text(L10n.t("choosePlan"))
                     .font(.caption)
                     .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
@@ -114,7 +115,7 @@ struct ContentView: View {
     private var sessionBody: some View {
         VStack(spacing: 8) {
             if session.running {
-                Text(session.paused ? "Paused" : session.phaseTitle)
+                Text(session.paused ? L10n.t("paused") : L10n.phase(session.phaseTitle))
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(phaseColor)
@@ -129,26 +130,26 @@ struct ContentView: View {
                         .foregroundStyle(Pelagic.muted)
                 }
                 if session.paused {
-                    Button("Resume", action: session.togglePause)
+                    Button(L10n.t("resume"), action: session.togglePause)
                         .buttonStyle(.borderedProminent)
                         .tint(Pelagic.seafoam)
-                    Button("Exit", role: .destructive) { confirmExit = true }
+                    Button(L10n.t("exit"), role: .destructive) { confirmExit = true }
                         .buttonStyle(.bordered)
                         .tint(Pelagic.alert)
                 } else {
-                    Button("Pause", action: session.togglePause)
+                    Button(L10n.t("pause"), action: session.togglePause)
                         .buttonStyle(.bordered)
                         .tint(Pelagic.seafoam)
                 }
             } else {
-                Text("Saved")
+                Text(L10n.t("saved"))
                     .font(.headline)
                     .foregroundStyle(Pelagic.seafoam)
-                Text(session.pendingSync ? "Waiting for your iPhone" : "Sent to your iPhone")
+                Text(session.pendingSync ? L10n.t("waitingPhone") : L10n.t("sentToPhone"))
                     .font(.caption2)
                     .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
-                Button("Okay", action: session.dismissSaved)
+                Button(L10n.t("okay"), action: session.dismissSaved)
                     .buttonStyle(.borderedProminent)
                     .tint(Pelagic.seafoam)
             }
@@ -163,12 +164,12 @@ struct ContentView: View {
                 if session.phoneTraining && session.reachable {
                     phoneTrainingNotice
                 } else if session.locked {
-                    Text("Unlock lifetime access on your iPhone")
+                    Text(L10n.t("unlockLifetime"))
                         .font(.caption)
                         .foregroundStyle(Pelagic.muted)
                         .multilineTextAlignment(.center)
                 } else {
-                    Button("Start") {
+                    Button(L10n.t("start")) {
                         session.startTable(table)
                     }
                     .buttonStyle(.borderedProminent)
@@ -178,7 +179,7 @@ struct ContentView: View {
                 Text(title)
                     .font(.headline)
                     .foregroundStyle(Pelagic.text)
-                Text("Open the iPhone app to sync this table")
+                Text(L10n.t("syncTable"))
                     .font(.caption)
                     .foregroundStyle(Pelagic.muted)
                     .multilineTextAlignment(.center)
@@ -191,7 +192,7 @@ struct ContentView: View {
         startCard(
             title: plan.name,
             detail: session.readyDetail,
-            meta: "Week \(plan.planWeek) of \(plan.planWeeks)",
+            meta: L10n.t("weekOf", ["week": "\(plan.planWeek)", "weeks": "\(plan.planWeeks)"]),
             showChevron: !plan.schedule.isEmpty,
             progress: plan.schedule.isEmpty ? nil : Double(plan.progress)
         )
@@ -247,7 +248,7 @@ struct ContentView: View {
     @ViewBuilder
     private func phoneOrStart(start: @escaping () -> Void) -> some View {
         if !session.phoneTraining || !session.reachable {
-            Button("Start", action: start)
+            Button(L10n.t("start"), action: start)
                 .buttonStyle(.borderedProminent)
                 .tint(Pelagic.seafoam)
         }
@@ -255,7 +256,7 @@ struct ContentView: View {
 
     private var phoneTrainingNotice: some View {
         VStack(spacing: 2) {
-            Text("Training on your iPhone")
+            Text(L10n.t("trainingOnPhone"))
                 .font(.caption)
                 .foregroundStyle(Pelagic.text)
                 .multilineTextAlignment(.center)
@@ -269,11 +270,11 @@ struct ContentView: View {
     }
 
     private func tableDetail(_ table: WatchTable) -> String {
-        let hold = clock(table.holdSeconds)
-        let prefix = table.tableType == "o2" ? "Holds from \(hold)" : "Hold \(hold)"
-        let count = table.rounds.count
-        let rounds = count == 1 ? "round" : "rounds"
-        return "\(prefix) · \(count) \(rounds)"
+        L10n.holdDetail(
+            tableType: table.tableType,
+            time: clock(table.holdSeconds),
+            count: table.rounds.count
+        )
     }
 
     private var phaseColor: Color {
@@ -305,7 +306,7 @@ private struct PlanScheduleList: View {
             Button(action: onBack) {
                 HStack(spacing: 4) {
                     Image(systemName: "chevron.left")
-                    Text("Plan")
+                    Text(L10n.t("plan"))
                 }
                 .font(.caption2)
                 .foregroundStyle(Pelagic.seafoam)
@@ -340,26 +341,26 @@ private struct PlanScheduleList: View {
         let complete = !week.sessions.isEmpty && week.sessions.allSatisfy(\.completed)
         return VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text("Week \(week.week)")
+                Text(L10n.t("week", ["week": "\(week.week)"]))
                     .font(.caption)
                     .fontWeight(.bold)
                 Spacer(minLength: 4)
                 if complete {
-                    Text("Complete")
+                    Text(L10n.t("complete"))
                         .foregroundStyle(Pelagic.seafoam)
                 } else if focused {
-                    Text("This week")
+                    Text(L10n.t("thisWeek"))
                         .foregroundStyle(Pelagic.seafoam)
                 }
                 if week.locked {
-                    Text("Locked")
+                    Text(L10n.t("locked"))
                         .foregroundStyle(Pelagic.muted)
                 }
             }
             .font(.caption2)
             .foregroundStyle(Pelagic.text)
             if week.locked {
-                Text("Finish week \(plan.planWeek) to start these.")
+                Text(L10n.t("lockNote", ["week": "\(plan.planWeek)"]))
                     .font(.caption2)
                     .foregroundStyle(Pelagic.muted)
             }
@@ -376,7 +377,7 @@ private struct PlanScheduleList: View {
                             .foregroundStyle(Pelagic.text)
                         Spacer(minLength: 4)
                         if session.completed {
-                            Text("Done")
+                            Text(L10n.t("done"))
                                 .font(.caption2)
                                 .fontWeight(.bold)
                                 .foregroundStyle(Pelagic.seafoam)
@@ -400,8 +401,10 @@ private struct PlanScheduleList: View {
     }
 
     private func sessionDetail(_ session: WatchListedSession) -> String {
-        let hold = clock(session.holdSeconds)
-        let prefix = session.tableType == "o2" ? "Holds from \(hold)" : "Hold \(hold)"
-        return "\(prefix) · \(session.rounds) rounds"
+        L10n.holdDetail(
+            tableType: session.tableType,
+            time: clock(session.holdSeconds),
+            count: session.rounds
+        )
     }
 }

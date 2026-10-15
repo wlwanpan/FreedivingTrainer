@@ -25,6 +25,7 @@ function handleException(e: unknown): BaseResults {
 export const DefaultSettings: Setting = {
   id: 0,
   dateFormat: DefaultDateFormat,
+  language: null,
   breatheUpSeconds: 60,
   trainingAnimation: true,
   trainingHaptic: true,

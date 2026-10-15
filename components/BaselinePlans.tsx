@@ -5,7 +5,10 @@ import SettingsStepper from '@/components/SettingsStepper'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes } from '@/design/styles'
 import { BaselineOutcome } from '@/hooks/useBaselineTest'
+import { planCopy, planLevelLine, tableTypeLabel } from '@/i18n/labels'
+import { Translate } from '@/i18n/types'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import {
   beginnerBaseHold,
   CustomPlan,
@@ -46,6 +49,7 @@ export default function BaselinePlans({
   onRetake,
   onBack,
 }: Props) {
+  const { t } = useI18n()
   const { formatSeconds } = useFormatterContext()
   const storedCustom = parseCustomPlan(initialCustomPlan)
   const [planId, setPlanId] = useState<TrainingPlanId>(initialPlanId ?? 'beginner')
@@ -74,14 +78,14 @@ export default function BaselinePlans({
   return (
     <Wrapper>
       <HeaderWithBtn
-        headerText='Choose a plan'
-        leftText={onBack ? 'Back' : undefined}
+        headerText={t('plan.choose')}
+        leftBack={onBack != null}
         leftOnClick={onBack}
         disabled={saving}
       />
       <SOptions showsVerticalScrollIndicator={false}>
         <SRule>
-          Start with 2–3 sessions a week. Never train CO2 and O2 on the same day.
+          {t('plan.rule')}
         </SRule>
         {TrainingPlans.map((plan) => {
           const selectedPlan = plan.id === planId
@@ -94,42 +98,45 @@ export default function BaselinePlans({
               <STop>
                 <STopText>
                   {plan.recommended ? (
-                    <SRecommend>Start here</SRecommend>
+                    <SRecommend>{t('plan.startHere')}</SRecommend>
                   ) : null}
-                  <SName>{plan.name}</SName>
+                  <SName>{planCopy(plan.id, 'name', t)}</SName>
                 </STopText>
                 {plan.id === 'custom' ? null : (
                   <SGain>
-                    {gainCopy(plan.weeks, outcome.maxHoldSeconds, formatSeconds)}
+                    {gainCopy(plan.weeks, outcome.maxHoldSeconds, formatSeconds, t)}
                   </SGain>
                 )}
               </STop>
-              <SMeta>{plan.level}</SMeta>
+              <SMeta>{planLevelLine(plan.id, t)}</SMeta>
               <SMeta>
                 {plan.id === 'custom' && selectedPlan
-                  ? `${customWeeks} weeks · ${customPlanFrequency(customSessions)}`
-                  : plan.frequency}
+                  ? t('plan.weeksMeta', {
+                    weeks: customWeeks,
+                    frequency: customPlanFrequency(customSessions, t),
+                  })
+                  : planCopy(plan.id, 'frequency', t)}
               </SMeta>
-              <SFocus>{plan.focus}</SFocus>
+              <SFocus>{planCopy(plan.id, 'focus', t)}</SFocus>
               {plan.id === 'custom' && selectedPlan ? null : (
-                <SMethod>{methodCopy(plan, outcome, formatSeconds)}</SMethod>
+                <SMethod>{methodCopy(plan, outcome, formatSeconds, t)}</SMethod>
               )}
               </SCardPress>
               {plan.id === 'custom' && selectedPlan ? (
                 <SBuilder>
                   <SettingsStepper
-                    label='Weeks'
+                    label={t('plan.weeks')}
                     value={customWeeks}
                     min={MIN_CUSTOM_WEEKS}
                     max={MAX_CUSTOM_WEEKS}
                     onChange={setCustomWeeks}
                   />
-                  <SSessionLabel>Each week</SSessionLabel>
+                  <SSessionLabel>{t('plan.eachWeek')}</SSessionLabel>
                   <SSessionRow>
                     {CustomSessionChoices.map((choice) => (
                       <SSessionChoice key={choice.kind}>
                         <SettingsChoice
-                          label={choice.label}
+                          label={tableTypeLabel(choice.kind, t)}
                           selected={customSessions.includes(choice.kind)}
                           onPress={() => toggleSession(choice.kind)}
                         />
@@ -145,8 +152,10 @@ export default function BaselinePlans({
       <Footer>
         <Button
           title={continuing
-            ? 'Continue with plan'
-            : selected.id === 'custom' ? 'Start your plan' : `Start ${selected.name}`}
+            ? t('plan.continue')
+            : selected.id === 'custom'
+              ? t('plan.startYour')
+              : t('plan.startNamed', { name: planCopy(selected.id, 'name', t) })}
           onPress={() => onStart({
             planId: selected.id,
             custom: selected.id === 'custom' ? customPlan : null,
@@ -154,7 +163,7 @@ export default function BaselinePlans({
           loading={saving}
         />
         <Button
-          title='Retake test'
+          title={t('plan.retake')}
           onPress={onRetake}
           disabled={saving}
           variant='ghost'
@@ -168,23 +177,27 @@ function gainCopy(
   weeks: number,
   baselineSeconds: number,
   formatSeconds: (seconds: number) => string,
+  t: Translate,
 ): string {
   const estimate = estimatedApneaTimes(weeks, baselineSeconds)
-  return `${formatSeconds(estimate.previous)} → ~${formatSeconds(estimate.next)}`
+  return t('plan.gain', {
+    previous: formatSeconds(estimate.previous),
+    next: formatSeconds(estimate.next),
+  })
 }
 
 function methodCopy(
   plan: TrainingPlan,
   outcome: BaselineOutcome,
   formatSeconds: (seconds: number) => string,
+  t: Translate,
 ): string {
-  if (plan.id !== 'beginner') return plan.method
+  if (plan.id !== 'beginner') return planCopy(plan.id, 'method', t)
   const hold = beginnerBaseHold(outcome.maxHoldSeconds, outcome.contractionSeconds)
   const marked = usesMarkedContraction(outcome.contractionSeconds)
-  const source = marked
-    ? 'your first contraction'
-    : 'half your maximum, since no contraction was marked'
-  return `Hold ${formatSeconds(hold)}, ${source}, for 7 rounds. Rest steps from 2:00 to 0:30. After week 2 the hold adds 15–20 seconds.`
+  return t(marked ? 'plan.methodBeginnerMarked' : 'plan.methodBeginnerUnmarked', {
+    time: formatSeconds(hold),
+  })
 }
 
 const Wrapper = styled.View`

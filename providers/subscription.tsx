@@ -1,5 +1,5 @@
 import { ENTITLEMENT_ID, FREE_SESSION_LIMIT } from '@/constants/subscription'
-import { ErrorTitles } from '@/constants/errors'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import Constants from 'expo-constants'
@@ -72,6 +72,7 @@ type Props = { children: ReactNode }
 
 export default function SubscriptionProvider({ children }: Props) {
   const { sessions } = useSQLContext()
+  const { t } = useI18n()
   const { showWarning } = useWarningModal()
 
   const [configured, setConfigured] = useState(false)
@@ -122,10 +123,10 @@ export default function SubscriptionProvider({ children }: Props) {
       if (err?.code === Purchases.PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
         return { success: false, cancelled: true }
       }
-      showWarning(ErrorTitles.Crash, err?.message ?? 'Something went wrong. Please try again.')
+      showWarning(t('errors.crash'), err?.message ?? t('subscription.genericError'))
       return { success: false, cancelled: false }
     }
-  }, [showWarning])
+  }, [showWarning, t])
 
   const restorePurchase = useCallback(async () => {
     try {
@@ -133,15 +134,15 @@ export default function SubscriptionProvider({ children }: Props) {
       setCustomerInfo(info)
       const restored = hasPaidAccess(info)
       if (!restored) {
-        showWarning(ErrorTitles.Input, 'No previous purchase found for this account.')
+        showWarning(t('errors.input'), t('subscription.noPurchase'))
       }
       return { success: true, restored }
     } catch (e) {
       const err = e as PurchasesError
-      showWarning(ErrorTitles.Crash, err?.message ?? 'Something went wrong. Please try again.')
+      showWarning(t('errors.crash'), err?.message ?? t('subscription.genericError'))
       return { success: false, restored: false }
     }
-  }, [showWarning])
+  }, [showWarning, t])
 
   return (
     <SubscriptionContext.Provider value={{

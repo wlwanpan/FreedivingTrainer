@@ -6,13 +6,14 @@ import SettingsStepper from '@/components/SettingsStepper'
 import WearableStatus from '@/components/WearableStatus'
 import WrapperScreen from '@/components/WrapperScreen'
 import { DateFormats } from '@/constants/dates'
-import { ErrorTitles } from '@/constants/errors'
 import { useBottomControlInset } from '@/design/chrome'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
+import { formatDay as formatDayValue } from '@/utils/date'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
@@ -30,6 +31,7 @@ export default function SettingsScreen() {
   const router = useRouter()
   const { settings, eraseAllData } = useSQLContext()
   const subscription = useSubscriptionContext()
+  const { t, language, setLanguage, options } = useI18n()
   const { formatSeconds } = useFormatterContext()
   const { showWarning, showConfirmDeletion } = useWarningModal()
   const updateSetting = useUpdateSetting()
@@ -45,8 +47,8 @@ export default function SettingsScreen() {
 
   const erase = async () => {
     const confirmed = await showConfirmDeletion(
-      'Erase all data?',
-      withWatchTrainingLoss('This removes your tables, logged sessions, and baseline from this device. The app will open as a new install. A lifetime purchase stays with your Apple ID.'),
+      t('settings.eraseTitle'),
+      withWatchTrainingLoss(t('settings.eraseBody'), t),
     )
     if (!confirmed) return
 
@@ -54,13 +56,13 @@ export default function SettingsScreen() {
     const res = await eraseAllData()
     if (res.error) {
       setEraseInFlight(false)
-      showWarning(ErrorTitles.Sql, res.error.message)
+      showWarning(t('errors.sql'), res.error.message)
     }
   }
 
   const restore = async () => {
     if (!subscription.configured) {
-      showWarning(ErrorTitles.Input, 'Add a RevenueCat API key before restoring purchases.')
+      showWarning(t('errors.input'), t('settings.restoreNeedKey'))
       return
     }
     setRestoreInFlight(true)
@@ -70,46 +72,46 @@ export default function SettingsScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <ScreenHeader title='Settings' />
+      <ScreenHeader title={t('settings.title')} />
       <SScroll
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingTop: 8, paddingBottom }}
       >
         <SCard>
-          <SCardTitle>Training</SCardTitle>
-          <SGroup>Animation</SGroup>
-          <SNote>Bubbles and card movement during a table.</SNote>
+          <SCardTitle>{t('settings.training')}</SCardTitle>
+          <SGroup>{t('settings.animation')}</SGroup>
+          <SNote>{t('settings.animationNote')}</SNote>
           <SChoiceRow>
             <SettingsChoice
-              label='On'
+              label={t('common.on')}
               selected={settings.trainingAnimation}
               onPress={() => { void updateSetting({ trainingAnimation: true }) }}
             />
             <SettingsChoice
-              label='Off'
+              label={t('common.off')}
               selected={!settings.trainingAnimation}
               onPress={() => { void updateSetting({ trainingAnimation: false }) }}
             />
           </SChoiceRow>
 
-          <SGroup>Haptic</SGroup>
-          <SNote>A tap when a step changes on your iPhone and Apple Watch.</SNote>
+          <SGroup>{t('settings.haptic')}</SGroup>
+          <SNote>{t('settings.hapticNote')}</SNote>
           <SChoiceRow>
             <SettingsChoice
-              label='On'
+              label={t('common.on')}
               selected={settings.trainingHaptic}
               onPress={() => { void updateSetting({ trainingHaptic: true }) }}
             />
             <SettingsChoice
-              label='Off'
+              label={t('common.off')}
               selected={!settings.trainingHaptic}
               onPress={() => { void updateSetting({ trainingHaptic: false }) }}
             />
           </SChoiceRow>
 
-          <SGroup>Preparation</SGroup>
+          <SGroup>{t('settings.preparation')}</SGroup>
           <SettingsStepper
-            label='Breathe-up'
+            label={t('settings.breatheUp')}
             mode='duration'
             value={settings.breatheUpSeconds}
             step={15}
@@ -118,45 +120,46 @@ export default function SettingsScreen() {
             onChange={(value) => { void updateSetting({ breatheUpSeconds: value }) }}
           />
 
-          <SGroup>Baseline</SGroup>
+          <SGroup>{t('settings.baseline')}</SGroup>
           <SNote>
             {settings.baselineMaxHoldSeconds == null
-              ? 'No maximum hold yet. A baseline test sizes the CO2 and O2 tables.'
-              : `Maximum ${formatSeconds(settings.baselineMaxHoldSeconds)}${
-                settings.baselineContractionSeconds == null
-                  ? ''
-                  : ` · contraction ${formatSeconds(settings.baselineContractionSeconds)}`
-              }`}
+              ? t('settings.baselineEmpty')
+              : settings.baselineContractionSeconds == null
+                ? t('settings.baselineMax', { time: formatSeconds(settings.baselineMaxHoldSeconds) })
+                : t('settings.baselineMaxContraction', {
+                  time: formatSeconds(settings.baselineMaxHoldSeconds),
+                  contraction: formatSeconds(settings.baselineContractionSeconds),
+                })}
           </SNote>
           <Button
-            title={settings.baselineMaxHoldSeconds == null ? 'Take baseline test' : 'Retake baseline test'}
+            title={settings.baselineMaxHoldSeconds == null ? t('settings.takeBaseline') : t('settings.retakeBaseline')}
             onPress={() => router.push('/baseline')}
           />
 
-          <SGroup>Plan</SGroup>
+          <SGroup>{t('settings.plan')}</SGroup>
           {settings.baselineMaxHoldSeconds == null ? (
-            <SNote>Take a baseline test to choose a plan.</SNote>
+            <SNote>{t('settings.planNeedBaseline')}</SNote>
           ) : (
             <>
               <SNote>
-                {planWeek?.detail ?? 'Choose a plan, or build your own. Keep CO2 and O2 on different days.'}
+                {planWeek?.detail ?? t('settings.planChoose')}
               </SNote>
               <Button
-                title='Change plan'
+                title={t('settings.changePlan')}
                 onPress={() => router.push('/plan')}
               />
             </>
           )}
 
-          <SGroup>CO2 table</SGroup>
+          <SGroup>{t('settings.co2Table')}</SGroup>
           {planWeek?.sessions.some((session) => session.kind === 'co2') ? (
-            <SNote>This plan sets the CO2 table.</SNote>
+            <SNote>{t('settings.planSetsCo2')}</SNote>
           ) : planWeek ? (
-            <SNote>This plan does not include a CO2 table.</SNote>
+            <SNote>{t('settings.planNoCo2')}</SNote>
           ) : (
             <>
               <SettingsStepper
-                label='Hold'
+                label={t('settings.hold')}
                 mode='duration'
                 value={settings.co2HoldSeconds}
                 step={15}
@@ -165,7 +168,7 @@ export default function SettingsScreen() {
                 onChange={(value) => { void updateSetting({ co2HoldSeconds: value }) }}
               />
               <SettingsStepper
-                label='Starting rest'
+                label={t('settings.startingRest')}
                 mode='duration'
                 value={settings.co2RestStartSeconds}
                 step={15}
@@ -174,7 +177,7 @@ export default function SettingsScreen() {
                 onChange={(value) => { void updateSetting({ co2RestStartSeconds: value }) }}
               />
               <SettingsStepper
-                label='Rest step'
+                label={t('settings.restStep')}
                 mode='duration'
                 value={settings.co2RestStepSeconds}
                 step={5}
@@ -183,7 +186,7 @@ export default function SettingsScreen() {
                 onChange={(value) => { void updateSetting({ co2RestStepSeconds: value }) }}
               />
               <SettingsStepper
-                label='Rounds'
+                label={t('settings.rounds')}
                 value={settings.co2Rounds}
                 min={1}
                 max={20}
@@ -192,13 +195,13 @@ export default function SettingsScreen() {
             </>
           )}
 
-          <SGroup>O2 table</SGroup>
+          <SGroup>{t('settings.o2Table')}</SGroup>
           {planWeek?.setsO2 ? (
-            <SNote>This plan sets the O2 table. Train it on a different day from CO2.</SNote>
+            <SNote>{t('settings.planSetsO2')}</SNote>
           ) : (
             <>
               <SettingsStepper
-                label='Starting hold'
+                label={t('settings.startingHold')}
                 mode='duration'
                 value={settings.o2HoldStartSeconds}
                 step={15}
@@ -207,7 +210,7 @@ export default function SettingsScreen() {
                 onChange={(value) => { void updateSetting({ o2HoldStartSeconds: value }) }}
               />
               <SettingsStepper
-                label='Hold step'
+                label={t('settings.holdStep')}
                 mode='duration'
                 value={settings.o2HoldStepSeconds}
                 step={5}
@@ -216,7 +219,7 @@ export default function SettingsScreen() {
                 onChange={(value) => { void updateSetting({ o2HoldStepSeconds: value }) }}
               />
               <SettingsStepper
-                label='Rest'
+                label={t('settings.rest')}
                 mode='duration'
                 value={settings.o2RestSeconds}
                 step={15}
@@ -225,7 +228,7 @@ export default function SettingsScreen() {
                 onChange={(value) => { void updateSetting({ o2RestSeconds: value }) }}
               />
               <SettingsStepper
-                label='Rounds'
+                label={t('settings.rounds')}
                 value={settings.o2Rounds}
                 min={1}
                 max={20}
@@ -236,16 +239,16 @@ export default function SettingsScreen() {
         </SCard>
 
         <SCard>
-          <SCardTitle>Purchases</SCardTitle>
+          <SCardTitle>{t('settings.purchases')}</SCardTitle>
           <FreeSessionsBanner />
           <Button
-            title={subscription.hasLifetimeAccess ? 'Lifetime access is active' : 'Unlock lifetime access'}
+            title={subscription.hasLifetimeAccess ? t('settings.lifetimeActive') : t('settings.unlockLifetime')}
             onPress={() => router.push('/paywall')}
             disabled={subscription.hasLifetimeAccess}
             style={{ marginTop: subscription.loading || subscription.hasLifetimeAccess ? 12 : 0 }}
           />
           <Button
-            title='Restore purchase'
+            title={t('settings.restore')}
             onPress={() => { void restore() }}
             loading={restoreInFlight}
             variant='ghost'
@@ -253,34 +256,48 @@ export default function SettingsScreen() {
         </SCard>
 
         <SCard>
-          <SCardTitle>Device</SCardTitle>
-          <SGroup>Apple Watch</SGroup>
+          <SCardTitle>{t('settings.device')}</SCardTitle>
+          <SGroup>{t('settings.appleWatch')}</SGroup>
           <SNote>
-            Heart rate from your watch during a table. Status updates automatically when the watch session is reachable. Garmin can be connected later.
+            {t('settings.appleWatchNote')}
           </SNote>
           <WearableStatus />
         </SCard>
 
         <SCard>
-          <SCardTitle>System</SCardTitle>
-          <SGroup>Date</SGroup>
+          <SCardTitle>{t('settings.system')}</SCardTitle>
+          <SGroup>{t('language.label')}</SGroup>
+          <SNote>{t('language.note')}</SNote>
+          <SLangRow>
+            {options.map((option) => (
+              <SLangChoice key={option.code}>
+                <SettingsChoice
+                  label={option.nativeName}
+                  selected={language === option.code}
+                  onPress={() => setLanguage(option.code)}
+                />
+              </SLangChoice>
+            ))}
+          </SLangRow>
+
+          <SGroup>{t('settings.date')}</SGroup>
           <SChoiceRow>
             {DateFormats.map((format) => (
               <SettingsChoice
                 key={format}
-                label={format === 'YYYY-MM-DD' ? '2026-10-08' : 'Oct 8, 2026'}
+                label={format === 'YYYY-MM-DD' ? '2026-10-08' : formatDayValue('2026-10-08', 'MMM D, YYYY', t)}
                 selected={settings.dateFormat === format}
                 onPress={() => { void updateSetting({ dateFormat: format }) }}
               />
             ))}
           </SChoiceRow>
 
-          <SGroup>Data</SGroup>
+          <SGroup>{t('settings.data')}</SGroup>
           <SNote>
-            Removes your tables, logged sessions, and baseline from this device.
+            {t('settings.dataNote')}
           </SNote>
           <Button
-            title='Erase all data'
+            title={t('settings.erase')}
             onPress={() => { void erase() }}
             loading={eraseInFlight}
             variant='danger'
@@ -339,6 +356,20 @@ const SChoiceRow = styled.View`
   gap: 8px;
   margin-top: 8px;
   margin-bottom: 4px;
+`
+
+const SLangRow = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+`
+
+const SLangChoice = styled.View`
+  flex-grow: 1;
+  flex-basis: 30%;
+  min-width: 96px;
 `
 
 const SAppVersion = styled.Text`

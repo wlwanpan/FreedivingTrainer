@@ -4,6 +4,7 @@ import SettingsChoice from '@/components/SettingsChoice'
 import SettingsStepper from '@/components/SettingsStepper'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import { MIN_BASELINE_SECONDS } from '@/utils/baseline'
 import { useState } from 'react'
 import { styled } from 'styled-components/native'
@@ -46,19 +47,21 @@ export default function BaselineManual({
     })
   }
 
+  const { t } = useI18n()
+
   return (
     <Wrapper>
-      <HeaderWithBtn headerText='Enter times' leftText='Back' leftOnClick={onBack} />
+      <HeaderWithBtn headerText={t('baseline.enterTitle')} leftBack leftOnClick={onBack} />
       <SBody
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps='handled'
         automaticallyAdjustKeyboardInsets
       >
         <SCopy>
-          Use a max hold and first contraction you already know. The tables are sized from these two times.
+          {t('baseline.enterCopy')}
         </SCopy>
         <SettingsStepper
-          label='Maximum hold'
+          label={t('baseline.maximumHold')}
           mode='duration'
           editable
           value={maxHoldSeconds}
@@ -67,27 +70,27 @@ export default function BaselineManual({
           step={STEP_SECONDS}
           onChange={changeMax}
         />
-        <SSection>First contraction</SSection>
+        <SSection>{t('baseline.firstContraction')}</SSection>
         <SCopy>
-          This is the moment the first urge to breathe arrives. Before it, you are in the relaxation phase and the hold still feels easy. After it, you are in the struggle phase. Beginner CO2 tables hold at this time so training stays in the relaxation phase.
+          {t('baseline.firstSectionCopy')}
         </SCopy>
         <SChoiceRow>
           <SettingsChoice
-            label='I know it'
+            label={t('baseline.iKnowIt')}
             selected={contractionSeconds != null}
             onPress={markKnown}
           />
           <SettingsChoice
-            label='Not sure'
+            label={t('baseline.notSure')}
             selected={contractionSeconds == null}
             onPress={() => setContractionSeconds(null)}
           />
         </SChoiceRow>
         {contractionSeconds == null ? (
-          <SNote>Without it, beginner tables use half your maximum.</SNote>
+          <SNote>{t('baseline.withoutIt')}</SNote>
         ) : (
           <SettingsStepper
-            label='Contraction'
+            label={t('baseline.contraction')}
             mode='duration'
             editable
             value={contractionSeconds}
@@ -100,7 +103,7 @@ export default function BaselineManual({
       </SBody>
       <Footer>
         <Button
-          title='Use these times'
+          title={t('baseline.useTimes')}
           onPress={() => onSubmit({ maxHoldSeconds, contractionSeconds })}
         />
       </Footer>

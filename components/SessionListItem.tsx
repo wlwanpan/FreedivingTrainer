@@ -1,8 +1,9 @@
-import { WatchDetailLabel } from '@/constants/sessions'
-import { TableType, TableTypeLabel } from '@/constants/tables'
+import { TableType } from '@/constants/tables'
 import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import { Session } from '@/db/schema'
+import { tableTypeLabel, watchDetailLabel } from '@/i18n/labels'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { contractionLabel, parseContractions } from '@/utils/contractions'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -22,11 +23,12 @@ const TableDot: Record<TableType, string> = {
 }
 
 export default function SessionListItem({ session, onDelete }: Props) {
+  const { t } = useI18n()
   const { heartRates } = useSQLContext()
   const { formatDay, formatSeconds } = useFormatterContext()
   const logged = parseContractions(session.contractions).length
   const watchLabel = session.source === 'watch'
-    ? WatchDetailLabel[session.watchDetail ?? 'ios']
+    ? watchDetailLabel(session.watchDetail ?? 'ios', t)
     : null
   const samples = heartRates.filter((sample) => sample.sessionId === session.id)
   const avgBpm = samples.length === 0
@@ -38,7 +40,7 @@ export default function SessionListItem({ session, onDelete }: Props) {
       <STop>
         <STitleRow>
           <SDot style={{ backgroundColor: TableDot[session.tableType] }} />
-          <STitle>{TableTypeLabel[session.tableType]}</STitle>
+          <STitle>{tableTypeLabel(session.tableType, t)}</STitle>
         </STitleRow>
         {watchLabel != null ? (
           <SWatchPill>
@@ -51,18 +53,21 @@ export default function SessionListItem({ session, onDelete }: Props) {
       </STop>
       <SMetaRow>
         <SMeta>
-          {watchLabel != null ? `${formatDay(session.day)} · ` : ''}
-          {session.roundsCompleted} rounds
+          {watchLabel != null ? t('sessionItem.dayWatch', { day: formatDay(session.day) }) : ''}
+          {t('sessionItem.rounds', { count: session.roundsCompleted })}
         </SMeta>
         <STimes>
-          {`Hold ${formatSeconds(session.holdSeconds)} · Rest ${formatSeconds(session.restSeconds)}`}
+          {t('sessionItem.holdRest', {
+            hold: formatSeconds(session.holdSeconds),
+            rest: formatSeconds(session.restSeconds),
+          })}
         </STimes>
       </SMetaRow>
       <SFooter>
         {avgBpm == null ? null : (
           <SFact>
             <Ionicons name='heart' size={13} color={Colors.Seafoam} />
-            <SFactText>{`Avg HR ${avgBpm} bpm`}</SFactText>
+            <SFactText>{t('sessionItem.avgHr', { bpm: avgBpm })}</SFactText>
           </SFact>
         )}
         <SFact>
@@ -72,12 +77,12 @@ export default function SessionListItem({ session, onDelete }: Props) {
             color={logged > 0 ? Colors.TextMuted : Colors.Aquamarine}
           />
           <SFactText>
-            {logged > 0 ? contractionLabel(logged) : '0 contractions'}
+            {logged > 0 ? contractionLabel(logged, t) : t('sessionItem.zeroContractions')}
           </SFactText>
         </SFact>
         {onDelete ? (
           <SDelete onPress={onDelete}>
-            <SDeleteText>Delete</SDeleteText>
+            <SDeleteText>{t('sessionItem.delete')}</SDeleteText>
           </SDelete>
         ) : null}
       </SFooter>

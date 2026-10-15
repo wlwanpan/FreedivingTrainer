@@ -1,9 +1,11 @@
 import { Colors, FontSizes } from '@/design/styles'
 import useWearableStatus, { wearableLabel, wearableLive } from '@/hooks/useWearableStatus'
+import { useI18n } from '@/providers/i18n'
 import { styled } from 'styled-components/native'
 
 
 export default function WearableStatus() {
+  const { t } = useI18n()
   const status = useWearableStatus()
   const live = wearableLive(status)
 
@@ -11,7 +13,7 @@ export default function WearableStatus() {
     <Wrapper>
       <SRow>
         <SDot $live={live} />
-        <SLabel $live={live}>{wearableLabel(status)}</SLabel>
+        <SLabel $live={live}>{wearableLabel(status, t)}</SLabel>
       </SRow>
       {status.syncLabel == null ? null : <SSync>{status.syncLabel}</SSync>}
     </Wrapper>

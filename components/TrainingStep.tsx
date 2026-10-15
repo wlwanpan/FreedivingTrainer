@@ -1,6 +1,9 @@
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { TrainPhaseKind } from '@/hooks/useTrainingClock'
+import { roundOrdinal } from '@/i18n/labels'
+import { Translate } from '@/i18n/types'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { trainingSpriteFrame } from '@/utils/training_sprite'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useEffect } from 'react'
@@ -17,22 +20,22 @@ import { styled } from 'styled-components/native'
 
 export type TrainingStepRole = 'done' | 'current' | 'next' | 'complete' | 'placeholder'
 
-const PhaseTitle: Record<TrainPhaseKind, string> = {
-  breathe: 'Breathe-up',
-  hold: 'Hold',
-  rest: 'Rest & Ventilate',
+const PhaseTitleKey: Record<TrainPhaseKind, string> = {
+  breathe: 'training.breatheUp',
+  hold: 'training.holdPhase',
+  rest: 'training.restVentilate',
 }
 
-const PhaseShort: Record<TrainPhaseKind, string> = {
-  breathe: 'Breathe-up',
-  hold: 'Hold',
-  rest: 'Rest',
+const PhaseShortKey: Record<TrainPhaseKind, string> = {
+  breathe: 'training.breatheUp',
+  hold: 'training.holdPhase',
+  rest: 'training.rest',
 }
 
-const PhaseStage: Record<TrainPhaseKind, string> = {
-  breathe: 'Preparation',
-  hold: 'Hold phase',
-  rest: 'Recovery phase',
+const PhaseStageKey: Record<TrainPhaseKind, string> = {
+  breathe: 'training.preparation',
+  hold: 'training.holdPhaseName',
+  rest: 'training.recoveryPhase',
 }
 
 const PhaseColor: Record<TrainPhaseKind, string> = {
@@ -41,10 +44,10 @@ const PhaseColor: Record<TrainPhaseKind, string> = {
   rest: Colors.Aquamarine,
 }
 
-const PhaseCue: Record<TrainPhaseKind, string> = {
-  breathe: 'Inhale soft abdominal breaths. Relax your neck, jaw, and shoulders.',
-  hold: 'Stay still. Soften your face, neck, and shoulders.',
-  rest: 'Inhale soft abdominal breaths. Relax your neck, jaw, and shoulders.',
+const PhaseCueKey: Record<TrainPhaseKind, string> = {
+  breathe: 'training.cueBreathe',
+  hold: 'training.cueHold',
+  rest: 'training.cueRest',
 }
 
 export const TrainingStepLayout = {
@@ -128,6 +131,7 @@ export default function TrainingStep({
   aside,
   animated = true,
 }: Props) {
+  const { t, language } = useI18n()
   const { formatSeconds } = useFormatterContext()
   const { width } = useWindowDimensions()
   const card = trainingCardSize(width)
@@ -170,9 +174,9 @@ export default function TrainingStep({
       {role === 'placeholder' ? (
         <SGhost
           style={[animatedStyle, { width: card.width, borderRadius: Radii.Card }]}
-          accessibilityLabel='No completed rounds yet'
+          accessibilityLabel={t('training.noCompletedRounds')}
         >
-          <SGhostText>No completed rounds yet</SGhostText>
+          <SGhostText>{t('training.noCompletedRounds')}</SGhostText>
         </SGhost>
       ) : (
       <SCard style={[animatedStyle, { width: card.width, borderRadius: Radii.Card }]}>
@@ -191,16 +195,18 @@ export default function TrainingStep({
               </SIconWell>
               <SRailCopy>
                 <SRailTitleRow>
-                  <SRailKicker>{PhaseShort[kind]} completed</SRailKicker>
+                  <SRailKicker>{t('training.phaseCompleted', { phase: t(PhaseShortKey[kind]) })}</SRailKicker>
                   {roundIndex == null ? null : (
-                    <SRailRound>{`${roundOrdinal(roundIndex)} Round`}</SRailRound>
+                    <SRailRound>{t('training.ordinalRound', { ordinal: roundOrdinal(roundIndex, language, t) })}</SRailRound>
                   )}
                 </SRailTitleRow>
                 <SRailMeta numberOfLines={1}>
-                  {`Duration: ${formatSeconds(seconds)}${aside ? ` • ${aside} logged` : ''}`}
+                  {aside
+                    ? t('training.durationLogged', { time: formatSeconds(seconds), aside })
+                    : t('training.duration', { time: formatSeconds(seconds) })}
                 </SRailMeta>
               </SRailCopy>
-              <SRailStatus>Done</SRailStatus>
+              <SRailStatus>{t('common.done')}</SRailStatus>
             </SRail>
           ) : role === 'next' ? (
             <SRail>
@@ -209,13 +215,13 @@ export default function TrainingStep({
               </SIconWell>
               <SRailCopy>
                 <SRailTitleRow>
-                  <SRailLead>{`Next: ${PhaseShort[kind]}`}</SRailLead>
+                  <SRailLead>{t('training.next', { phase: t(PhaseShortKey[kind]) })}</SRailLead>
                   {roundIndex == null ? null : (
-                    <SRailRound>{`Round ${roundIndex}`}</SRailRound>
+                    <SRailRound>{t('training.roundN', { n: roundIndex })}</SRailRound>
                   )}
                 </SRailTitleRow>
                 <SRailMeta numberOfLines={1}>
-                  {`Upcoming target: ${formatSeconds(seconds)} ${PhaseShort[kind]}`}
+                  {t('training.upcoming', { time: formatSeconds(seconds), phase: t(PhaseShortKey[kind]) })}
                 </SRailMeta>
               </SRailCopy>
               <SRailTime style={{ fontVariant: ['tabular-nums'] }}>
@@ -227,11 +233,11 @@ export default function TrainingStep({
               <SHeroHeader>
                 <SBadge>
                   <SBadgeText>
-                    {role === 'complete' ? 'Table complete' : PhaseTitle[kind]}
+                    {role === 'complete' ? t('training.tableComplete') : t(PhaseTitleKey[kind])}
                   </SBadgeText>
                 </SBadge>
                 {role !== 'complete' && stepIndex != null && stepCount != null ? (
-                  <SStage>{`Stage ${stepIndex + 1} of ${stepCount}`}</SStage>
+                  <SStage>{t('training.stage', { current: stepIndex + 1, total: stepCount })}</SStage>
                 ) : null}
               </SHeroHeader>
               <STimerBlock>
@@ -241,10 +247,10 @@ export default function TrainingStep({
                     fontVariant: ['tabular-nums'],
                   }}
                 >
-                  {role === 'complete' ? 'Done' : formatSeconds(shownSeconds)}
+                  {role === 'complete' ? t('common.done') : formatSeconds(shownSeconds)}
                 </STime>
                 <SPhaseLine>
-                  {role === 'complete' ? 'Session saved' : heroSubtitle(kind, roundIndex, roundCount)}
+                  {role === 'complete' ? t('training.sessionSaved') : heroSubtitle(kind, roundIndex, roundCount, t)}
                 </SPhaseLine>
               </STimerBlock>
               <SNote>
@@ -256,7 +262,7 @@ export default function TrainingStep({
                   />
                 </SNoteIcon>
                 <SNoteText>
-                  {role === 'complete' ? note ?? '' : PhaseCue[kind]}
+                  {role === 'complete' ? note ?? '' : t(PhaseCueKey[kind])}
                 </SNoteText>
               </SNote>
             </SHero>
@@ -268,24 +274,14 @@ export default function TrainingStep({
   )
 }
 
-function heroSubtitle(kind: TrainPhaseKind, roundIndex: number | null, roundCount: number): string {
-  if (roundIndex == null) return 'Settle in before the first hold'
-  return `Round ${roundIndex} of ${roundCount} ${PhaseStage[kind]}`
-}
-
-function roundOrdinal(value: number): string {
-  const tens = value % 100
-  if (tens >= 11 && tens <= 13) return `${value}th`
-  switch (value % 10) {
-    case 1:
-      return `${value}st`
-    case 2:
-      return `${value}nd`
-    case 3:
-      return `${value}rd`
-    default:
-      return `${value}th`
-  }
+function heroSubtitle(
+  kind: TrainPhaseKind,
+  roundIndex: number | null,
+  roundCount: number,
+  t: Translate,
+): string {
+  if (roundIndex == null) return t('training.settle')
+  return t('training.roundPhase', { n: roundIndex, total: roundCount, phase: t(PhaseStageKey[kind]) })
 }
 
 const SExit = styled(Animated.View)`

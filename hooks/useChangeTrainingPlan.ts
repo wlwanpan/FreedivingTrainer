@@ -1,5 +1,6 @@
-import { ErrorTitles } from '@/constants/errors'
 import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
+import { planCopy } from '@/i18n/labels'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
 import {
@@ -19,6 +20,7 @@ export type PlanChangeResult = 'saved' | 'unchanged' | 'cancelled' | 'error'
 
 export default function useChangeTrainingPlan() {
   const sql = useSQLContext()
+  const { t } = useI18n()
   const { showConfirmation, showWarning } = useWarningModal()
   const planWeek = useCurrentPlanWeek()
   const outline = useTrainingOutline()
@@ -34,8 +36,8 @@ export default function useChangeTrainingPlan() {
 
     if (current != null && outline?.progress !== 1) {
       const confirmed = await showConfirmation(
-        'Change plan?',
-        withWatchTrainingLoss(planSwitchWarning(current.name, planWeek?.week ?? null)),
+        t('plan.changeTitle'),
+        withWatchTrainingLoss(planSwitchWarning(planCopy(current.id, 'name', t), planWeek?.week ?? null, t), t),
       )
       if (!confirmed) return 'cancelled'
     }
@@ -71,7 +73,7 @@ export default function useChangeTrainingPlan() {
       updatedAt: now,
     })
     if (res.error) {
-      showWarning(ErrorTitles.Sql, res.error.message)
+      showWarning(t('errors.sql'), res.error.message)
       return 'error'
     }
     return 'saved'

@@ -2,11 +2,11 @@ import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import TableRoundRow from '@/components/TableRoundRow'
 import WrapperScreen from '@/components/WrapperScreen'
-import { ErrorTitles } from '@/constants/errors'
 import { Footer } from '@/design/styled'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
@@ -25,6 +25,7 @@ import { styled } from 'styled-components/native'
 
 export default function PrepareScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const params = useLocalSearchParams<{
     type?: string | string[]
     name?: string | string[]
@@ -44,7 +45,7 @@ export default function PrepareScreen() {
   const watchBusy = watchBlocksPhoneStart(useWearableStatus())
   const tableType = parseTableType(params.type)
   const table = parseTrainTable(params)
-  const title = trainTitle(params.name, tableType)
+  const title = trainTitle(params.name, tableType, t)
   const note = parseLabel(params.note)
   const slot = parseSlot(params)
   const outline = tableType == null || table == null
@@ -73,7 +74,7 @@ export default function PrepareScreen() {
       return
     }
     if (outline.rounds.length === 0) {
-      showWarning(ErrorTitles.Input, 'Add at least one round before training.')
+      showWarning(t('errors.input'), t('home.addRound'))
       return
     }
     router.push({
@@ -100,10 +101,10 @@ export default function PrepareScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <HeaderWithBtn headerText={title} leftText='Back' leftOnClick={leave} />
+      <HeaderWithBtn headerText={title} leftBack leftOnClick={leave} />
       {watchBusy ? (
         <SBanner>
-          <SBannerText>Table started on Apple Watch</SBannerText>
+          <SBannerText>{t('table.watchBanner')}</SBannerText>
         </SBanner>
       ) : null}
       <SScroll
@@ -111,17 +112,20 @@ export default function PrepareScreen() {
         contentContainerStyle={{ paddingBottom: Space.md }}
       >
         <SMeta
-          accessibilityLabel={`${formatSeconds(outline.totalSeconds)} total session duration. ${outline.stepCount} total steps.`}
+          accessibilityLabel={t('prepare.metaA11y', {
+            duration: formatSeconds(outline.totalSeconds),
+            count: outline.stepCount,
+          })}
         >
           <STile>
             <SValue style={{ fontVariant: ['tabular-nums'] }}>
               {formatSeconds(outline.totalSeconds)}
             </SValue>
-            <SLabel>Total session duration</SLabel>
+            <SLabel>{t('prepare.duration')}</SLabel>
           </STile>
           <STile>
             <SValue>{outline.stepCount}</SValue>
-            <SLabel>Total steps</SLabel>
+            <SLabel>{t('prepare.steps')}</SLabel>
           </STile>
         </SMeta>
         {note == null ? null : <SNote>{note}</SNote>}
@@ -138,7 +142,7 @@ export default function PrepareScreen() {
       </SScroll>
       <Footer>
         <Button
-          title={watchBusy ? 'On Watch' : 'Start'}
+          title={watchBusy ? t('training.onWatch') : t('common.start')}
           disabled={watchBusy}
           onPress={start}
         />

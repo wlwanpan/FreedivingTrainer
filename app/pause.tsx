@@ -1,7 +1,7 @@
 import Button from '@/components/Button'
 import { Colors, Fonts, FontSizes } from '@/design/styles'
 import { resumeTrainingSession } from '@/hooks/trainingPause'
-import { TrainingGestureCopy } from '@/utils/training_gestures'
+import { useI18n } from '@/providers/i18n'
 import { useNavigation, useRouter } from 'expo-router'
 import { useEffect, useMemo } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -10,6 +10,7 @@ import { styled } from 'styled-components/native'
 
 
 export default function PauseScreen() {
+  const { t } = useI18n()
   const router = useRouter()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
@@ -35,7 +36,7 @@ export default function PauseScreen() {
   return (
     <Wrapper
       accessibilityRole='alert'
-      accessibilityLabel={TrainingGestureCopy.paused}
+      accessibilityLabel={t('pause.paused')}
     >
       <GestureDetector gesture={taps}>
         <SScrim />
@@ -44,8 +45,8 @@ export default function PauseScreen() {
         onPress={() => {}}
         style={{ paddingBottom: insets.bottom + 16 }}
       >
-        <STitle>{TrainingGestureCopy.paused}</STitle>
-        <Button title='Resume' onPress={dismiss} />
+        <STitle>{t('pause.paused')}</STitle>
+        <Button title={t('pause.resume')} onPress={dismiss} />
       </SCard>
     </Wrapper>
   )

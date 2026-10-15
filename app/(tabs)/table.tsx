@@ -4,12 +4,14 @@ import SettingsStepper from '@/components/SettingsStepper'
 import TableRoundRow from '@/components/TableRoundRow'
 import TableTypeSwitch from '@/components/TableTypeSwitch'
 import WrapperScreen from '@/components/WrapperScreen'
-import { TableType, TableTypeDescription, TableTypeLabel, TableTypeTerm } from '@/constants/tables'
+import { TableType } from '@/constants/tables'
+import { tableTypeDescription, tableTypeLabel, tableTypeTerm } from '@/i18n/labels'
 import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { buildCo2Table, buildO2Table } from '@/utils/table'
@@ -20,6 +22,7 @@ import { styled } from 'styled-components/native'
 
 export default function TableScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const { settings } = useSQLContext()
   const subscription = useSubscriptionContext()
   const updateSetting = useUpdateSetting()
@@ -39,7 +42,7 @@ export default function TableScreen() {
       pathname: '/train',
       params: {
         type: tableType,
-        name: TableTypeLabel[tableType],
+        name: tableTypeLabel(tableType, t),
         hold: String(o2 ? settings.o2HoldStartSeconds : settings.co2HoldSeconds),
         holdStep: String(o2 ? settings.o2HoldStepSeconds : 0),
         restStart: String(o2 ? settings.o2RestSeconds : settings.co2RestStartSeconds),
@@ -51,21 +54,21 @@ export default function TableScreen() {
 
   return (
     <WrapperScreen skipBottomInset>
-      <ScreenHeader title='Tables' />
+      <ScreenHeader title={t('table.title')} />
       {watchBusy ? (
         <SBanner>
-          <SBannerText>Table started on Apple Watch</SBannerText>
+          <SBannerText>{t('table.watchBanner')}</SBannerText>
         </SBanner>
       ) : null}
       <TableTypeSwitch value={tableType} onChange={setTableType} />
       <SCopy>
-        {TableTypeTerm[tableType] ? (
+        {tableTypeTerm(tableType, t) ? (
           <>
-            <STerm>{TableTypeTerm[tableType]}</STerm>
+            <STerm>{tableTypeTerm(tableType, t)}</STerm>
             {': '}
           </>
         ) : null}
-        {TableTypeDescription[tableType]}
+        {tableTypeDescription(tableType, t)}
       </SCopy>
       <SScroll
         showsVerticalScrollIndicator={false}
@@ -77,7 +80,7 @@ export default function TableScreen() {
           {tableType === 'o2' ? (
             <>
               <SettingsStepper
-                label='Starting hold'
+                label={t('settings.startingHold')}
                 mode='duration'
                 editable
                 value={settings.o2HoldStartSeconds}
@@ -87,7 +90,7 @@ export default function TableScreen() {
                 onChange={(value) => { void updateSetting({ o2HoldStartSeconds: value }) }}
               />
               <SettingsStepper
-                label='Hold step'
+                label={t('settings.holdStep')}
                 mode='duration'
                 editable
                 value={settings.o2HoldStepSeconds}
@@ -97,7 +100,7 @@ export default function TableScreen() {
                 onChange={(value) => { void updateSetting({ o2HoldStepSeconds: value }) }}
               />
               <SettingsStepper
-                label='Rest'
+                label={t('settings.rest')}
                 mode='duration'
                 editable
                 value={settings.o2RestSeconds}
@@ -107,7 +110,7 @@ export default function TableScreen() {
                 onChange={(value) => { void updateSetting({ o2RestSeconds: value }) }}
               />
               <SettingsStepper
-                label='Rounds'
+                label={t('settings.rounds')}
                 value={settings.o2Rounds}
                 min={1}
                 max={20}
@@ -118,7 +121,7 @@ export default function TableScreen() {
           ) : (
             <>
               <SettingsStepper
-                label='Hold'
+                label={t('settings.hold')}
                 mode='duration'
                 editable
                 value={settings.co2HoldSeconds}
@@ -128,7 +131,7 @@ export default function TableScreen() {
                 onChange={(value) => { void updateSetting({ co2HoldSeconds: value }) }}
               />
               <SettingsStepper
-                label='Starting rest'
+                label={t('settings.startingRest')}
                 mode='duration'
                 editable
                 value={settings.co2RestStartSeconds}
@@ -138,7 +141,7 @@ export default function TableScreen() {
                 onChange={(value) => { void updateSetting({ co2RestStartSeconds: value }) }}
               />
               <SettingsStepper
-                label='Rest step'
+                label={t('settings.restStep')}
                 mode='duration'
                 editable
                 value={settings.co2RestStepSeconds}
@@ -148,7 +151,7 @@ export default function TableScreen() {
                 onChange={(value) => { void updateSetting({ co2RestStepSeconds: value }) }}
               />
               <SettingsStepper
-                label='Rounds'
+                label={t('settings.rounds')}
                 value={settings.co2Rounds}
                 min={1}
                 max={20}
@@ -171,7 +174,7 @@ export default function TableScreen() {
       </SScroll>
       <Footer aboveTabs>
         <Button
-          title='Start'
+          title={t('table.start')}
           disabled={watchBusy}
           onPress={start}
         />

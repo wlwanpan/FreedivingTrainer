@@ -1,5 +1,7 @@
-import { TableType, TableTypeLabel, TableTypes } from '@/constants/tables'
+import { TableType, TableTypes } from '@/constants/tables'
 import type { TrainPlanSlot, TrainTable } from '@/hooks/useTrainingClock'
+import { tableTypeLabel } from '@/i18n/labels'
+import { Translate } from '@/i18n/types'
 import { WeekSession } from '@/utils/training_plan'
 
 
@@ -86,6 +88,6 @@ export function parseTrainTable(params: {
   }
 }
 
-export function trainTitle(name: string | string[] | undefined, tableType: TableType | null): string {
-  return parseLabel(name) ?? (tableType == null ? '' : TableTypeLabel[tableType])
+export function trainTitle(name: string | string[] | undefined, tableType: TableType | null, t: Translate): string {
+  return parseLabel(name) ?? (tableType == null ? '' : tableTypeLabel(tableType, t))
 }

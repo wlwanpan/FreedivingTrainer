@@ -1,5 +1,6 @@
 import TrainingClock from '@/components/TrainingClock'
 import WrapperScreen from '@/components/WrapperScreen'
+import { useI18n } from '@/providers/i18n'
 import useTrainingClock from '@/hooks/useTrainingClock'
 import {
   parseSlot,
@@ -13,6 +14,7 @@ import { useCallback, useEffect } from 'react'
 
 export default function TrainScreen() {
   const router = useRouter()
+  const { t } = useI18n()
   const params = useLocalSearchParams<{
     type?: string | string[]
     name?: string | string[]
@@ -25,7 +27,7 @@ export default function TrainScreen() {
     session?: string | string[]
   }>()
   const tableType = parseTableType(params.type)
-  const title = trainTitle(params.name, tableType)
+  const title = trainTitle(params.name, tableType, t)
   const training = useTrainingClock(tableType, parseTrainTable(params), parseSlot(params), title)
 
   const leave = useCallback(() => {

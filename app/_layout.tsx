@@ -4,6 +4,7 @@ import { DATABASE_NAME, drizzleDb } from '@/db/client'
 import { useAppFonts } from '@/design/fonts'
 import { Colors } from '@/design/styles'
 import FormatterContextProvider from '@/providers/formatter'
+import I18nProvider from '@/providers/i18n'
 import SQLContextProvider from '@/providers/sql'
 import SubscriptionProvider from '@/providers/subscription'
 import WarningModalProvider from '@/providers/warning_modal'
@@ -51,12 +52,14 @@ export default function RootLayout() {
             <SQLiteProvider databaseName={DATABASE_NAME}>
               <WarningModalProvider>
                 <SQLContextProvider>
-                  <FormatterContextProvider>
-                    <SubscriptionProvider>
-                      <WatchBridge />
-                      <RootNavigator />
-                    </SubscriptionProvider>
-                  </FormatterContextProvider>
+                  <I18nProvider>
+                    <FormatterContextProvider>
+                      <SubscriptionProvider>
+                        <WatchBridge />
+                        <RootNavigator />
+                      </SubscriptionProvider>
+                    </FormatterContextProvider>
+                  </I18nProvider>
                 </SQLContextProvider>
               </WarningModalProvider>
             </SQLiteProvider>

@@ -1,4 +1,6 @@
 import { TableType } from '@/constants/tables'
+import { englishTranslate } from '@/i18n/translate'
+import { Translate } from '@/i18n/types'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
 
 
@@ -191,12 +193,16 @@ export function serializeCustomPlan(plan: CustomPlan): string {
   return JSON.stringify(normalized)
 }
 
-export function customPlanFrequency(sessions: readonly SessionKind[]): string {
-  const count = `${sessions.length} ${sessions.length === 1 ? 'session' : 'sessions'} a week`
+export function customPlanFrequency(
+  sessions: readonly SessionKind[],
+  t: Translate = englishTranslate,
+): string {
   if (sessions.includes('co2') && sessions.includes('o2')) {
-    return `${count}, on separate days`
+    return t('plan.customFrequencySeparate', { count: sessions.length })
   }
-  return count
+  return sessions.length === 1
+    ? t('plan.customFrequency', { count: sessions.length })
+    : t('plan.customFrequencyPlural', { count: sessions.length })
 }
 
 export function withCustomPlan(plan: TrainingPlan, custom: CustomPlan): TrainingPlan {
@@ -220,9 +226,13 @@ export function isCurrentPlanChoice(
   return serializeCustomPlan(choice.custom ?? { weeks: 0, sessions: [] }) === (settings.customPlan ?? '')
 }
 
-export function planSwitchWarning(planName: string, week: number | null): string {
-  if (week == null) return 'Previous plan progress will be lost.'
-  return `Previous plan progress will be lost. You are on week ${week} of ${planName}, and the new plan starts at week 1.`
+export function planSwitchWarning(
+  planName: string,
+  week: number | null,
+  t: Translate = englishTranslate,
+): string {
+  if (week == null) return t('plan.switchLost')
+  return t('plan.switchLostWeek', { week, name: planName })
 }
 
 export function planFromChoice(choice: PlanChoice): TrainingPlan | null {
@@ -423,23 +433,32 @@ export function planDetail(input: {
   week: number
   contractionSeconds: number | null
   retestDue: boolean
-}): string {
-  const head = `${input.plan.name} · week ${input.week} of ${input.plan.weeks}. ${input.plan.frequency}.`
+}, t: Translate = englishTranslate): string {
+  const name = t(`plan.${input.plan.id}.name`)
+  const frequency = input.plan.id === 'custom'
+    ? customPlanFrequency(input.plan.sessionKinds ?? [], t)
+    : t(`plan.${input.plan.id}.frequency`)
+  const head = t('plan.detailHead', {
+    name,
+    week: input.week,
+    weeks: input.plan.weeks,
+    frequency,
+  })
   if (input.plan.id === 'beginner') {
-    return `${head} ${beginnerProgress(input.week, input.contractionSeconds)}`
+    return `${head} ${t(beginnerProgressKey(input.week, input.contractionSeconds))}`
   }
   if (input.plan.id === 'custom') {
-    return `${head} The same sessions repeat each week.`
+    return `${head} ${t('plan.detailCustom')}`
   }
   if (input.plan.id === 'intermediate') {
     const retest = input.retestDue
-      ? ' Retake the baseline this week so the intervals can move.'
+      ? t('plan.detailIntermediateRetestNow')
       : input.week < 4
-        ? ' Retake the baseline in week 4.'
+        ? t('plan.detailIntermediateRetestWeek4')
         : ''
     return `${head}${retest}`
   }
-  return `${head} CO2, a one-breath table, O2, and a dry apnea walk — each on its own day.`
+  return `${head} ${t('plan.detailAdvanced')}`
 }
 
 export type TableSpec = Pick<
@@ -521,26 +540,18 @@ function beginnerSession(
     restStartSeconds: BEGINNER_REST_START_SECONDS,
     restStepSeconds: BEGINNER_REST_STEP_SECONDS,
     rounds: BEGINNER_ROUNDS,
-    note: beginnerProgress(week, contraction),
+    note: beginnerProgressKey(week, contraction),
   }
 }
 
-function beginnerProgress(week: number, contraction: number | null): string {
+export function beginnerProgressKey(week: number, contraction: number | null): string {
   const marked = usesMarkedContraction(contraction)
-  if (!marked && week <= 2) {
-    return 'No contraction was marked, so the hold starts at half your maximum. Rest steps from 2:00 to 0:30.'
-  }
-  if (!marked && week === 3) {
-    return 'No contraction was marked. The hold is 15 seconds past half your maximum.'
-  }
-  if (!marked) {
-    return 'No contraction was marked. The hold is 20 seconds past half your maximum.'
-  }
-  if (week <= 2) {
-    return 'No-contraction table. The hold is your first contraction, and rest steps from 2:00 to 0:30.'
-  }
-  if (week === 3) return 'The hold is 15 seconds past your first contraction.'
-  return 'The hold is 20 seconds past your first contraction.'
+  if (!marked && week <= 2) return 'plan.note.beginnerUnmarkedEarly'
+  if (!marked && week === 3) return 'plan.note.beginnerUnmarkedWeek3'
+  if (!marked) return 'plan.note.beginnerUnmarkedWeek4'
+  if (week <= 2) return 'plan.note.beginnerMarkedEarly'
+  if (week === 3) return 'plan.note.beginnerMarkedWeek3'
+  return 'plan.note.beginnerMarkedWeek4'
 }
 
 function intermediateSessions(baseline: number): WeekSession[] {
@@ -580,7 +591,7 @@ function standardCo2(baseline: number, name: string): WeekSession {
     restStartSeconds: 120,
     restStepSeconds: 15,
     rounds: 8,
-    note: 'Hold stays in the 60–75% band. Rest steps down. Keep this on a different day from O2.',
+    note: 'plan.note.co2',
   }
 }
 
@@ -596,7 +607,7 @@ function o2Session(baseline: number, name: string): WeekSession {
     restStartSeconds: 120,
     restStepSeconds: 0,
     rounds: climb.rounds,
-    note: 'Rest stays at 2:00. Holds climb, and the last one stays at or under 80% of your maximum.',
+    note: 'plan.note.o2',
   }
 }
 
@@ -611,7 +622,7 @@ function oneBreathSession(baseline: number): WeekSession {
     restStartSeconds: ONE_BREATH_REST_SECONDS,
     restStepSeconds: 0,
     rounds: 8,
-    note: 'About 40% of your best. Take one recovery breath, then hold again.',
+    note: 'plan.note.oneBreath',
   }
 }
 
@@ -626,7 +637,7 @@ function walkSession(baseline: number): WeekSession {
     restStartSeconds: WALK_REST_SECONDS,
     restStepSeconds: 0,
     rounds: 6,
-    note: 'Walk during each hold. Stand still while you recover.',
+    note: 'plan.note.walk',
   }
 }
 

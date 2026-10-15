@@ -1,5 +1,6 @@
 import Loader from '@/components/Loader'
 import { Colors } from '@/design/styles'
+import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import Ionicons from '@expo/vector-icons/Ionicons'
@@ -11,6 +12,7 @@ import WrapperScreen from '@/components/WrapperScreen'
 
 export default function TabLayout() {
   const sql = useSQLContext()
+  const { t } = useI18n()
   const subscription = useSubscriptionContext()
   const router = useRouter()
   const pathname = usePathname()
@@ -67,21 +69,21 @@ export default function TabLayout() {
       disableTransparentOnScrollEdge
     >
       <NativeTabs.Trigger name='index'>
-        <Label>Home</Label>
+        <Label>{t('tabs.home')}</Label>
         <Icon
           sf={{ default: 'drop', selected: 'drop.fill' }}
           androidSrc={<VectorIcon family={Ionicons} name='water-outline' />}
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name='table'>
-        <Label>Tables</Label>
+        <Label>{t('tabs.tables')}</Label>
         <Icon
           sf={{ default: 'timer', selected: 'timer' }}
           androidSrc={<VectorIcon family={Ionicons} name='timer-outline' />}
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name='settings'>
-        <Label>Settings</Label>
+        <Label>{t('tabs.settings')}</Label>
         <Icon
           sf={{ default: 'slider.horizontal.3', selected: 'slider.horizontal.3' }}
           androidSrc={<VectorIcon family={Ionicons} name='options-outline' />}
