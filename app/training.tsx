@@ -7,12 +7,12 @@ import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
 import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useTrainingOutline from '@/hooks/useTrainingOutline'
-import useWearableStatus, { watchBlocksPhoneStart } from '@/hooks/useWearableStatus'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
-import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
+import { trainParamsFromSession } from '@/utils/train_route'
 import { sessionRounds, WeekSession } from '@/utils/training_plan'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
 import { styled } from 'styled-components/native'
 
@@ -20,36 +20,20 @@ import { styled } from 'styled-components/native'
 export default function TrainingScreen() {
   const router = useRouter()
   const { settings } = useSQLContext()
-  const subscription = useSubscriptionContext()
   const { showWarning } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
   const outline = useTrainingOutline()
-  const watchBusy = watchBlocksPhoneStart(useWearableStatus())
   const paddingBottom = useBottomControlInset(false)
 
-  const start = (session: WeekSession, week: number, locked: boolean) => {
-    if (locked || watchBusy) return
-    if (subscription.freeLimitReached) {
-      router.push('/paywall')
-      return
-    }
+  const open = (session: WeekSession, week: number, locked: boolean) => {
+    if (locked) return
     if (sessionRounds(session).length === 0) {
       showWarning(ErrorTitles.Input, 'Add at least one round before training.')
       return
     }
     router.push({
-      pathname: '/train',
-      params: {
-        type: session.tableType,
-        name: session.name,
-        hold: String(session.holdSeconds),
-        holdStep: String(session.holdStepSeconds),
-        restStart: String(session.restStartSeconds),
-        restStep: String(session.restStepSeconds),
-        rounds: String(session.rounds),
-        week: String(week),
-        session: String(session.index),
-      },
+      pathname: '/prepare',
+      params: trainParamsFromSession(session, week),
     })
   }
 
@@ -97,9 +81,9 @@ export default function TrainingScreen() {
               {entry.sessions.map((session) => (
                 <STraining
                   key={`${entry.week}-${session.kind}-${session.index}`}
-                  disabled={entry.locked || watchBusy}
+                  disabled={entry.locked}
                   $locked={entry.locked}
-                  onPress={() => start(session, entry.week, entry.locked)}
+                  onPress={() => open(session, entry.week, entry.locked)}
                 >
                   <STrainingBody>
                     <SNameRow>
@@ -109,9 +93,13 @@ export default function TrainingScreen() {
                     <STrainingMeta $locked={entry.locked}>{sessionSummary(session, formatSeconds)}</STrainingMeta>
                     <STrainingNote>{session.note}</STrainingNote>
                   </STrainingBody>
-                  <SStart $locked={entry.locked || watchBusy}>
-                    {entry.locked ? 'Locked' : watchBusy ? 'On Watch' : 'Start'}
-                  </SStart>
+                  <STrail>
+                    {entry.locked ? (
+                      <SLockedText>Locked</SLockedText>
+                    ) : (
+                      <Ionicons name='chevron-forward' size={18} color={Colors.Seafoam} />
+                    )}
+                  </STrail>
                 </STraining>
               ))}
             </SWeek>
@@ -233,10 +221,17 @@ const STrainingNote = styled.Text`
   color: ${Colors.TextMuted};
 `
 
-const SStart = styled.Text<{ $locked: boolean }>`
+const STrail = styled.View`
+  min-width: ${Layout.MinControl}px;
+  min-height: ${Layout.MinControl}px;
+  align-items: flex-end;
+  justify-content: center;
+`
+
+const SLockedText = styled.Text`
   font-size: ${FontSizes.Small};
   font-weight: 800;
-  color: ${(props) => props.$locked ? Colors.TextMuted : Colors.Seafoam};
+  color: ${Colors.TextMuted};
 `
 
 const SEmpty = styled.View`
