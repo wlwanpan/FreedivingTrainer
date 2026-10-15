@@ -298,24 +298,25 @@ private struct PlanScheduleList: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            scheduleHeader
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(plan.schedule) { week in
-                            weekCard(week, focused: week.week == focusWeek)
-                                .id(week.week)
-                        }
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(plan.schedule) { week in
+                        weekCard(week, focused: week.week == focusWeek)
+                            .id(week.week)
                     }
                 }
-                .task(id: focusWeek) {
-                    try? await Task.sleep(for: .milliseconds(50))
-                    proxy.scrollTo(focusWeek, anchor: .top)
-                }
+                .padding(.bottom, 8)
+            }
+            .safeAreaInset(edge: .top, spacing: 0) {
+                scheduleHeader
+            }
+            .padding(.horizontal, 8)
+            .task(id: focusWeek) {
+                try? await Task.sleep(for: .milliseconds(50))
+                proxy.scrollTo(focusWeek, anchor: .top)
             }
         }
-        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
@@ -328,7 +329,7 @@ private struct PlanScheduleList: View {
                 }
                 .font(.caption2)
                 .foregroundStyle(Pelagic.seafoam)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -339,8 +340,8 @@ private struct PlanScheduleList: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 6)
         .background(Pelagic.canvas)
-        .zIndex(1)
     }
 
     private func weekCard(_ week: WatchListedWeek, focused: Bool) -> some View {
