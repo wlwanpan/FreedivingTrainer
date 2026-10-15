@@ -62,6 +62,12 @@ export const useSubscriptionContext = () => {
   return context
 }
 
+function hasPaidAccess(info: CustomerInfo | null): boolean {
+  if (info == null) return false
+  if (info.entitlements.active[ENTITLEMENT_ID] != null) return true
+  return Object.keys(info.entitlements.active).length > 0
+}
+
 type Props = { children: ReactNode }
 
 export default function SubscriptionProvider({ children }: Props) {
@@ -98,7 +104,7 @@ export default function SubscriptionProvider({ children }: Props) {
     }
   }, [])
 
-  const hasLifetimeAccess = !!customerInfo?.entitlements.active[ENTITLEMENT_ID]
+  const hasLifetimeAccess = hasPaidAccess(customerInfo)
   const sessionsUsed = sessions.length
   const sessionsRemaining = Math.max(0, FREE_SESSION_LIMIT - sessionsUsed)
   const freeLimitReached = !hasLifetimeAccess && sessionsUsed >= FREE_SESSION_LIMIT
@@ -106,11 +112,11 @@ export default function SubscriptionProvider({ children }: Props) {
 
   const purchase = useCallback(async (pkg: PurchasesPackage) => {
     try {
-      await Purchases.purchasePackage(pkg)
+      const { customerInfo: purchasedInfo } = await Purchases.purchasePackage(pkg)
       await Purchases.invalidateCustomerInfoCache()
       const refreshedInfo = await Purchases.getCustomerInfo()
       setCustomerInfo(refreshedInfo)
-      return { success: true, cancelled: false }
+      return { success: hasPaidAccess(refreshedInfo) || hasPaidAccess(purchasedInfo), cancelled: false }
     } catch (e) {
       const err = e as PurchasesError
       if (err?.code === Purchases.PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
@@ -125,7 +131,7 @@ export default function SubscriptionProvider({ children }: Props) {
     try {
       const info = await Purchases.restorePurchases()
       setCustomerInfo(info)
-      const restored = !!info.entitlements.active[ENTITLEMENT_ID]
+      const restored = hasPaidAccess(info)
       if (!restored) {
         showWarning(ErrorTitles.Input, 'No previous purchase found for this account.')
       }

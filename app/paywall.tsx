@@ -9,6 +9,13 @@ import { PurchasesPackage } from 'react-native-purchases'
 import { styled } from 'styled-components/native'
 
 
+function goToDashboard(router: ReturnType<typeof useRouter>) {
+  if (router.canDismiss()) {
+    router.dismissAll()
+  }
+  router.replace('/')
+}
+
 const VALUE_PROPS: { title: string; description: string }[] = [
   {
     title: 'Unlimited tables',
@@ -34,9 +41,8 @@ export default function PaywallScreen() {
   const packages = subscription.offerings?.current?.availablePackages ?? []
 
   useEffect(() => {
-    if (subscription.hasLifetimeAccess) {
-      router.dismissTo('/')
-    }
+    if (!subscription.hasLifetimeAccess) return
+    goToDashboard(router)
   }, [subscription.hasLifetimeAccess, router])
 
   const usageLine = subscription.hasLifetimeAccess

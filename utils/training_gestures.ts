@@ -5,5 +5,4 @@ export const TrainingGestureCopy = {
   doubleBody: 'Pause or resume the table.',
   holdOnly: 'Log contractions during a hold.',
   paused: 'Paused',
-  resume: 'Double tap to resume.',
 } as const

@@ -78,6 +78,14 @@ export default function RootNavigator() {
           contentStyle: { backgroundColor: 'transparent' },
         }}
       />
+      <Stack.Screen
+        name='pause'
+        options={{
+          animation: 'fade',
+          presentation: 'transparentModal',
+          contentStyle: { backgroundColor: 'transparent' },
+        }}
+      />
     </Stack>
   )
 }

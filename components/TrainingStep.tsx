@@ -15,7 +15,7 @@ import Animated, {
 import { styled } from 'styled-components/native'
 
 
-export type TrainingStepRole = 'done' | 'current' | 'next' | 'complete'
+export type TrainingStepRole = 'done' | 'current' | 'next' | 'complete' | 'placeholder'
 
 const PhaseTitle: Record<TrainPhaseKind, string> = {
   breathe: 'Breathe-up',
@@ -49,11 +49,19 @@ const PhaseCue: Record<TrainPhaseKind, string> = {
 
 export const TrainingStepLayout = {
   inset: Space.screen,
-  gap: Space.xl,
+  gap: 20,
   edge: Space.md,
   rail: 72,
   current: 312,
 } as const
+
+const RoleOpacity: Record<TrainingStepRole, number> = {
+  done: 0.64,
+  current: 1,
+  next: 1,
+  complete: 1,
+  placeholder: 1,
+}
 
 export type TrainingCardSize = {
   width: number
@@ -71,12 +79,12 @@ export function trainingCardSize(windowWidth: number): TrainingCardSize {
 }
 
 export function trainingCardHeight(role: TrainingStepRole, card: TrainingCardSize): number {
-  return role === 'done' || role === 'next' ? card.rail : card.current
+  return role === 'current' || role === 'complete' ? card.current : card.rail
 }
 
 export function trainingStepY(role: TrainingStepRole, chainHeight: number, card: TrainingCardSize): number {
   const current = Math.max(0, (chainHeight - card.current) / 2)
-  if (role === 'done') {
+  if (role === 'done' || role === 'placeholder') {
     return Math.max(TrainingStepLayout.edge, current - TrainingStepLayout.gap - card.rail)
   }
   if (role === 'next') {
@@ -123,21 +131,26 @@ export default function TrainingStep({
   const { width } = useWindowDimensions()
   const card = trainingCardSize(width)
   const nextHeight = trainingCardHeight(role, card)
+  const nextOpacity = RoleOpacity[role]
   const translateY = useSharedValue(y)
   const height = useSharedValue(nextHeight)
+  const opacity = useSharedValue(nextOpacity)
 
   useEffect(() => {
     if (!animated) {
       translateY.value = y
       height.value = nextHeight
+      opacity.value = nextOpacity
       return
     }
     translateY.value = withTiming(y, Motion)
     height.value = withTiming(nextHeight, Motion)
-  }, [animated, height, nextHeight, translateY, y])
+    opacity.value = withTiming(nextOpacity, Motion)
+  }, [animated, height, nextHeight, nextOpacity, opacity, translateY, y])
 
   const animatedStyle = useAnimatedStyle(() => ({
     height: height.value,
+    opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }))
   const zIndex = role === 'current' || role === 'complete' ? 3 : role === 'done' ? 2 : 1
@@ -153,6 +166,12 @@ export default function TrainingStep({
       style={{ zIndex }}
       pointerEvents={role === 'current' || role === 'complete' ? 'auto' : 'none'}
     >
+      {role === 'placeholder' ? (
+        <SGhost
+          style={[animatedStyle, { width: card.width, borderRadius: Radii.Card }]}
+          accessibilityLabel='No completed step yet'
+        />
+      ) : (
       <SCard style={[animatedStyle, { width: card.width, borderRadius: Radii.Card }]}>
         <SClip style={{ borderRadius: Radii.Card }}>
           {rail ? null : (
@@ -241,6 +260,7 @@ export default function TrainingStep({
           )}
         </SClip>
       </SCard>
+      )}
     </SExit>
   )
 }
@@ -283,6 +303,14 @@ const SCard = styled(Animated.View)`
   shadow-opacity: 0.06;
   shadow-radius: 24px;
   elevation: 2;
+`
+
+const SGhost = styled(Animated.View)`
+  align-self: center;
+  background-color: transparent;
+  border-width: 2px;
+  border-color: ${Colors.TextDisabled};
+  border-style: dotted;
 `
 
 const SClip = styled.View`

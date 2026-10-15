@@ -10,6 +10,7 @@ import { useBottomControlInset } from '@/design/chrome'
 import { Footer } from '@/design/styled'
 import { Colors, FontSizes, Layout } from '@/design/styles'
 import { TrainStep } from '@/hooks/useTrainingClock'
+import { registerTrainingResume } from '@/hooks/trainingPause'
 import { useFormatterContext } from '@/providers/formatter'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
@@ -18,6 +19,7 @@ import { contractionLabel, contractionsInRound, ContractionTap, LoggedContractio
 import { playTrainingHaptic } from '@/utils/training_haptic'
 import { TrainingGestureCopy } from '@/utils/training_gestures'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import { useRouter } from 'expo-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { LayoutChangeEvent, useWindowDimensions } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -77,6 +79,7 @@ export default function TrainingClock({
   const updateSetting = useUpdateSetting()
   const { showConfirmation } = useWarningModal()
   const { formatSeconds } = useFormatterContext()
+  const router = useRouter()
   const animated = settings.trainingAnimation
   const showIntro = updatedAt != null && !settings.trainingGesturesSeen
   const { width } = useWindowDimensions()
@@ -110,7 +113,12 @@ export default function TrainingClock({
   onPauseRef.current = () => {
     if (doneRef.current) return
     playTrainingHaptic(settings.trainingHaptic, 'tap')
+    if (pausedRef.current) {
+      onTogglePauseRef.current()
+      return
+    }
     onTogglePauseRef.current()
+    router.push('/pause')
   }
   onContractionRef.current = () => {
     const result = onLogContraction()
@@ -145,6 +153,14 @@ export default function TrainingClock({
       })
     return Gesture.Exclusive(double, single)
   }, [gesturesActive])
+
+  useEffect(() => {
+    registerTrainingResume(() => {
+      if (doneRef.current || !pausedRef.current) return
+      onTogglePauseRef.current()
+    })
+    return () => registerTrainingResume(null)
+  }, [])
 
   useEffect(() => {
     if (introOpened.current || !showIntro || doneRef.current) return
@@ -202,7 +218,7 @@ export default function TrainingClock({
     const leave = await showConfirmation(
       'Leave training?',
       'Current progress will be lost.',
-      { confirmTitle: 'Go Back' },
+      { confirmTitle: 'Leave' },
     )
     if (leave) {
       onCancel()
@@ -282,6 +298,13 @@ export default function TrainingClock({
                 aside={previousAside}
                 animated={animated}
               />
+            ) : chainHeight > 0 && current ? (
+              <TrainingStep
+                key='placeholder'
+                role='placeholder'
+                y={trainingStepY('placeholder', chainHeight, cardSize)}
+                animated={animated}
+              />
             ) : null}
             {chainHeight > 0 && current ? (
               <TrainingStep
@@ -327,12 +350,6 @@ export default function TrainingClock({
         {!done && !tutorialOpen ? (
           <SNotices pointerEvents='none' style={{ bottom: bottomInset }}>
             {feedback ? <SPill><SPillText>{feedback.text}</SPillText></SPill> : null}
-            {paused ? (
-              <SPauseCard>
-                <SPauseTitle>{TrainingGestureCopy.paused}</SPauseTitle>
-                <SPauseHint>{TrainingGestureCopy.resume}</SPauseHint>
-              </SPauseCard>
-            ) : null}
           </SNotices>
         ) : null}
         {tutorialOpen ? <TrainingGestureTutorial onDismiss={dismissTutorial} /> : null}
@@ -408,24 +425,3 @@ const SPillText = styled.Text`
   text-align: center;
 `
 
-const SPauseCard = styled.View`
-  padding: 10px 16px;
-  border-radius: 14px;
-  background-color: ${Colors.Chrome};
-  border-width: 1px;
-  border-color: ${Colors.Hairline};
-`
-
-const SPauseTitle = styled.Text`
-  color: ${Colors.Text};
-  font-size: ${FontSizes.Medium};
-  font-weight: 800;
-  text-align: center;
-`
-
-const SPauseHint = styled.Text`
-  margin-top: 2px;
-  color: ${Colors.Aquamarine};
-  font-size: ${FontSizes.Small};
-  text-align: center;
-`
