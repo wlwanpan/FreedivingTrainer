@@ -167,8 +167,15 @@ const SFinger = styled.View`
   width: 64px;
   height: 92px;
   border-radius: 32px;
-  background-color: ${Colors.CardAlt};
   align-items: center;
+  background-color: ${Colors.Card};
+  border-width: 1px;
+  border-color: ${Colors.Hairline};
+  shadow-color: ${Colors.Shadow};
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.12;
+  shadow-radius: 8px;
+  elevation: 3;
 `
 
 const SNail = styled.View`
@@ -184,7 +191,7 @@ const SCrease = styled.View`
   height: 3px;
   margin-top: 14px;
   border-radius: 2px;
-  background-color: rgba(255, 255, 255, 0.28);
+  background-color: ${Colors.Hairline};
 `
 
 const SCue = styled.View<{ $active: boolean }>`

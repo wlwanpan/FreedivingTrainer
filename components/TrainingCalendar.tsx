@@ -15,9 +15,11 @@ const Weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
 
 type Props = {
   trainedDays: Set<string>
+  selectedDay?: string | null
+  onSelectDay?: (day: string) => void
 }
 
-export default function TrainingCalendar({ trainedDays }: Props) {
+export default function TrainingCalendar({ trainedDays, selectedDay = null, onSelectDay }: Props) {
   const today = todayDate()
   const [cursor, setCursor] = useState(() => initialMonth(trainedDays, today))
   const { year, month } = cursor
@@ -67,10 +69,17 @@ export default function TrainingCalendar({ trainedDays }: Props) {
           const key = dayStamp(year, month, cell)
           const trained = trainedDays.has(key)
           const isToday = key === today
+          const selected = key === selectedDay
           return (
-            <SCell key={key} accessibilityLabel={trained ? `${cell}, trained` : String(cell)}>
-              <SMark $trained={trained} $today={isToday && !trained}>
-                <SDayText $trained={trained} $today={isToday}>{cell}</SDayText>
+            <SCell
+              key={key}
+              onPress={() => onSelectDay?.(key)}
+              accessibilityRole='button'
+              accessibilityState={{ selected }}
+              accessibilityLabel={dayLabel(cell, trained, selected)}
+            >
+              <SMark $trained={trained} $today={isToday && !trained} $selected={selected}>
+                <SDayText $trained={trained} $today={isToday} $selected={selected}>{cell}</SDayText>
               </SMark>
             </SCell>
           )
@@ -83,6 +92,14 @@ export default function TrainingCalendar({ trainedDays }: Props) {
 function initialMonth(days: Set<string>, today: string): { year: number; month: number } {
   const latest = [...days].sort().at(-1)
   return monthFromDay(latest ?? today) ?? monthFromDay(today) ?? { year: 2026, month: 0 }
+}
+
+function dayLabel(day: number, trained: boolean, selected: boolean): string {
+  const marks = [
+    trained ? 'trained' : null,
+    selected ? 'selected' : null,
+  ].filter((mark): mark is string => mark != null)
+  return marks.length === 0 ? String(day) : `${day}, ${marks.join(', ')}`
 }
 
 function monthCells(year: number, month: number): (number | null)[] {
@@ -157,30 +174,34 @@ const SPad = styled.View`
   aspect-ratio: 1;
 `
 
-const SCell = styled.View`
+const SCell = styled.Pressable`
   width: 14.2857%;
   aspect-ratio: 1;
   align-items: center;
   justify-content: center;
 `
 
-const SMark = styled.View<{ $trained: boolean; $today: boolean }>`
+const SMark = styled.View<{ $trained: boolean; $today: boolean; $selected: boolean }>`
   width: 32px;
   height: 32px;
   align-items: center;
   justify-content: center;
   border-radius: ${Radii.Pill}px;
-  background-color: ${(props) => (props.$trained ? Colors.Seafoam : 'transparent')};
-  border-width: 1px;
-  border-color: ${(props) => (props.$today ? Colors.Lagoon : 'transparent')};
+  background-color: ${(props) => (
+    props.$trained ? Colors.Seafoam : props.$selected ? Colors.CardAlt : 'transparent'
+  )};
+  border-width: ${(props) => (props.$selected ? 2 : 1)}px;
+  border-color: ${(props) => (
+    props.$selected || props.$today ? Colors.Lagoon : 'transparent'
+  )};
 `
 
-const SDayText = styled.Text<{ $trained: boolean; $today: boolean }>`
+const SDayText = styled.Text<{ $trained: boolean; $today: boolean; $selected: boolean }>`
   font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.XSmall};
   font-weight: 600;
   font-variant: tabular-nums;
   color: ${(props) => (
-    props.$trained ? Colors.OnSeafoam : props.$today ? Colors.Lagoon : Colors.Text
+    props.$trained ? Colors.OnSeafoam : props.$selected || props.$today ? Colors.Lagoon : Colors.Text
   )};
 `
