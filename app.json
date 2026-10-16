@@ -9,6 +9,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
+      "icon": "./assets/AppIcon.icon",
       "bundleIdentifier": "com.wlwanpan.FreedivingTrainer",
       "appleTeamId": "WD73B9M86L",
       "supportsTablet": false,

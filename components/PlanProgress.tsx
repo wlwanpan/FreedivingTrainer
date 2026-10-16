@@ -1,3 +1,4 @@
+import PlanIdentity from '@/components/PlanIdentity'
 import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import { TrainingOutline } from '@/hooks/useTrainingOutline'
 import { useI18n } from '@/providers/i18n'
@@ -15,7 +16,6 @@ type Props = {
 
 export default function PlanProgress({ outline, onRetest, onPress, children }: Props) {
   const { t } = useI18n()
-  const [phase, focus] = splitLevel(outline.level)
   const percent = Math.round(outline.progress * 100)
   const current = outline.schedule.find((entry) => entry.current)
   const weekTotal = current?.sessions.length ?? 0
@@ -29,11 +29,7 @@ export default function PlanProgress({ outline, onRetest, onPress, children }: P
     <>
       <SHeader>
         <SHeaderText>
-          <SMetaRow>
-            {phase ? <SPhase>{phase}</SPhase> : null}
-            {focus ? <SFocus>{focus}</SFocus> : null}
-          </SMetaRow>
-          <SPlanName>{outline.planName}</SPlanName>
+          <PlanIdentity level={outline.level} name={outline.planName} />
         </SHeaderText>
         {onPress ? (
           <SIcon>
@@ -85,12 +81,6 @@ export default function PlanProgress({ outline, onRetest, onPress, children }: P
   )
 }
 
-function splitLevel(level: string): [string | null, string | null] {
-  const parts = level.split(' · ')
-  if (parts.length < 2) return [level || null, null]
-  return [parts[0], parts.slice(1).join(' · ')]
-}
-
 const Wrapper = styled.View`
   margin: ${Space.md}px ${Space.screen}px 0;
   padding: 20px;
@@ -116,43 +106,6 @@ const SHeader = styled.View`
 
 const SHeaderText = styled.View`
   flex: 1;
-`
-
-const SMetaRow = styled.View`
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-`
-
-const SPhase = styled.Text`
-  padding: 2px 8px;
-  border-radius: ${Radii.Pill}px;
-  overflow: hidden;
-  font-family: ${Fonts.BodySemi};
-  font-size: ${FontSizes.XXSmall};
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: ${Colors.Seafoam};
-  background-color: ${Colors.SeafoamMuted};
-  border-width: 1px;
-  border-color: ${Colors.Hairline};
-`
-
-const SFocus = styled.Text`
-  font-family: ${Fonts.Body};
-  font-size: ${FontSizes.XSmall};
-  color: ${Colors.TextMuted};
-`
-
-const SPlanName = styled.Text`
-  font-family: ${Fonts.Headline};
-  font-size: ${FontSizes.Large};
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  color: ${Colors.Text};
 `
 
 const SIcon = styled.View`

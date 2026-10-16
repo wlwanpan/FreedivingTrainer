@@ -428,39 +428,6 @@ export function weeklySessions(input: {
   return sessions.map((session, index) => ({ ...session, index: index + 1 }))
 }
 
-export function planDetail(input: {
-  plan: TrainingPlan
-  week: number
-  contractionSeconds: number | null
-  retestDue: boolean
-}, t: Translate = englishTranslate): string {
-  const name = t(`plan.${input.plan.id}.name`)
-  const frequency = input.plan.id === 'custom'
-    ? customPlanFrequency(input.plan.sessionKinds ?? [], t)
-    : t(`plan.${input.plan.id}.frequency`)
-  const head = t('plan.detailHead', {
-    name,
-    week: input.week,
-    weeks: input.plan.weeks,
-    frequency,
-  })
-  if (input.plan.id === 'beginner') {
-    return `${head} ${t(beginnerProgressKey(input.week, input.contractionSeconds))}`
-  }
-  if (input.plan.id === 'custom') {
-    return `${head} ${t('plan.detailCustom')}`
-  }
-  if (input.plan.id === 'intermediate') {
-    const retest = input.retestDue
-      ? t('plan.detailIntermediateRetestNow')
-      : input.week < 4
-        ? t('plan.detailIntermediateRetestWeek4')
-        : ''
-    return `${head}${retest}`
-  }
-  return `${head} ${t('plan.detailAdvanced')}`
-}
-
 export type TableSpec = Pick<
   WeekSession,
   'tableType' | 'holdSeconds' | 'holdStepSeconds' | 'restStartSeconds' | 'restStepSeconds' | 'rounds'

@@ -1,5 +1,6 @@
 import Button from '@/components/Button'
 import FreeSessionsBanner from '@/components/FreeSessionsBanner'
+import PlanIdentity from '@/components/PlanIdentity'
 import ScreenHeader from '@/components/ScreenHeader'
 import SettingsChoice from '@/components/SettingsChoice'
 import SettingsStepper from '@/components/SettingsStepper'
@@ -156,11 +157,20 @@ export default function SettingsScreen() {
           <SGroup>{t('settings.plan')}</SGroup>
           {settings.baselineMaxHoldSeconds == null ? (
             <SNote>{t('settings.planNeedBaseline')}</SNote>
+          ) : planWeek == null ? (
+            <>
+              <SNote>{t('settings.planChoose')}</SNote>
+              <Button
+                title={t('settings.changePlan')}
+                onPress={() => router.push('/plan')}
+              />
+            </>
           ) : (
             <>
-              <SNote>
-                {planWeek?.detail ?? t('settings.planChoose')}
-              </SNote>
+              <SPlanMeta>
+                <PlanIdentity level={planWeek.level} name={planWeek.planName} />
+                <SPlanFrequency>{planWeek.frequency}</SPlanFrequency>
+              </SPlanMeta>
               <Button
                 title={t('settings.changePlan')}
                 onPress={() => router.push('/plan')}
@@ -362,6 +372,19 @@ const SGroup = styled.Text`
   font-weight: 600;
   letter-spacing: 0.7px;
   text-transform: uppercase;
+  color: ${Colors.TextMuted};
+`
+
+const SPlanMeta = styled.View`
+  margin-top: 8px;
+  margin-bottom: 12px;
+`
+
+const SPlanFrequency = styled.Text`
+  margin-top: 4px;
+  font-family: ${Fonts.BodyMedium};
+  font-size: ${FontSizes.XSmall};
+  font-weight: 500;
   color: ${Colors.TextMuted};
 `
 
