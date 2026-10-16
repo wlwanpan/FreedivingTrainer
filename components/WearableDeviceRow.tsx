@@ -11,6 +11,7 @@ type Props = {
   subtitle: string
   icon: ComponentProps<typeof Ionicons>['name']
   comingSoon?: boolean
+  badge?: string
   selected?: boolean
   loading?: boolean
   last?: boolean
@@ -22,6 +23,7 @@ export default function WearableDeviceRow({
   subtitle,
   icon,
   comingSoon = false,
+  badge,
   selected = false,
   loading = false,
   last = false,
@@ -29,6 +31,7 @@ export default function WearableDeviceRow({
 }: Props) {
   const { t } = useI18n()
   const disabled = comingSoon || loading
+  const chip = comingSoon ? t('wearable.comingSoon') : badge
 
   return (
     <Wrapper
@@ -55,12 +58,21 @@ export default function WearableDeviceRow({
             <ActivityIndicator size='small' color={Colors.Seafoam} />
           ) : comingSoon ? (
             <SSoon>
-              <SSoonLabel>{t('wearable.comingSoon')}</SSoonLabel>
+              <SSoonLabel>{chip}</SSoonLabel>
             </SSoon>
-          ) : selected ? (
-            <Ionicons name='checkmark-circle' size={22} color={Colors.Seafoam} />
           ) : (
-            <Ionicons name='chevron-forward' size={18} color={Colors.TextMuted} />
+            <>
+              {badge != null && !selected ? (
+                <SSoon>
+                  <SSoonLabel>{badge}</SSoonLabel>
+                </SSoon>
+              ) : null}
+              {selected ? (
+                <Ionicons name='checkmark-circle' size={22} color={Colors.Seafoam} />
+              ) : (
+                <Ionicons name='chevron-forward' size={18} color={Colors.TextMuted} />
+              )}
+            </>
           )}
         </SRow>
       )}

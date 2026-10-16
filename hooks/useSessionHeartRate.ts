@@ -46,6 +46,7 @@ export default function useSessionHeartRate(enabled: boolean) {
   const publish = useCallback((heartRateActive?: boolean) => {
     if (heartRateActive != null) trackingRef.current = heartRateActive
     publishWearableLive({
+      source: 'apple-watch',
       connected: watchIsConnected(),
       heartRateActive: trackingRef.current,
     })
@@ -101,7 +102,11 @@ export default function useSessionHeartRate(enabled: boolean) {
       subscriptions.forEach((subscription) => subscription.remove())
       tellWatch('stopSession')
       trackingRef.current = false
-      publishWearableLive({ connected: watchIsConnected(), heartRateActive: false })
+      publishWearableLive({
+        source: 'apple-watch',
+        connected: watchIsConnected(),
+        heartRateActive: false,
+      })
     }
   }, [enabled, publish, record])
 

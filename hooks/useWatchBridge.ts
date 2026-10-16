@@ -1,3 +1,4 @@
+import { ingestWatchCompletion } from '@/hooks/ingestWatchCompletion'
 import { publishWearableLive } from '@/hooks/useWearableStatus'
 import { useI18n } from '@/providers/i18n'
 import { ensureWatchSession, WatchConnectivity } from '@/hooks/watchConnectivity'
@@ -6,18 +7,13 @@ import { readPhoneTraining, subscribePhoneTraining } from '@/hooks/phoneTraining
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
-import { recordCompletedSession } from '@/hooks/recordCompletedSession'
-import { sessionRounds } from '@/utils/training_plan'
-import { attachCompletionHeartRates } from '@/utils/watch_heart_rates'
-import { dayStamp, readWatchCompletion } from '@/utils/watch_completion'
+import { buildWatchContext, watchPlanKey } from '@/utils/watch_context'
 import {
   initialWatchSyncState,
-  phoneTrainingContext,
   reduceWatchSync,
   WatchSyncEvent,
   WatchTrainingStaleMs,
 } from '@/utils/watch_sync'
-import { watchTablesFromSettings } from '@/utils/watch_tables'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 function sessionLink() {
@@ -31,6 +27,7 @@ function sessionLink() {
 function publishLink() {
   const link = sessionLink()
   publishWearableLive({
+    source: 'apple-watch',
     paired: link.paired,
     connected: link.reachable,
   })
@@ -78,6 +75,7 @@ export default function useWatchBridge() {
     syncStateRef.current = result.state
     const link = sessionLink()
     publishWearableLive({
+      source: 'apple-watch',
       paired: link.paired,
       connected: link.reachable,
       watchTraining: result.state.watchRunning,
@@ -96,10 +94,7 @@ export default function useWatchBridge() {
   }
 
   const next = nextTrainingSession(outline)
-  const rounds = next == null ? [] : sessionRounds(next)
-  const planKey = settings.trainingPlan == null || settings.trainingPlanStartedAt == null
-    ? ''
-    : `${settings.trainingPlan}:${settings.trainingPlanStartedAt.getTime()}:${settings.customPlan ?? ''}`
+  const planKey = watchPlanKey(settings)
   const planKeyRef = useRef<string | null>(null)
   const syncRef = useRef('')
   const ready = updatedAt != null
@@ -111,59 +106,19 @@ export default function useWatchBridge() {
         : 'plan'
     planKeyRef.current = planKey
   }
-  const sync = syncRef.current
-  const tables = watchTablesFromSettings(settings, t)
-  const shared = {
-    type: 'nextSession' as const,
-    loggedCount: sessions.length,
+  const context = buildWatchContext({
+    settings,
+    sessionsCount: sessions.length,
     planKey,
-    sync,
+    sync: syncRef.current,
     syncedAt,
-    tables,
     language,
-    trainingHaptic: settings.trainingHaptic,
-    trainingSound: settings.trainingSound,
-    phoneTraining: phoneTrainingContext(phoneTraining),
-  }
-  const context = subscription.freeLimitReached
-    ? { ...shared, locked: true }
-    : outline != null && next == null
-      ? { ...shared, complete: true }
-      : next == null || rounds.length === 0
-        ? shared
-        : {
-          ...shared,
-          name: next.name,
-          week: next.week,
-          sessionIndex: next.index,
-          planWeek: outline?.week ?? next.week,
-          planWeeks: outline?.weeks ?? 1,
-          progress: Math.round((outline?.progress ?? 0) * 100),
-          planName: outline?.planName ?? '',
-          schedule: (outline?.schedule ?? []).map((entry) => ({
-            week: entry.week,
-            current: entry.current,
-            locked: entry.locked,
-            sessions: entry.sessions.map((session) => ({
-              index: session.index,
-              name: session.name,
-              tableType: session.tableType,
-              holdSeconds: session.holdSeconds,
-              restSeconds: session.restStartSeconds,
-              rounds: session.rounds,
-              completed: session.completed,
-              note: session.note,
-            })),
-          })),
-          tableType: next.tableType,
-          breatheUpSeconds: settings.breatheUpSeconds,
-          holdSeconds: next.holdSeconds,
-          restSeconds: next.restStartSeconds,
-          rounds: rounds.map((round) => ({
-            hold: round.holdSeconds,
-            rest: round.restSeconds,
-          })),
-        }
+    t,
+    outline,
+    next,
+    phoneTraining,
+    freeLimitReached: subscription.freeLimitReached,
+  })
   const contextKey = JSON.stringify(context)
   const contextRef = useRef(context)
   const activePlanKeyRef = useRef(planKey)
@@ -214,73 +169,19 @@ export default function useWatchBridge() {
         }
       })
     }
-    const persistHeartRates = async (
-      completed: NonNullable<ReturnType<typeof readWatchCompletion>>,
-      sessionId?: number,
-    ) => {
-      const rates = await attachCompletionHeartRates({
-        completed,
-        sessions: sessionsRef.current,
-        existingSamples: heartRatesRef.current,
-        insertHeartRates: (samples) => insertHeartRatesRef.current(samples),
-        sessionId,
-      })
-      if (rates.error) warnRef.current(rates.error.message)
-    }
     const saveCompletion = async (payload: Record<string, unknown>): Promise<boolean> => {
-      const completed = readWatchCompletion(payload, activePlanKeyRef.current)
-      if (completed == null) return false
-      const replay = reduceWatchSync(syncStateRef.current, {
-        type: 'completion',
-        completedAt: completed.completedAt,
-        savedCreatedAt: sessionsRef.current.map((session) => session.createdAt.getTime()),
+      const result = await ingestWatchCompletion({
+        payload,
+        planKey: activePlanKeyRef.current,
+        planStartedAt: planStartedRef.current,
+        sessions: sessionsRef.current,
+        heartRates: heartRatesRef.current,
+        savedCompletions: savedRef.current,
+        rememberSync: rememberSyncRef.current,
+        insertHeartRates: (samples) => insertHeartRatesRef.current(samples),
+        warn: warnRef.current,
       })
-      const duplicate = replay.ack
-        || savedRef.current.has(completed.completedAt)
-        || (completed.planWeek == null && sessionsRef.current.some((session) => (
-          session.tableType === completed.tableType
-          && session.holdSeconds === completed.holdSeconds
-          && session.roundsCompleted === completed.roundsCompleted
-          && Math.abs(session.createdAt.getTime() - completed.completedAt) < 2000
-        )))
-      if (duplicate) {
-        savedRef.current.add(completed.completedAt)
-        rememberSyncRef.current(completed.completedAt)
-        await persistHeartRates(completed)
-        return true
-      }
-      savedRef.current.add(completed.completedAt)
-      const createdAt = new Date(completed.completedAt)
-      const result = await recordCompletedSession({
-        tableType: completed.tableType,
-        day: dayStamp(createdAt),
-        roundsCompleted: completed.roundsCompleted,
-        roundsPlanned: completed.roundsPlanned,
-        holdSeconds: completed.holdSeconds,
-        restSeconds: completed.restSeconds,
-        planWeek: completed.planWeek,
-        planSession: completed.planSession,
-        startedAt: completed.startedAt == null ? null : new Date(completed.startedAt),
-        source: 'watch',
-        watchDetail: completed.watchDetail,
-        createdAt,
-        updatedAt: createdAt,
-      }, planStartedRef.current)
-      const sessionId = result.insertionID
-      if (result.skipped) {
-        rememberSyncRef.current(completed.completedAt)
-        await persistHeartRates(completed)
-        return true
-      }
-      if (sessionId == null) {
-        savedRef.current.delete(completed.completedAt)
-        if (result.error) warnRef.current(result.error.message)
-        return false
-      }
-      rememberSyncRef.current(completed.completedAt)
-      if (result.error) warnRef.current(result.error.message)
-      await persistHeartRates(completed, sessionId)
-      return true
+      return result.saved
     }
     const subscriptions = [
       WatchConnectivity.addMessageListener((event) => { save(event.message, event.replyId) }),
@@ -330,7 +231,7 @@ export default function useWatchBridge() {
         if (!reachable) return
         WatchConnectivity.sendMessage({
           type: 'phoneTraining',
-          ...contextRef.current.phoneTraining,
+          ...(contextRef.current.phoneTraining as Record<string, unknown>),
         }).catch(() => undefined)
       })()
     }

@@ -59,7 +59,8 @@
         }
       ],
       "./plugins/withWatchEasParent",
-      "./plugins/withPbxprojObjectVersion"
+      "./plugins/withPbxprojObjectVersion",
+      "./companion/plugin/withGarminConnectIQ"
     ],
     "experiments": {
       "typedRoutes": true,
