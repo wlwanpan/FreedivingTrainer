@@ -123,6 +123,7 @@
     "takeBaseline": "Faire le test de baseline",
     "retakeBaseline": "Refaire le test de baseline",
     "plan": "Plan",
+    "currentPlan": "Plan actuel",
     "planNeedBaseline": "Faites un test de baseline pour choisir un plan.",
     "planChoose": "Choisissez un plan, ou construisez le vôtre. Gardez CO2 et O2 sur des jours différents.",
     "changePlan": "Changer de plan",

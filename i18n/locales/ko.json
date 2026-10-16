@@ -123,6 +123,7 @@
     "takeBaseline": "베이스라인 테스트하기",
     "retakeBaseline": "베이스라인 다시 측정",
     "plan": "플랜",
+    "currentPlan": "현재 플랜",
     "planNeedBaseline": "플랜을 고르려면 베이스라인 테스트를 하세요.",
     "planChoose": "플랜을 고르거나 직접 만드세요. CO2와 O2는 다른 날에 하세요.",
     "changePlan": "플랜 변경",

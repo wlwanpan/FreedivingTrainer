@@ -23,7 +23,7 @@ export default function WearableStatus() {
 const Wrapper = styled.View`
   align-items: flex-start;
   gap: 2px;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 `
 
 const SRow = styled.View`

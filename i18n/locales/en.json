@@ -123,6 +123,7 @@
     "takeBaseline": "Take baseline test",
     "retakeBaseline": "Retake baseline test",
     "plan": "Plan",
+    "currentPlan": "Current plan",
     "planNeedBaseline": "Take a baseline test to choose a plan.",
     "planChoose": "Choose a plan, or build your own. Keep CO2 and O2 on different days.",
     "changePlan": "Change plan",

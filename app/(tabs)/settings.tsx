@@ -2,13 +2,15 @@ import Button from '@/components/Button'
 import FreeSessionsBanner from '@/components/FreeSessionsBanner'
 import PlanIdentity from '@/components/PlanIdentity'
 import ScreenHeader from '@/components/ScreenHeader'
+import SettingsCard from '@/components/SettingsCard'
 import SettingsChoice from '@/components/SettingsChoice'
+import SettingsField from '@/components/SettingsField'
 import SettingsStepper from '@/components/SettingsStepper'
 import WearableStatus from '@/components/WearableStatus'
 import WrapperScreen from '@/components/WrapperScreen'
 import { DateFormats } from '@/constants/dates'
 import { useBottomControlInset } from '@/design/chrome'
-import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Radii, Space } from '@/design/styles'
 import useCurrentPlanWeek from '@/hooks/useCurrentPlanWeek'
 import useUpdateSetting from '@/hooks/useUpdateSetting'
 import { withWatchTrainingLoss } from '@/hooks/useWearableStatus'
@@ -19,7 +21,6 @@ import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
 import { formatDay as formatDayValue } from '@/utils/date'
-import Ionicons from '@expo/vector-icons/Ionicons'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -73,112 +74,137 @@ export default function SettingsScreen() {
     setRestoreInFlight(false)
   }
 
+  const baselineNote = settings.baselineMaxHoldSeconds == null
+    ? t('settings.baselineEmpty')
+    : settings.baselineContractionSeconds == null
+      ? t('settings.baselineMax', { time: formatSeconds(settings.baselineMaxHoldSeconds) })
+      : t('settings.baselineMaxContraction', {
+        time: formatSeconds(settings.baselineMaxHoldSeconds),
+        contraction: formatSeconds(settings.baselineContractionSeconds),
+      })
+
   return (
     <WrapperScreen skipBottomInset>
       <ScreenHeader title={t('settings.title')} />
       <SScroll
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 8, paddingBottom }}
+        contentContainerStyle={{ paddingBottom }}
       >
-        <SCard>
-          <SCardTitle>{t('settings.training')}</SCardTitle>
-          <SGroup>{t('settings.animation')}</SGroup>
-          <SNote>{t('settings.animationNote')}</SNote>
-          <SChoiceRow>
-            <SettingsChoice
-              label={t('common.on')}
-              selected={settings.trainingAnimation}
-              onPress={() => { void updateSetting({ trainingAnimation: true }) }}
-            />
-            <SettingsChoice
-              label={t('common.off')}
-              selected={!settings.trainingAnimation}
-              onPress={() => { void updateSetting({ trainingAnimation: false }) }}
-            />
-          </SChoiceRow>
+        <SettingsCard icon='notifications-outline' title={t('settings.training')}>
+          <SettingsField
+            icon='sparkles-outline'
+            title={t('settings.animation')}
+            note={t('settings.animationNote')}
+          >
+            <SChoiceRow>
+              <SettingsChoice
+                label={t('common.on')}
+                selected={settings.trainingAnimation}
+                onPress={() => { void updateSetting({ trainingAnimation: true }) }}
+              />
+              <SettingsChoice
+                label={t('common.off')}
+                selected={!settings.trainingAnimation}
+                onPress={() => { void updateSetting({ trainingAnimation: false }) }}
+              />
+            </SChoiceRow>
+          </SettingsField>
+          <SettingsField
+            icon='flash-outline'
+            title={t('settings.haptic')}
+            note={t('settings.hapticNote')}
+          >
+            <SChoiceRow>
+              <SettingsChoice
+                label={t('common.on')}
+                selected={settings.trainingHaptic}
+                onPress={() => { void updateSetting({ trainingHaptic: true }) }}
+              />
+              <SettingsChoice
+                label={t('common.off')}
+                selected={!settings.trainingHaptic}
+                onPress={() => { void updateSetting({ trainingHaptic: false }) }}
+              />
+            </SChoiceRow>
+          </SettingsField>
+          <SettingsField
+            icon='volume-medium-outline'
+            title={t('settings.sound')}
+            note={t('settings.soundNote')}
+            last
+          >
+            <SChoiceRow>
+              <SettingsChoice
+                label={t('common.on')}
+                selected={settings.trainingSound}
+                onPress={() => { void updateSetting({ trainingSound: true }) }}
+              />
+              <SettingsChoice
+                label={t('common.off')}
+                selected={!settings.trainingSound}
+                onPress={() => { void updateSetting({ trainingSound: false }) }}
+              />
+            </SChoiceRow>
+          </SettingsField>
+        </SettingsCard>
 
-          <SGroup>{t('settings.haptic')}</SGroup>
-          <SNote>{t('settings.hapticNote')}</SNote>
-          <SChoiceRow>
-            <SettingsChoice
-              label={t('common.on')}
-              selected={settings.trainingHaptic}
-              onPress={() => { void updateSetting({ trainingHaptic: true }) }}
-            />
-            <SettingsChoice
-              label={t('common.off')}
-              selected={!settings.trainingHaptic}
-              onPress={() => { void updateSetting({ trainingHaptic: false }) }}
-            />
-          </SChoiceRow>
-
-          <SGroup>{t('settings.sound')}</SGroup>
-          <SNote>{t('settings.soundNote')}</SNote>
-          <SChoiceRow>
-            <SettingsChoice
-              label={t('common.on')}
-              selected={settings.trainingSound}
-              onPress={() => { void updateSetting({ trainingSound: true }) }}
-            />
-            <SettingsChoice
-              label={t('common.off')}
-              selected={!settings.trainingSound}
-              onPress={() => { void updateSetting({ trainingSound: false }) }}
-            />
-          </SChoiceRow>
-
-          <SGroup>{t('settings.preparation')}</SGroup>
-          <SettingsStepper
-            label={t('settings.breatheUp')}
-            mode='duration'
-            value={settings.breatheUpSeconds}
-            step={15}
-            min={0}
-            max={300}
-            onChange={(value) => { void updateSetting({ breatheUpSeconds: value }) }}
-          />
-
-          <SGroup>{t('settings.baseline')}</SGroup>
-          <SNote>
-            {settings.baselineMaxHoldSeconds == null
-              ? t('settings.baselineEmpty')
-              : settings.baselineContractionSeconds == null
-                ? t('settings.baselineMax', { time: formatSeconds(settings.baselineMaxHoldSeconds) })
-                : t('settings.baselineMaxContraction', {
-                  time: formatSeconds(settings.baselineMaxHoldSeconds),
-                  contraction: formatSeconds(settings.baselineContractionSeconds),
-                })}
-          </SNote>
-          <Button
-            title={settings.baselineMaxHoldSeconds == null ? t('settings.takeBaseline') : t('settings.retakeBaseline')}
-            onPress={() => router.push('/baseline')}
-          />
-
-          <SGroup>{t('settings.plan')}</SGroup>
-          {settings.baselineMaxHoldSeconds == null ? (
-            <SNote>{t('settings.planNeedBaseline')}</SNote>
-          ) : planWeek == null ? (
-            <>
+        <SettingsCard icon='map-outline' title={t('settings.currentPlan')}>
+          {settings.baselineMaxHoldSeconds != null && planWeek == null ? (
+            <SPlanBlock>
               <SNote>{t('settings.planChoose')}</SNote>
               <Button
                 title={t('settings.changePlan')}
                 onPress={() => router.push('/plan')}
+                style={{ marginBottom: 0 }}
               />
-            </>
-          ) : (
-            <>
-              <SPlanMeta>
+            </SPlanBlock>
+          ) : planWeek != null ? (
+            <SPlanBlock>
+              <SInset>
                 <PlanIdentity level={planWeek.level} name={planWeek.planName} />
                 <SPlanFrequency>{planWeek.frequency}</SPlanFrequency>
-              </SPlanMeta>
-              <Button
-                title={t('settings.changePlan')}
-                onPress={() => router.push('/plan')}
-              />
-            </>
-          )}
+                <Button
+                  title={t('settings.changePlan')}
+                  onPress={() => router.push('/plan')}
+                  style={{ marginBottom: 0 }}
+                />
+              </SInset>
+            </SPlanBlock>
+          ) : null}
+          <SettingsField
+            icon='stopwatch-outline'
+            title={t('settings.baseline')}
+            note={baselineNote}
+            last
+          >
+            <Button
+              title={settings.baselineMaxHoldSeconds == null ? t('settings.takeBaseline') : t('settings.retakeBaseline')}
+              onPress={() => router.push('/baseline')}
+              style={{ marginBottom: 0 }}
+            />
+          </SettingsField>
+        </SettingsCard>
 
-          <SGroup>{t('settings.co2Table')}</SGroup>
+        <SettingsCard icon='leaf-outline' title={t('settings.preparation')}>
+          <SettingsField
+            icon='cloud-outline'
+            title={t('settings.breatheUp')}
+            last
+            accessory={(
+              <SettingsStepper
+                mode='duration'
+                value={settings.breatheUpSeconds}
+                step={15}
+                min={0}
+                max={300}
+                last
+                onChange={(value) => { void updateSetting({ breatheUpSeconds: value }) }}
+              />
+            )}
+          />
+        </SettingsCard>
+
+        <SettingsCard icon='water-outline' title={t('settings.co2Table')}>
           {planWeek?.sessions.some((session) => session.kind === 'co2') ? (
             <SNote>{t('settings.planSetsCo2')}</SNote>
           ) : planWeek ? (
@@ -217,12 +243,14 @@ export default function SettingsScreen() {
                 value={settings.co2Rounds}
                 min={1}
                 max={20}
+                last
                 onChange={(value) => { void updateSetting({ co2Rounds: value }) }}
               />
             </>
           )}
+        </SettingsCard>
 
-          <SGroup>{t('settings.o2Table')}</SGroup>
+        <SettingsCard icon='fitness-outline' title={t('settings.o2Table')}>
           {planWeek?.setsO2 ? (
             <SNote>{t('settings.planSetsO2')}</SNote>
           ) : (
@@ -259,14 +287,14 @@ export default function SettingsScreen() {
                 value={settings.o2Rounds}
                 min={1}
                 max={20}
+                last
                 onChange={(value) => { void updateSetting({ o2Rounds: value }) }}
               />
             </>
           )}
-        </SCard>
+        </SettingsCard>
 
-        <SCard>
-          <SCardTitle>{t('settings.purchases')}</SCardTitle>
+        <SettingsCard icon='diamond-outline' title={t('settings.purchases')}>
           {subscription.hasLifetimeAccess ? (
             <SNote>{t('settings.lifetimeActive')}</SNote>
           ) : null}
@@ -284,58 +312,60 @@ export default function SettingsScreen() {
             loading={restoreInFlight}
             disabled={subscription.hasLifetimeAccess}
             variant='ghost'
+            style={{ marginBottom: 0 }}
           />
-        </SCard>
+        </SettingsCard>
 
-        <SCard>
-          <SCardTitle>{t('settings.device')}</SCardTitle>
-          <SGroup>{t('settings.appleWatch')}</SGroup>
-          <SNote>
-            {t('settings.appleWatchNote')}
-          </SNote>
-          <WearableStatus />
-        </SCard>
-
-        <SCard>
-          <SCardTitle>{t('settings.system')}</SCardTitle>
-          <SGroup>{t('language.label')}</SGroup>
-          <SNote>{t('language.note')}</SNote>
-          <SLangLink
-            onPress={() => router.push('/language')}
-            accessibilityRole='button'
-            accessibilityLabel={t('language.openA11y', { language: languageNativeName(language) })}
+        <SettingsCard icon='watch-outline' title={t('settings.device')}>
+          <SettingsField
+            icon='watch-outline'
+            title={t('settings.appleWatch')}
+            note={t('settings.appleWatchNote')}
+            last
           >
-            {({ pressed }) => (
-              <SLangInner $pressed={pressed}>
-                <SLangValue>{languageNativeName(language)}</SLangValue>
-                <Ionicons name='chevron-forward' size={18} color={Colors.TextMuted} />
-              </SLangInner>
-            )}
-          </SLangLink>
+            <WearableStatus />
+          </SettingsField>
+        </SettingsCard>
 
-          <SGroup>{t('settings.date')}</SGroup>
-          <SChoiceRow>
-            {DateFormats.map((format) => (
-              <SettingsChoice
-                key={format}
-                label={format === 'YYYY-MM-DD' ? '2026-10-08' : formatDayValue('2026-10-08', 'MMM D, YYYY', t)}
-                selected={settings.dateFormat === format}
-                onPress={() => { void updateSetting({ dateFormat: format }) }}
-              />
-            ))}
-          </SChoiceRow>
-
-          <SGroup>{t('settings.data')}</SGroup>
-          <SNote>
-            {t('settings.dataNote')}
-          </SNote>
-          <Button
-            title={t('settings.erase')}
-            onPress={() => { void erase() }}
-            loading={eraseInFlight}
-            variant='danger'
+        <SettingsCard icon='settings-outline' title={t('settings.system')}>
+          <SettingsField
+            icon='globe-outline'
+            title={t('language.label')}
+            note={t('language.note')}
+            value={languageNativeName(language)}
+            accessibilityLabel={t('language.openA11y', { language: languageNativeName(language) })}
+            onPress={() => router.push('/language')}
           />
-        </SCard>
+          <SettingsField
+            icon='calendar-outline'
+            title={t('settings.date')}
+          >
+            <SChoiceRow>
+              {DateFormats.map((format) => (
+                <SettingsChoice
+                  key={format}
+                  label={format === 'YYYY-MM-DD' ? '2026-10-08' : formatDayValue('2026-10-08', 'MMM D, YYYY', t)}
+                  selected={settings.dateFormat === format}
+                  onPress={() => { void updateSetting({ dateFormat: format }) }}
+                />
+              ))}
+            </SChoiceRow>
+          </SettingsField>
+          <SettingsField
+            icon='trash-outline'
+            title={t('settings.data')}
+            note={t('settings.dataNote')}
+            last
+          >
+            <Button
+              title={t('settings.erase')}
+              onPress={() => { void erase() }}
+              loading={eraseInFlight}
+              variant='danger'
+              style={{ marginBottom: 0 }}
+            />
+          </SettingsField>
+        </SettingsCard>
         <SAppVersion>
           {appVersion === '' ? appName : `${appName} ${appVersion}`}
         </SAppVersion>
@@ -348,40 +378,24 @@ const SScroll = styled.ScrollView`
   flex: 1;
 `
 
-const SCard = styled.View`
-  margin: 0 ${Space.screen}px 12px;
-  padding: 16px 16px 8px;
-  border-radius: ${Radii.Card}px;
-  background-color: ${Colors.Card};
+const SPlanBlock = styled.View`
+  padding-bottom: ${Space.md}px;
+  border-bottom-width: 1px;
+  border-bottom-color: ${Colors.Hairline};
+`
+
+const SInset = styled.View`
+  margin-top: ${Space.sm}px;
+  padding: ${Space.md}px;
+  border-radius: 12px;
+  background-color: ${Colors.Telemetry};
   border-width: 1px;
   border-color: ${Colors.Hairline};
 `
 
-const SCardTitle = styled.Text`
-  font-family: ${Fonts.HeadlineSemi};
-  font-size: ${FontSizes.Medium};
-  font-weight: 600;
-  color: ${Colors.Text};
-`
-
-const SGroup = styled.Text`
-  margin-top: 16px;
-  margin-bottom: 4px;
-  font-family: ${Fonts.BodySemi};
-  font-size: ${FontSizes.XSmall};
-  font-weight: 600;
-  letter-spacing: 0.7px;
-  text-transform: uppercase;
-  color: ${Colors.TextMuted};
-`
-
-const SPlanMeta = styled.View`
-  margin-top: 8px;
-  margin-bottom: 12px;
-`
-
 const SPlanFrequency = styled.Text`
   margin-top: 4px;
+  margin-bottom: 12px;
   font-family: ${Fonts.BodyMedium};
   font-size: ${FontSizes.XSmall};
   font-weight: 500;
@@ -389,46 +403,21 @@ const SPlanFrequency = styled.Text`
 `
 
 const SNote = styled.Text`
-  margin-top: 8px;
+  margin-top: ${Space.sm}px;
   margin-bottom: 12px;
   font-family: ${Fonts.Body};
-  font-size: ${FontSizes.Medium};
-  line-height: 22px;
-  color: ${Colors.Text};
+  font-size: ${FontSizes.Small};
+  line-height: 20px;
+  color: ${Colors.TextMuted};
 `
 
 const SChoiceRow = styled.View`
   flex-direction: row;
   gap: 8px;
-  margin-top: 8px;
-  margin-bottom: 4px;
-`
-
-const SLangLink = styled.Pressable`
-  min-height: ${Layout.MinControl}px;
-  margin-bottom: 4px;
-`
-
-const SLangInner = styled.View<{ $pressed: boolean }>`
-  flex: 1;
-  flex-direction: row;
-  align-items: center;
-  min-height: ${Layout.MinControl}px;
-  padding: 0 4px;
-  border-radius: ${Radii.Control}px;
-  background-color: ${(props) => props.$pressed ? Colors.Hover : 'transparent'};
-`
-
-const SLangValue = styled.Text`
-  flex: 1;
-  font-family: ${Fonts.BodySemi};
-  font-size: ${FontSizes.Medium};
-  font-weight: 600;
-  color: ${Colors.Text};
 `
 
 const SAppVersion = styled.Text`
-  margin: 8px ${Space.screen}px 12px;
+  margin: ${Space.md}px ${Space.screen}px 12px;
   text-align: center;
   font-family: ${Fonts.BodySemi};
   font-size: ${FontSizes.Small};

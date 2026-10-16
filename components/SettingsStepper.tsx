@@ -7,7 +7,7 @@ import { styled } from 'styled-components/native'
 
 
 type Props = {
-  label: string
+  label?: string
   value: number
   mode?: 'duration' | 'count'
   step?: number
@@ -79,8 +79,8 @@ export default function SettingsStepper({
   }
 
   return (
-    <Wrapper $last={last}>
-      <SLabel>{label}</SLabel>
+    <Wrapper $last={last} $labeled={label != null}>
+      {label != null ? <SLabel>{label}</SLabel> : null}
       <SControls>
         <SStep onPress={() => stepBy(-step)} disabled={!editing && value <= min}>
           <SStepText>{mode === 'duration' ? `-${formatDuration(step)}` : '−'}</SStepText>
@@ -137,11 +137,11 @@ function parseClockDigits(raw: string): number | null {
   return Number(digits.slice(0, -2)) * 60 + Number(digits.slice(-2))
 }
 
-const Wrapper = styled.View<{ $last: boolean }>`
+const Wrapper = styled.View<{ $last: boolean; $labeled: boolean }>`
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
+  justify-content: ${(props) => props.$labeled ? 'space-between' : 'flex-end'};
+  padding: ${(props) => props.$labeled ? '12px 0' : 0};
   border-bottom-width: ${(props) => props.$last ? 0 : 1}px;
   border-bottom-color: ${Colors.Hairline};
 `
