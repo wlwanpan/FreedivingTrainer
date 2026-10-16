@@ -279,6 +279,12 @@ final class WatchSession: NSObject, ObservableObject {
             applyPhoneTraining(message)
             return
         }
+        if textValue(message["type"]) == "requestSync" {
+            applyPlan(message)
+            flushPending()
+            publishTrainingContext()
+            return
+        }
         if textValue(message["type"]) == "nextSession" {
             applyPlan(message)
             return

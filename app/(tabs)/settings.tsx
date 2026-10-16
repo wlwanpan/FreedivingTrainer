@@ -339,6 +339,7 @@ export default function SettingsScreen() {
           <SettingsField
             icon='calendar-outline'
             title={t('settings.date')}
+            last
           >
             <SChoiceRow>
               {DateFormats.map((format) => (
@@ -351,20 +352,17 @@ export default function SettingsScreen() {
               ))}
             </SChoiceRow>
           </SettingsField>
-          <SettingsField
-            icon='trash-outline'
-            title={t('settings.data')}
-            note={t('settings.dataNote')}
-            last
-          >
-            <Button
-              title={t('settings.erase')}
-              onPress={() => { void erase() }}
-              loading={eraseInFlight}
-              variant='danger'
-              style={{ marginBottom: 0 }}
-            />
-          </SettingsField>
+        </SettingsCard>
+
+        <SettingsCard icon='trash-outline' title={t('settings.data')}>
+          <SNote>{t('settings.dataNote')}</SNote>
+          <Button
+            title={t('settings.erase')}
+            onPress={() => { void erase() }}
+            loading={eraseInFlight}
+            variant='danger'
+            style={{ marginBottom: 0 }}
+          />
         </SettingsCard>
         <SAppVersion>
           {appVersion === '' ? appName : `${appName} ${appVersion}`}

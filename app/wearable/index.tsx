@@ -1,6 +1,7 @@
 import EmptyListPlaceholder from '@/components/EmptyListPlaceholder'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
 import SessionListItem from '@/components/SessionListItem'
+import WearableSyncButton from '@/components/WearableSyncButton'
 import WrapperScreen from '@/components/WrapperScreen'
 import { Colors, Fonts, FontSizes, Layout, Radii, Space } from '@/design/styles'
 import useWearableStatus, { lastSyncLabel, wearableLabel, wearableLive } from '@/hooks/useWearableStatus'
@@ -52,6 +53,7 @@ export default function WearableScreen() {
         <SStatusRow>
           <SDot $live={live} />
           <SStatus $live={live}>{wearableLabel(wearable, t)}</SStatus>
+          {wearable.connected ? <WearableSyncButton /> : null}
         </SStatusRow>
         <SFact>
           <SFactLabel>{t('wearable.lastSync')}</SFactLabel>

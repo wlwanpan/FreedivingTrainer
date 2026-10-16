@@ -16,8 +16,8 @@ enum TrainingSprite {
         guard let sheet = UIImage(named: "TrainingSprite")?.cgImage else { return nil }
         let tile = tile
         let unit = CGFloat(sheet.width) / TrainingSprite.sheet
-        // Stay inside the icon's rounded corners so the art covers the screen.
-        let crop = tile.size * 0.84
+        // Same inset as utils/training_sprite.ts (`cover = 0.9`).
+        let crop = tile.size * 0.9
         let originX = tile.x + (tile.size - crop) / 2
         let originY = tile.y + (tile.size - crop) / 2
         let rect = CGRect(
@@ -52,8 +52,10 @@ struct TrainingSpriteBackground: View {
                 if let image = sprite.image {
                     Image(uiImage: image)
                         .resizable()
+                        .scaledToFill()
                         .frame(width: geo.size.width, height: geo.size.height)
-                        .opacity(0.18)
+                        .clipped()
+                        .opacity(0.16)
                 }
             }
         }

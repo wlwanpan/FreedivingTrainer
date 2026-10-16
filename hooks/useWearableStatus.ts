@@ -55,6 +55,16 @@ const idleLive: WearableLive = {
 
 let wearableLiveState = idleLive
 const wearableLiveListeners = new Set<() => void>()
+const wearableSyncListeners = new Set<() => void>()
+
+export function requestWearableSync() {
+  wearableSyncListeners.forEach((listener) => listener())
+}
+
+export function subscribeWearableSyncRequest(listener: () => void) {
+  wearableSyncListeners.add(listener)
+  return () => wearableSyncListeners.delete(listener)
+}
 
 function sameLink(current: WearableLinkLive, next: WearableLinkLive): boolean {
   return current.connected === next.connected

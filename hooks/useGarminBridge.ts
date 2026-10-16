@@ -12,7 +12,7 @@ import {
   type NextSessionMessage,
 } from 'expo-garmin-connect-iq'
 import { ingestWatchCompletion } from '@/hooks/ingestWatchCompletion'
-import { publishWearableLive } from '@/hooks/useWearableStatus'
+import { publishWearableLive, subscribeWearableSyncRequest } from '@/hooks/useWearableStatus'
 import { useI18n } from '@/providers/i18n'
 import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
 import { readPhoneTraining, subscribePhoneTraining } from '@/hooks/phoneTraining'
@@ -291,10 +291,17 @@ export default function useGarminBridge() {
   useEffect(() => {
     if (!ready || !isGarminModuleAvailable()) return
     let cancelled = false
-    const publish = () => {
+    const publish = (manual = false) => {
       void (async () => {
         const status = await getStatus()
         if (cancelled || status.devices.length === 0) return
+        if (manual) {
+          applySyncRef.current({
+            type: 'requested',
+            now: Date.now(),
+            reachable: status.connected,
+          })
+        }
         const payload = slimNextSession(contextRef.current as NextSessionMessage)
         try {
           const result = await sendNextSession(payload as Record<string, unknown>)
@@ -309,11 +316,13 @@ export default function useGarminBridge() {
         })
       })()
     }
-    const remove = addGarminListener('onDeviceStatus', () => publish())
+    const removeStatus = addGarminListener('onDeviceStatus', () => publish())
+    const removeSync = subscribeWearableSyncRequest(() => publish(true))
     publish()
     return () => {
       cancelled = true
-      remove()
+      removeStatus()
+      removeSync()
     }
   }, [contextKey, ready])
 }

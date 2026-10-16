@@ -93,6 +93,25 @@ describe('reduceWatchSync', () => {
     assert.equal(again.state.syncedAt, now + 5)
   })
 
+  it('clears a finished sync when the user asks to sync again', () => {
+    const published = reduceWatchSync(initialWatchSyncState, {
+      type: 'published',
+      now,
+      reachable: true,
+    })
+    const synced = snapshot(published.state, 0, now)
+    assert.equal(synced.stamp, now)
+    const requested = reduceWatchSync(synced.state, {
+      type: 'requested',
+      now: now + 1,
+      reachable: true,
+    })
+    assert.equal(requested.stamp, null)
+    assert.equal(requested.state.contextPublished, false)
+    assert.equal(requested.state.pendingCount, null)
+    assert.equal(requested.state.syncedAt, now)
+  })
+
   it('waits for a fresh queue count after reconnecting', () => {
     const published = reduceWatchSync(initialWatchSyncState, {
       type: 'published',

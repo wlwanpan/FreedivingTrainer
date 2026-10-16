@@ -304,12 +304,17 @@ private struct PlanScheduleList: View {
                     ForEach(plan.schedule) { week in
                         weekCard(week, focused: week.week == focusWeek)
                             .id(week.week)
+                            .contentShape(Rectangle())
+                            .highPriorityGesture(backSwipe)
                     }
+                    scheduleFooter
                 }
                 .padding(.bottom, 8)
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 scheduleHeader
+                    .contentShape(Rectangle())
+                    .highPriorityGesture(backSwipe)
             }
             .padding(.horizontal, 8)
             .task(id: focusWeek) {
@@ -320,28 +325,35 @@ private struct PlanScheduleList: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
-    private var scheduleHeader: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Button(action: onBack) {
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.left")
-                    Text(L10n.t("plan"))
+    private var backSwipe: some Gesture {
+        DragGesture(minimumDistance: 24)
+            .onEnded { value in
+                let horizontal = value.translation.width
+                let vertical = value.translation.height
+                if horizontal > 48 && abs(vertical) < abs(horizontal) {
+                    onBack()
                 }
-                .font(.caption2)
-                .foregroundStyle(Pelagic.seafoam)
-                .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+    }
+
+    private var scheduleHeader: some View {
+        Group {
             if !plan.planName.isEmpty {
                 Text(plan.planName)
                     .font(.headline)
                     .foregroundStyle(Pelagic.text)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 6)
+                    .background(Pelagic.canvas)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 6)
-        .background(Pelagic.canvas)
+    }
+
+    private var scheduleFooter: some View {
+        Button(L10n.t("back"), action: onBack)
+            .pelagicPrimaryButton()
+            .frame(maxWidth: .infinity)
+            .padding(.top, 4)
     }
 
     private func weekCard(_ week: WatchListedWeek, focused: Bool) -> some View {

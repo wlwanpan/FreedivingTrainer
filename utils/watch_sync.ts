@@ -33,6 +33,7 @@ export type WatchSyncEvent =
   | { type: 'reachability'; reachable: boolean; now: number }
   | { type: 'snapshot'; payload: Record<string, unknown>; now: number; reachable: boolean }
   | { type: 'published'; now: number; reachable: boolean }
+  | { type: 'requested'; now: number; reachable: boolean }
   | { type: 'completion'; completedAt: number; savedCreatedAt: readonly number[] }
 
 export type WatchSyncResult = {
@@ -123,6 +124,15 @@ export function reduceWatchSync(state: WatchSyncState, event: WatchSyncEvent): W
       watchRunning: event.reachable ? state.watchRunning : false,
       pendingCount: event.reachable && !reconnected ? state.pendingCount : null,
       contextPublished: event.reachable && !reconnected ? state.contextPublished : false,
+    }, event.now)
+  }
+  if (event.type === 'requested') {
+    return withStamp(state, {
+      ...state,
+      reachable: event.reachable,
+      contextPublished: false,
+      pendingCount: event.reachable ? null : state.pendingCount,
+      watchRunning: event.reachable ? state.watchRunning : false,
     }, event.now)
   }
   if (event.type === 'published') {

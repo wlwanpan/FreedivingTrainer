@@ -1,5 +1,5 @@
 import { ingestWatchCompletion } from '@/hooks/ingestWatchCompletion'
-import { publishWearableLive } from '@/hooks/useWearableStatus'
+import { publishWearableLive, subscribeWearableSyncRequest } from '@/hooks/useWearableStatus'
 import { useI18n } from '@/providers/i18n'
 import { ensureWatchSession, WatchConnectivity } from '@/hooks/watchConnectivity'
 import useTrainingOutline, { nextTrainingSession } from '@/hooks/useTrainingOutline'
@@ -216,23 +216,42 @@ export default function useWatchBridge() {
   useEffect(() => {
     if (!ready || !WatchConnectivity.isSupported) return
     let cancelled = false
-    const publish = () => {
+    const publish = (manual = false) => {
       void (async () => {
         const activated = await ensureWatchSession()
         if (cancelled || !activated) return
+        const reachable = sessionLink().reachable
+        if (manual) {
+          applySyncRef.current({ type: 'requested', now: Date.now(), reachable })
+        }
         try {
           await WatchConnectivity.updateApplicationContext(contextRef.current)
         } catch {
-          return
+          if (!manual) return
         }
         if (cancelled) return
-        const reachable = sessionLink().reachable
-        applySyncRef.current({ type: 'published', now: Date.now(), reachable })
-        if (!reachable) return
-        WatchConnectivity.sendMessage({
-          type: 'phoneTraining',
-          ...(contextRef.current.phoneTraining as Record<string, unknown>),
-        }).catch(() => undefined)
+        if (reachable) {
+          const payload = manual
+            ? { ...contextRef.current, type: 'requestSync' }
+            : {
+              type: 'phoneTraining',
+              ...(contextRef.current.phoneTraining as Record<string, unknown>),
+            }
+          try {
+            await WatchConnectivity.sendMessage(payload)
+          } catch {
+            if (!manual) {
+              applySyncRef.current({ type: 'published', now: Date.now(), reachable })
+              return
+            }
+          }
+        }
+        if (cancelled) return
+        applySyncRef.current({
+          type: 'published',
+          now: Date.now(),
+          reachable: sessionLink().reachable,
+        })
       })()
     }
     const subscriptions = [
@@ -240,6 +259,7 @@ export default function useWatchBridge() {
         if (event.activationState === 'activated') publish()
       }),
       WatchConnectivity.addReachabilityListener(() => publish()),
+      { remove: subscribeWearableSyncRequest(() => publish(true)) },
     ]
     publish()
     return () => {

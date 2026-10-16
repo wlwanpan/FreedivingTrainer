@@ -1,3 +1,4 @@
+import WearableSyncButton from '@/components/WearableSyncButton'
 import { Colors, FontSizes } from '@/design/styles'
 import useWearableStatus, { wearableLabel, wearableLive } from '@/hooks/useWearableStatus'
 import { useI18n } from '@/providers/i18n'
@@ -14,6 +15,7 @@ export default function WearableStatus() {
       <SRow>
         <SDot $live={live} />
         <SLabel $live={live}>{wearableLabel(status, t)}</SLabel>
+        {status.connected ? <WearableSyncButton /> : null}
       </SRow>
       {status.syncLabel == null ? null : <SSync>{status.syncLabel}</SSync>}
     </Wrapper>
@@ -21,7 +23,7 @@ export default function WearableStatus() {
 }
 
 const Wrapper = styled.View`
-  align-items: flex-start;
+  align-items: stretch;
   gap: 2px;
   margin-bottom: 0;
 `
@@ -40,6 +42,7 @@ const SDot = styled.View<{ $live: boolean }>`
 `
 
 const SLabel = styled.Text<{ $live: boolean }>`
+  flex: 1;
   font-size: ${FontSizes.Small};
   font-weight: 700;
   color: ${(props) => props.$live ? Colors.Seafoam : Colors.TextMuted};

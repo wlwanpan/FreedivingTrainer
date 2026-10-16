@@ -45,9 +45,11 @@ const STitle = styled.Text`
 `
 
 const SRight = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: ${Space.sm}px;
   min-width: ${Layout.MinControl}px;
   min-height: ${Layout.MinControl}px;
   flex-shrink: 0;
-  align-items: flex-end;
-  justify-content: center;
 `
