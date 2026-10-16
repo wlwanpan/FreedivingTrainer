@@ -3,7 +3,7 @@ import { ImageSourcePropType, ImageStyle } from 'react-native'
 
 export type TrainingSpriteName = 'breathe' | 'hold' | 'meditate' | 'rest'
 
-const trainingSprite: ImageSourcePropType = require('../assets/images/training_sprite.png')
+const trainingSprite: ImageSourcePropType = require('../assets/images/training_sprite.jpeg')
 
 const SpriteSize = 1254
 
@@ -15,12 +15,12 @@ const Frame: Record<TrainingSpriteName, { x: number; y: number; size: number }> 
   meditate: { x: 653, y: 644, size: 501 },
 }
 
-export function trainingSpriteFrame(name: TrainingSpriteName): {
+export function trainingSpriteFrame(name: TrainingSpriteName, cover = 0.9): {
   source: ImageSourcePropType
   style: ImageStyle
 } {
   const { x, y, size } = Frame[name]
-  const crop = size * 0.9
+  const crop = size * cover
   const originX = x + (size - crop) / 2
   const originY = y + (size - crop) / 2
   const scale = SpriteSize / crop

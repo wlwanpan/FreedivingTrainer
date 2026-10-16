@@ -1,7 +1,8 @@
 import Button from '@/components/Button'
 import { Footer } from '@/design/styled'
-import { Colors, Fonts, FontSizes } from '@/design/styles'
+import { Colors, Fonts, FontSizes, Space } from '@/design/styles'
 import { useI18n } from '@/providers/i18n'
+import { trainingSpriteFrame } from '@/utils/training_sprite'
 import { styled } from 'styled-components/native'
 
 
@@ -11,11 +12,15 @@ type Props = {
 
 export default function OnboardingWelcome({ onContinue }: Props) {
   const { t } = useI18n()
+  const sprite = trainingSpriteFrame('meditate', 1)
 
   return (
     <Wrapper>
       <SBody>
         <SEyebrow>{t('onboarding.eyebrow')}</SEyebrow>
+        <SArt>
+          <SSprite source={sprite.source} style={sprite.style} accessible={false} />
+        </SArt>
         <STitle>{t('onboarding.welcomeTitle')}</STitle>
         <SCopy>{t('onboarding.welcomeCopy')}</SCopy>
       </SBody>
@@ -36,17 +41,26 @@ const SBody = styled.View`
   justify-content: center;
 `
 
+const SArt = styled.View`
+  align-self: center;
+  width: 200px;
+  height: 200px;
+  margin-top: ${Space.xl}px;
+  margin-bottom: ${Space.xl}px;
+  overflow: hidden;
+`
+
+const SSprite = styled.Image``
+
 const SEyebrow = styled.Text`
-  font-family: ${Fonts.BodySemi};
-  font-size: ${FontSizes.XSmall};
-  font-weight: 600;
-  letter-spacing: 0.7px;
-  text-transform: uppercase;
-  color: ${Colors.Seafoam};
+  margin-top: 8px;
+  font-family: ${Fonts.Headline};
+  font-size: ${FontSizes.XLarge};
+  font-weight: 700;
+  color: ${Colors.Text};
 `
 
 const STitle = styled.Text`
-  margin-top: 8px;
   font-family: ${Fonts.Headline};
   font-size: ${FontSizes.XLarge};
   font-weight: 700;
