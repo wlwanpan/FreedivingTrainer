@@ -42,7 +42,7 @@ xed ios
 - File-based navigation with Expo Router
 - Styles in `styled-components/native`, tokens in `design/styles.ts`
 - Drizzle ORM on `expo-sqlite`
-- RevenueCat via `react-native-purchases` (`lifetime_access` entitlement)
+- RevenueCat via `react-native-purchases` (`lifetime_access_freediving_trainer` entitlement)
 
 ## Database
 
@@ -58,7 +58,7 @@ Migrations run on launch from `app/_layout.tsx`. In a dev client, press Shift+M 
 
 ## Purchases
 
-Set `REVENUECAT_IOS_API_KEY` in `.env.local` or as an EAS secret. The app looks for a `lifetime_access` entitlement. The first 10 logged tables are free.
+Set `REVENUECAT_IOS_API_KEY` in `.env.local` or as an EAS secret. The app looks for a `lifetime_access_freediving_trainer` entitlement. The first 10 logged tables are free.
 
 ## Releases
 
