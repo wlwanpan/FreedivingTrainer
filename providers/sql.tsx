@@ -32,6 +32,7 @@ export const DefaultSettings: Setting = {
   trainingSound: true,
   trainingGesturesSeen: false,
   safetyRuleDismissed: false,
+  practice: 'freediver',
   co2HoldSeconds: 90,
   co2RestStartSeconds: 120,
   co2RestStepSeconds: 15,

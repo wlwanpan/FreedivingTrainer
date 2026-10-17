@@ -17,6 +17,8 @@ import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
+import { practiceFromValue } from '@/utils/practice'
+import { trainParamsFromSession } from '@/utils/train_route'
 import { baselineFollowsPlan, sessionRounds, WeekSession } from '@/utils/training_plan'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useRouter } from 'expo-router'
@@ -58,23 +60,14 @@ export default function HomeScreen() {
       router.push('/paywall')
       return
     }
-    if (sessionRounds(session).length === 0) {
+    if (!session.openHold && sessionRounds(session).length === 0) {
       showWarning(t('errors.input'), t('home.addRound'))
       return
     }
+    const mermaid = practiceFromValue(settings.practice) === 'mermaid'
     router.push({
-      pathname: '/train',
-      params: {
-        type: session.tableType,
-        name: session.name,
-        hold: String(session.holdSeconds),
-        holdStep: String(session.holdStepSeconds),
-        restStart: String(session.restStartSeconds),
-        restStep: String(session.restStepSeconds),
-        rounds: String(session.rounds),
-        week: String(session.week),
-        session: String(session.index),
-      },
+      pathname: mermaid ? '/prepare' : '/train',
+      params: trainParamsFromSession(session, session.week),
     })
   }
 
@@ -153,9 +146,15 @@ export default function HomeScreen() {
                   </SDrillCopy>
                 </SDrillHead>
                 <SChips>
-                  <SChip>{holdChip(nextSession, formatSeconds, t)}</SChip>
-                  <SChip>{t('home.restChip', { time: formatSeconds(nextSession.restStartSeconds) })}</SChip>
-                  <SRounds>{t('home.roundsTotal', { count: nextSession.rounds })}</SRounds>
+                  {nextSession.openHold ? (
+                    <SChip>{t('home.openWalk')}</SChip>
+                  ) : (
+                    <>
+                      <SChip>{holdChip(nextSession, formatSeconds, t)}</SChip>
+                      <SChip>{t('home.restChip', { time: formatSeconds(nextSession.restStartSeconds) })}</SChip>
+                      <SRounds>{t('home.roundsTotal', { count: nextSession.rounds })}</SRounds>
+                    </>
+                  )}
                 </SChips>
                 <Button
                   title={watchBusy ? t('home.onWatch') : t('home.startSession')}
@@ -205,6 +204,9 @@ function sessionSummary(
   formatSeconds: (seconds: number) => string,
   t: ReturnType<typeof useI18n>['t'],
 ): string {
+  if (session.openHold) {
+    return t('home.sessionSummaryOpen', { name: sessionDisplayName(session.name, t) })
+  }
   return t('home.sessionSummary', {
     name: sessionDisplayName(session.name, t),
     hold: holdLabel(session.tableType, formatSeconds(session.holdSeconds), t),

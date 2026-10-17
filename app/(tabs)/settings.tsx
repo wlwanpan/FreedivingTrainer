@@ -21,6 +21,7 @@ import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
 import { formatDay as formatDayValue } from '@/utils/date'
+import { Practice, practiceFromValue } from '@/utils/practice'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -37,7 +38,7 @@ export default function SettingsScreen() {
   const subscription = useSubscriptionContext()
   const { t, language } = useI18n()
   const { formatSeconds } = useFormatterContext()
-  const { showWarning, showConfirmDeletion } = useWarningModal()
+  const { showWarning, showConfirmation, showConfirmDeletion } = useWarningModal()
   const updateSetting = useUpdateSetting()
   const planWeek = useCurrentPlanWeek()
   const paddingBottom = useBottomControlInset(true)
@@ -72,6 +73,17 @@ export default function SettingsScreen() {
     setRestoreInFlight(true)
     await subscription.restorePurchase()
     setRestoreInFlight(false)
+  }
+
+  const practice = practiceFromValue(settings.practice)
+
+  const selectPractice = async (next: Practice) => {
+    if (next === practice || settings.id === 0) return
+    if (settings.trainingPlan != null) {
+      const confirmed = await showConfirmation(t('settings.practiceTitle'), t('settings.practiceBody'))
+      if (!confirmed) return
+    }
+    void updateSetting({ practice: next })
   }
 
   const baselineNote = settings.baselineMaxHoldSeconds == null
@@ -149,6 +161,24 @@ export default function SettingsScreen() {
         </SettingsCard>
 
         <SettingsCard icon='map-outline' title={t('settings.currentPlan')}>
+          <SettingsField
+            icon='person-outline'
+            title={t('settings.practice')}
+            note={t('settings.practiceNote')}
+          >
+            <SChoiceRow>
+              <SettingsChoice
+                label={t('onboarding.practiceFreediver')}
+                selected={practice === 'freediver'}
+                onPress={() => { void selectPractice('freediver') }}
+              />
+              <SettingsChoice
+                label={t('onboarding.practiceMermaid')}
+                selected={practice === 'mermaid'}
+                onPress={() => { void selectPractice('mermaid') }}
+              />
+            </SChoiceRow>
+          </SettingsField>
           {settings.baselineMaxHoldSeconds != null && planWeek == null ? (
             <SPlanBlock>
               <SNote>{t('settings.planChoose')}</SNote>

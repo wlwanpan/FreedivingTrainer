@@ -127,6 +127,10 @@
     "planNeedBaseline": "Take a baseline test to choose a plan.",
     "planChoose": "Choose a plan, or build your own. Keep CO2 and O2 on different days.",
     "changePlan": "Change plan",
+    "practice": "Practice",
+    "practiceNote": "Freediver keeps the current tables. Mermaid uses dry-land plans.",
+    "practiceTitle": "Change practice?",
+    "practiceBody": "Premade plans switch with this choice. Sessions that no longer match will show as not done.",
     "co2Table": "CO2 table",
     "planSetsCo2": "This plan sets the CO2 table.",
     "planNoCo2": "This plan does not include a CO2 table.",
@@ -159,7 +163,11 @@
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
     "welcomeTitle": "Welcome",
-    "welcomeCopy": "CO2 and O2 static-apnea tables sized from your maximum hold. First we will find your baseline, then you can choose a training plan.",
+    "welcomeCopy": "Choose how you train. One maximum hold sizes your tables, then you pick a plan.",
+    "practiceFreediver": "Freediver",
+    "practiceMermaid": "Mermaid",
+    "practiceFreediverCopy": "CO2 and O2 static tables, sized from your maximum hold.",
+    "practiceMermaidCopy": "Dry-land tables: static holds, apnea walks, and maximum-distance walks.",
     "continue": "Continue",
     "title": "Find your baseline",
     "copy": "One maximum static hold sizes your tables. Mark the first contraction, then keep holding until you need to breathe. After that, choose a plan or build your own. Keep CO2 and O2 on different days.",
@@ -188,7 +196,9 @@
     "weekDone": "Every session this week is done.",
     "sessionSummary": "{name} · {hold} · {count} rounds",
     "holdsFrom": "Holds from {time}",
-    "hold": "Hold {time}"
+    "hold": "Hold {time}",
+    "openWalk": "Until you need to breathe",
+    "sessionSummaryOpen": "{name} · walk until you need to breathe"
   },
   "table": {
     "title": "Tables",
@@ -198,7 +208,8 @@
   "prepare": {
     "duration": "Total session duration",
     "steps": "Total steps",
-    "metaA11y": "{duration} total session duration. {count} total steps."
+    "metaA11y": "{duration} total session duration. {count} total steps.",
+    "openHold": "Open walk"
   },
   "training": {
     "title": "Training",
@@ -230,6 +241,12 @@
     "holdPhaseName": "Hold phase",
     "recoveryPhase": "Recovery phase",
     "cueBreathe": "Inhale soft abdominal breaths. Relax your neck, jaw, and shoulders.",
+    "cueBreatheMermaid": "Breathe quietly. Do not hyperventilate. Keep your heart rate low.",
+    "cueWalkOpen": "Walk at a moderate pace on a soft surface. Stop when you need to breathe.",
+    "openWalkSummary": "Walk until you need to breathe",
+    "openWalkUpcoming": "Until you stop",
+    "openMark": "Open",
+    "stepsSaved": "{count} steps logged.",
     "cueHold": "Stay still. Soften your face, neck, and shoulders.",
     "cueRest": "Inhale soft abdominal breaths. Relax your neck, jaw, and shoulders.",
     "noCompletedStep": "No completed step yet",
@@ -383,6 +400,39 @@
       "focus": "Peak adaptation, and a way through a plateau.",
       "method": "Alternate standard CO2 and O2 with one-breath tables at about 40% of your best, plus dry apnea walks."
     },
+    "mermaid": {
+      "notCardio": "These tables are not cardio. Keep your heart rate low.",
+      "noHyperventilation": "Do not hyperventilate in the breathe-up. Over-breathing strips CO2 and hides the urge to breathe.",
+      "eyesClosed": "Stay still and supported. You can close your eyes and follow the haptic or audio cues.",
+      "softSurface": "Walk only on a soft surface: sand, soft grass, or a heavy gym mat.",
+      "spotter": "A spotter should walk beside you to protect your head if you lose motor control or faint.",
+      "methodBeginnerMarked": "No-contraction table. Hold {time}, your first contraction, for 7 rounds. Rest steps from 2:00 to 0:30. After week 2 the hold adds 15–20 seconds. Stay still and supported, eyes closed, and follow the haptic or audio cues.",
+      "methodBeginnerUnmarked": "Standard CO2 table. Hold {time}, half your maximum, since no contraction was marked, for 7 rounds. Rest steps from 2:00 to 0:30. After week 2 the hold adds 15–20 seconds. Stay still and supported, eyes closed, and follow the haptic or audio cues.",
+      "beginner": {
+        "name": "Foundational",
+        "level": "Foundational",
+        "levelFocus": "Static CO2",
+        "frequency": "2–3 static CO2 sessions a week",
+        "focus": "Delay the urge to breathe while you stay still.",
+        "method": "A no-contraction table when you mark the first contraction, or a standard CO2 table from half your maximum. Stay supported, close your eyes, and follow the cues."
+      },
+      "intermediate": {
+        "name": "Intermediate",
+        "level": "Intermediate",
+        "levelFocus": "Apnea walks",
+        "frequency": "3 sessions a week, on separate days",
+        "focus": "Static O2 on a couch or bed, and dynamic CO2 walks.",
+        "method": "O2 rest stays fixed while the hold climbs. Apnea walks keep a steady pace for a fixed time, and the rest between walks shrinks. Walk only on sand, soft grass, or a heavy gym mat."
+      },
+      "advanced": {
+        "name": "Advanced",
+        "level": "Advanced",
+        "levelFocus": "Maximum distance",
+        "frequency": "3 sessions a week, with a full day off",
+        "focus": "Walk until the urge to breathe stops you.",
+        "method": "Sit for a 2:00 breathe-up, then walk at a moderate pace until you must breathe. Soft surfaces only. A spotter walks beside you. The iPhone pedometer logs your steps, and Apple Watch adds heart rate when it is connected."
+      }
+    },
     "custom": {
       "name": "Your plan",
       "level": "Custom",
@@ -401,11 +451,19 @@
       "co2": "Hold stays in the 60–75% band. Rest steps down. Keep this on a different day from O2.",
       "o2": "Rest stays at 2:00. Holds climb, and the last one stays at or under 80% of your maximum.",
       "oneBreath": "About 40% of your best. Take one recovery breath, then hold again.",
-      "walk": "Walk during each hold. Stand still while you recover."
+      "walk": "Walk during each hold. Stand still while you recover.",
+      "mermaidO2": "Couch or bed. Rest stays fixed and the hold climbs. Do not hyperventilate in the breathe-up.",
+      "mermaidWalk": "Steady pace for a fixed hold. Rest shrinks between walks. Sand, soft grass, or a heavy gym mat only.",
+      "mermaidDistance": "Sit for a 2:00 breathe-up, then walk until you need to breathe. A spotter should stay beside you."
     },
     "session": {
       "co21": "CO2 1",
-      "co22": "CO2 2"
+      "co22": "CO2 2",
+      "apneaWalk": "Apnea walk",
+      "apneaWalk2": "Apnea walk 2",
+      "maxDistance": "Maximum distance",
+      "maxDistance2": "Maximum distance 2",
+      "maxDistance3": "Maximum distance 3"
     }
   },
   "baseline": {
@@ -473,6 +531,7 @@
     "avgContraction": "Avg contraction",
     "round": "Round",
     "heartRate": "Heart rate",
+    "steps": "Steps",
     "a11y": "{elapsed} elapsed of {total}. Average first contraction {contraction}. Round {round} of {rounds}. Heart rate {heart}."
   },
   "sessionItem": {
@@ -480,6 +539,7 @@
     "holdRest": "Hold {hold} · Rest {rest}",
     "avgHr": "Avg HR {bpm} bpm",
     "zeroContractions": "0 contractions",
+    "steps": "{count} steps",
     "delete": "Delete",
     "dayWatch": "{day} · "
   },

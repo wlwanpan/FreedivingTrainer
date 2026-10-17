@@ -127,6 +127,10 @@
     "planNeedBaseline": "Mache einen Baseline-Test, um einen Plan zu wählen.",
     "planChoose": "Wähle einen Plan oder erstelle deinen eigenen. Halte CO2 und O2 an unterschiedlichen Tagen.",
     "changePlan": "Plan ändern",
+    "practice": "Praxis",
+    "practiceNote": "Freediver behält die bisherigen Tabellen. Mermaid nutzt Trockenpläne.",
+    "practiceTitle": "Praxis wechseln?",
+    "practiceBody": "Die vorgeschlagenen Pläne wechseln mit dieser Wahl. Sitzungen, die nicht mehr passen, gelten als nicht erledigt.",
     "co2Table": "CO2-Tabelle",
     "planSetsCo2": "Dieser Plan legt die CO2-Tabelle fest.",
     "planNoCo2": "Dieser Plan enthält keine CO2-Tabelle.",
@@ -159,7 +163,11 @@
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
     "welcomeTitle": "Willkommen",
-    "welcomeCopy": "CO2- und O2-Statik-Tabellen, abgestimmt auf deine maximale Haltzeit. Zuerst finden wir deine Baseline, danach wählst du einen Trainingsplan.",
+    "welcomeCopy": "Wähle, wie du trainierst. Ein maximaler Atemstopp bestimmt deine Tabellen, danach wählst du einen Plan.",
+    "practiceFreediver": "Freediver",
+    "practiceMermaid": "Mermaid",
+    "practiceFreediverCopy": "Statische CO2- und O2-Tabellen, bemessen nach deinem maximalen Atemstopp.",
+    "practiceMermaidCopy": "Trockentabellen: statische Stopps, Apnoe-Gänge und Gänge auf maximale Distanz.",
     "continue": "Weiter",
     "title": "Finde deine Baseline",
     "copy": "Ein maximaler statischer Halt legt deine Tabellen fest. Markiere die erste Kontraktion und halte, bis du atmen musst. Danach wähle einen Plan oder erstelle deinen eigenen. Halte CO2 und O2 an unterschiedlichen Tagen.",
@@ -188,7 +196,9 @@
     "weekDone": "Alle Einheiten dieser Woche sind erledigt.",
     "sessionSummary": "{name} · {hold} · {count} Runden",
     "holdsFrom": "Halte ab {time}",
-    "hold": "Halt {time}"
+    "hold": "Halt {time}",
+    "openWalk": "Bis zum Atemreiz",
+    "sessionSummaryOpen": "{name} · gehe, bis du atmen musst"
   },
   "table": {
     "title": "Tabellen",
@@ -198,7 +208,8 @@
   "prepare": {
     "duration": "Gesamtdauer der Einheit",
     "steps": "Schritte insgesamt",
-    "metaA11y": "{duration} Gesamtdauer. {count} Schritte insgesamt."
+    "metaA11y": "{duration} Gesamtdauer. {count} Schritte insgesamt.",
+    "openHold": "Offener Gang"
   },
   "training": {
     "title": "Training",
@@ -230,6 +241,12 @@
     "holdPhaseName": "Haltphase",
     "recoveryPhase": "Erholungsphase",
     "cueBreathe": "Atme weiche Bauchatmung. Entspanne Nacken, Kiefer und Schultern.",
+    "cueBreatheMermaid": "Atme ruhig. Nicht hyperventilieren. Halte die Herzfrequenz niedrig.",
+    "cueWalkOpen": "Gehe in mäßigem Tempo auf weichem Untergrund. Stoppe, wenn du atmen musst.",
+    "openWalkSummary": "Gehe, bis du atmen musst",
+    "openWalkUpcoming": "Bis du stoppst",
+    "openMark": "Offen",
+    "stepsSaved": "{count} Schritte gespeichert.",
     "cueHold": "Bleib ruhig. Weiche Gesicht, Nacken und Schultern.",
     "cueRest": "Atme weiche Bauchatmung. Entspanne Nacken, Kiefer und Schultern.",
     "noCompletedStep": "Noch kein abgeschlossener Schritt",
@@ -383,6 +400,39 @@
       "focus": "Spitzenanpassung und ein Weg durch ein Plateau.",
       "method": "Wechsle Standard-CO2 und O2 mit Ein-Atemzug-Tabellen bei etwa 40 % deiner Bestzeit sowie trockenen Apnoe-Gängen."
     },
+    "mermaid": {
+      "notCardio": "Diese Tabellen sind kein Cardio. Halte die Herzfrequenz niedrig.",
+      "noHyperventilation": "Hyperventiliere nicht in der Einatemphase. Zu viel Atmung entzieht CO2 und überdeckt den Atemreiz.",
+      "eyesClosed": "Bleib still und gestützt. Du kannst die Augen schließen und den haptischen oder akustischen Signalen folgen.",
+      "softSurface": "Gehe nur auf weichem Untergrund: Sand, weiches Gras oder eine dicke Gymnastikmatte.",
+      "spotter": "Eine Begleitperson sollte neben dir gehen und deinen Kopf schützen, falls du die Motorik verlierst oder ohnmächtig wirst.",
+      "methodBeginnerMarked": "Tabelle ohne Kontraktion. Halt {time}, deine erste Kontraktion, über 7 Runden. Die Pause sinkt von 2:00 auf 0:30. Nach Woche 2 kommen 15–20 Sekunden hinzu. Bleib still und gestützt, Augen zu, und folge den Signalen.",
+      "methodBeginnerUnmarked": "Standard-CO2-Tabelle. Halt {time}, die Hälfte deines Maximums, weil keine Kontraktion markiert wurde, über 7 Runden. Die Pause sinkt von 2:00 auf 0:30. Nach Woche 2 kommen 15–20 Sekunden hinzu. Bleib still und gestützt, Augen zu, und folge den Signalen.",
+      "beginner": {
+        "name": "Grundlage",
+        "level": "Grundlage",
+        "levelFocus": "Statisches CO2",
+        "frequency": "2–3 statische CO2-Sitzungen pro Woche",
+        "focus": "Verzögere den Atemreiz, während du still bleibst.",
+        "method": "Eine Tabelle ohne Kontraktion, wenn du die erste Kontraktion markierst, oder eine Standard-CO2-Tabelle bei der Hälfte deines Maximums. Bleib gestützt, schließe die Augen und folge den Signalen."
+      },
+      "intermediate": {
+        "name": "Mittelstufe",
+        "level": "Mittelstufe",
+        "levelFocus": "Apnoe-Gänge",
+        "frequency": "3 Sitzungen pro Woche, an verschiedenen Tagen",
+        "focus": "Statisches O2 auf dem Sofa oder im Bett und dynamische CO2-Gänge.",
+        "method": "Die O2-Pause bleibt fest, während der Halt steigt. Apnoe-Gänge halten ein gleichmäßiges Tempo für eine feste Zeit, und die Pause zwischen den Gängen wird kürzer. Gehe nur auf Sand, weichem Gras oder einer dicken Matte."
+      },
+      "advanced": {
+        "name": "Fortgeschritten",
+        "level": "Fortgeschritten",
+        "levelFocus": "Maximale Distanz",
+        "frequency": "3 Sitzungen pro Woche, mit einem freien Tag",
+        "focus": "Gehe, bis der Atemreiz dich stoppt.",
+        "method": "Setz dich für eine Einatmung von 2:00, dann gehe in mäßigem Tempo, bis du atmen musst. Nur weiche Untergründe. Eine Begleitperson geht neben dir. Der Schrittzähler des iPhone speichert deine Schritte, und die Apple Watch ergänzt die Herzfrequenz, wenn sie verbunden ist."
+      }
+    },
     "custom": {
       "name": "Dein Plan",
       "level": "Benutzerdefiniert",
@@ -401,11 +451,19 @@
       "co2": "Der Halt bleibt im Band 60–75 %. Die Pause sinkt. Mache das an einem anderen Tag als O2.",
       "o2": "Die Pause bleibt bei 2:00. Die Halte steigen, und der letzte bleibt bei höchstens 80 % deines Maximums.",
       "oneBreath": "Etwa 40 % deiner Bestzeit. Ein Erholungsatemzug, dann wieder halten.",
-      "walk": "Gehe während jedes Halts. Stehe still, während du dich erholst."
+      "walk": "Gehe während jedes Halts. Stehe still, während du dich erholst.",
+      "mermaidO2": "Sofa oder Bett. Die Pause bleibt fest und der Halt steigt. Nicht hyperventilieren.",
+      "mermaidWalk": "Gleichmäßiges Tempo, fester Halt. Die Pause zwischen den Gängen wird kürzer. Nur Sand, weiches Gras oder eine dicke Matte.",
+      "mermaidDistance": "2:00 Einatmung, dann gehen, bis du atmen musst. Eine Begleitperson sollte neben dir bleiben."
     },
     "session": {
       "co21": "CO2 1",
-      "co22": "CO2 2"
+      "co22": "CO2 2",
+      "apneaWalk": "Apnoe-Gang",
+      "apneaWalk2": "Apnoe-Gang 2",
+      "maxDistance": "Maximale Distanz",
+      "maxDistance2": "Maximale Distanz 2",
+      "maxDistance3": "Maximale Distanz 3"
     }
   },
   "baseline": {
@@ -473,6 +531,7 @@
     "avgContraction": "Mittl. Kontr.",
     "round": "Runde",
     "heartRate": "Herzfrequenz",
+    "steps": "Schritte",
     "a11y": "{elapsed} von {total} vergangen. Mittlere erste Kontraktion {contraction}. Runde {round} von {rounds}. Herzfrequenz {heart}."
   },
   "sessionItem": {
@@ -480,6 +539,7 @@
     "holdRest": "Halt {hold} · Pause {rest}",
     "avgHr": "Mittl. HF {bpm} bpm",
     "zeroContractions": "0 Kontraktionen",
+    "steps": "{count} Schritte",
     "delete": "Löschen",
     "dayWatch": "{day} · "
   },

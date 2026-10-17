@@ -4,6 +4,7 @@ import useChangeTrainingPlan from '@/hooks/useChangeTrainingPlan'
 import { BaselineOutcome } from '@/hooks/useBaselineTest'
 import { useSQLContext } from '@/providers/sql'
 import { generateTablesFromBaseline } from '@/utils/baseline'
+import { practiceFromValue } from '@/utils/practice'
 import { PlanChoice, trainingPlanById } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -46,6 +47,7 @@ export default function PlanScreen() {
       <BaselinePlans
         outcome={outcome}
         saving={saving}
+        practice={practiceFromValue(settings.practice)}
         initialPlanId={currentPlanId}
         initialCustomPlan={settings.customPlan}
         onBack={() => router.back()}

@@ -1,13 +1,14 @@
 import { Setting } from '@/db/schema'
 import { NextTrainingSession, TrainingOutline } from '@/hooks/useTrainingOutline'
 import { Translate } from '@/i18n/types'
+import { practiceFromValue } from '@/utils/practice'
 import { sessionRounds } from '@/utils/training_plan'
 import { phoneTrainingContext, PhoneTraining } from '@/utils/watch_sync'
 import { watchTablesFromSettings } from '@/utils/watch_tables'
 
-export function watchPlanKey(settings: Pick<Setting, 'trainingPlan' | 'trainingPlanStartedAt' | 'customPlan'>): string {
+export function watchPlanKey(settings: Pick<Setting, 'trainingPlan' | 'trainingPlanStartedAt' | 'customPlan' | 'practice'>): string {
   if (settings.trainingPlan == null || settings.trainingPlanStartedAt == null) return ''
-  return `${settings.trainingPlan}:${settings.trainingPlanStartedAt.getTime()}:${settings.customPlan ?? ''}`
+  return `${settings.trainingPlan}:${settings.trainingPlanStartedAt.getTime()}:${settings.customPlan ?? ''}:${practiceFromValue(settings.practice)}`
 }
 
 export function buildWatchContext(input: {
@@ -36,7 +37,7 @@ export function buildWatchContext(input: {
     phoneTraining,
     freeLimitReached,
   } = input
-  const rounds = next == null ? [] : sessionRounds(next)
+  const rounds = next == null || next.openHold ? [] : sessionRounds(next)
   const tables = watchTablesFromSettings(settings, t)
   const shared = {
     type: 'nextSession' as const,

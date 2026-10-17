@@ -80,6 +80,12 @@ export default function SessionListItem({ session, onDelete }: Props) {
             {logged > 0 ? contractionLabel(logged, t) : t('sessionItem.zeroContractions')}
           </SFactText>
         </SFact>
+        {session.steps == null ? null : (
+          <SFact>
+            <Ionicons name='walk-outline' size={13} color={Colors.Aquamarine} />
+            <SFactText>{t('sessionItem.steps', { count: session.steps })}</SFactText>
+          </SFact>
+        )}
         {onDelete ? (
           <SDelete onPress={onDelete}>
             <SDeleteText>{t('sessionItem.delete')}</SDeleteText>

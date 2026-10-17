@@ -127,6 +127,10 @@
     "planNeedBaseline": "Faites un test de baseline pour choisir un plan.",
     "planChoose": "Choisissez un plan, ou construisez le vôtre. Gardez CO2 et O2 sur des jours différents.",
     "changePlan": "Changer de plan",
+    "practice": "Pratique",
+    "practiceNote": "Freediver garde les tables actuelles. Mermaid utilise des plans au sec.",
+    "practiceTitle": "Changer de pratique ?",
+    "practiceBody": "Les plans proposés changent avec ce choix. Les séances qui ne correspondent plus apparaîtront comme non faites.",
     "co2Table": "Table CO2",
     "planSetsCo2": "Ce plan définit la table CO2.",
     "planNoCo2": "Ce plan n’inclut pas de table CO2.",
@@ -159,7 +163,11 @@
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
     "welcomeTitle": "Bienvenue",
-    "welcomeCopy": "Des tables d’apnée statique CO2 et O2 calibrées sur votre apnée maximale. Commençons par trouver votre baseline, puis choisissez un plan d’entraînement.",
+    "welcomeCopy": "Choisissez comment vous vous entraînez. Une apnée maximale dimensionne vos tables, puis vous choisissez un plan.",
+    "practiceFreediver": "Freediver",
+    "practiceMermaid": "Mermaid",
+    "practiceFreediverCopy": "Tables statiques CO2 et O2, dimensionnées à partir de votre apnée maximale.",
+    "practiceMermaidCopy": "Tables au sec : apnées statiques, marches en apnée et marches de distance maximale.",
     "continue": "Continuer",
     "title": "Trouvez votre baseline",
     "copy": "Une apnée statique maximale dimensionne vos tables. Marquez la première contraction, puis tenez jusqu’au besoin de respirer. Ensuite, choisissez un plan ou construisez le vôtre. Gardez CO2 et O2 sur des jours différents.",
@@ -188,7 +196,9 @@
     "weekDone": "Toutes les séances de la semaine sont faites.",
     "sessionSummary": "{name} · {hold} · {count} tours",
     "holdsFrom": "Apnées dès {time}",
-    "hold": "Apnée {time}"
+    "hold": "Apnée {time}",
+    "openWalk": "Jusqu’à l’envie de respirer",
+    "sessionSummaryOpen": "{name} · marchez jusqu’à l’envie de respirer"
   },
   "table": {
     "title": "Tables",
@@ -198,7 +208,8 @@
   "prepare": {
     "duration": "Durée totale de la séance",
     "steps": "Étapes au total",
-    "metaA11y": "{duration} de durée totale. {count} étapes au total."
+    "metaA11y": "{duration} de durée totale. {count} étapes au total.",
+    "openHold": "Marche ouverte"
   },
   "training": {
     "title": "Entraînement",
@@ -230,6 +241,12 @@
     "holdPhaseName": "Phase d’apnée",
     "recoveryPhase": "Phase de récupération",
     "cueBreathe": "Inspirez de souples respirations abdominales. Relâchez nuque, mâchoire et épaules.",
+    "cueBreatheMermaid": "Respirez calmement. N’hyperventilez pas. Gardez la fréquence cardiaque basse.",
+    "cueWalkOpen": "Marchez à un rythme modéré sur une surface souple. Arrêtez-vous quand vous devez respirer.",
+    "openWalkSummary": "Marchez jusqu’à l’envie de respirer",
+    "openWalkUpcoming": "Jusqu’à l’arrêt",
+    "openMark": "Ouverte",
+    "stepsSaved": "{count} pas enregistrés.",
     "cueHold": "Restez immobile. Détendez visage, nuque et épaules.",
     "cueRest": "Inspirez de souples respirations abdominales. Relâchez nuque, mâchoire et épaules.",
     "noCompletedStep": "Aucune étape terminée pour l’instant",
@@ -383,6 +400,39 @@
       "focus": "Adaptation de pointe, et une issue au plateau.",
       "method": "Alternez CO2 et O2 standard avec des tables une-respiration à environ 40 % de votre meilleur, plus des marches d’apnée sèche."
     },
+    "mermaid": {
+      "notCardio": "Ces tables ne sont pas un entraînement cardio. Gardez la fréquence cardiaque basse.",
+      "noHyperventilation": "N’hyperventilez pas pendant la préparation respiratoire. Trop respirer retire le CO2 et masque l’envie de respirer.",
+      "eyesClosed": "Restez immobile et soutenu. Vous pouvez fermer les yeux et suivre les signaux haptiques ou sonores.",
+      "softSurface": "Marchez seulement sur une surface souple : sable, herbe souple ou tapis de gym épais.",
+      "spotter": "Un partenaire doit marcher à côté de vous pour protéger votre tête en cas de perte de contrôle moteur ou de syncope.",
+      "methodBeginnerMarked": "Table sans contraction. Apnée {time}, votre première contraction, pendant 7 tours. Le repos passe de 2:00 à 0:30. Après la semaine 2, l’apnée gagne 15–20 secondes. Restez immobile et soutenu, les yeux fermés, et suivez les signaux.",
+      "methodBeginnerUnmarked": "Table CO2 standard. Apnée {time}, la moitié de votre maximum, car aucune contraction n’a été marquée, pendant 7 tours. Le repos passe de 2:00 à 0:30. Après la semaine 2, l’apnée gagne 15–20 secondes. Restez immobile et soutenu, les yeux fermés, et suivez les signaux.",
+      "beginner": {
+        "name": "Fondamental",
+        "level": "Fondamental",
+        "levelFocus": "CO2 statique",
+        "frequency": "2–3 séances CO2 statiques par semaine",
+        "focus": "Retarder l’envie de respirer en restant immobile.",
+        "method": "Une table sans contraction si vous marquez la première contraction, ou une table CO2 standard à la moitié de votre maximum. Restez soutenu, fermez les yeux et suivez les signaux."
+      },
+      "intermediate": {
+        "name": "Intermédiaire",
+        "level": "Intermédiaire",
+        "levelFocus": "Marches en apnée",
+        "frequency": "3 séances par semaine, sur des jours différents",
+        "focus": "O2 statique sur un canapé ou un lit, et marches CO2 dynamiques.",
+        "method": "Le repos O2 reste fixe pendant que l’apnée monte. Les marches en apnée gardent un rythme régulier pendant un temps fixe, et le repos entre les marches diminue. Marchez seulement sur du sable, de l’herbe souple ou un tapis de gym épais."
+      },
+      "advanced": {
+        "name": "Avancé",
+        "level": "Avancé",
+        "levelFocus": "Distance maximale",
+        "frequency": "3 séances par semaine, avec un jour de repos",
+        "focus": "Marchez jusqu’à ce que l’envie de respirer vous arrête.",
+        "method": "Asseyez-vous pour une préparation de 2:00, puis marchez à un rythme modéré jusqu’à devoir respirer. Surfaces souples seulement. Un partenaire marche à côté de vous. Le podomètre de l’iPhone enregistre vos pas, et l’Apple Watch ajoute la fréquence cardiaque lorsqu’elle est connectée."
+      }
+    },
     "custom": {
       "name": "Votre plan",
       "level": "Personnalisé",
@@ -401,11 +451,19 @@
       "co2": "L’apnée reste dans la bande 60–75 %. Le repos diminue. Faites-le un autre jour que l’O2.",
       "o2": "Le repos reste à 2:00. Les apnées montent, et la dernière reste à 80 % ou moins de votre maximum.",
       "oneBreath": "Environ 40 % de votre meilleur. Une respiration de récupération, puis une nouvelle apnée.",
-      "walk": "Marchez pendant chaque apnée. Restez immobile pendant la récupération."
+      "walk": "Marchez pendant chaque apnée. Restez immobile pendant la récupération.",
+      "mermaidO2": "Canapé ou lit. Le repos reste fixe et l’apnée monte. N’hyperventilez pas pendant la préparation.",
+      "mermaidWalk": "Rythme régulier, apnée fixe. Le repos diminue entre les marches. Sable, herbe souple ou tapis de gym épais seulement.",
+      "mermaidDistance": "Préparation de 2:00, puis marchez jusqu’à l’envie de respirer. Un partenaire doit rester à côté de vous."
     },
     "session": {
       "co21": "CO2 1",
-      "co22": "CO2 2"
+      "co22": "CO2 2",
+      "apneaWalk": "Marche en apnée",
+      "apneaWalk2": "Marche en apnée 2",
+      "maxDistance": "Distance maximale",
+      "maxDistance2": "Distance maximale 2",
+      "maxDistance3": "Distance maximale 3"
     }
   },
   "baseline": {
@@ -473,6 +531,7 @@
     "avgContraction": "Contr. moyenne",
     "round": "Tour",
     "heartRate": "Fréq. cardiaque",
+    "steps": "Pas",
     "a11y": "{elapsed} écoulé sur {total}. Première contraction moyenne {contraction}. Tour {round} sur {rounds}. Fréquence cardiaque {heart}."
   },
   "sessionItem": {
@@ -480,6 +539,7 @@
     "holdRest": "Apnée {hold} · Repos {rest}",
     "avgHr": "FC moy. {bpm} bpm",
     "zeroContractions": "0 contraction",
+    "steps": "{count} pas",
     "delete": "Supprimer",
     "dayWatch": "{day} · "
   },

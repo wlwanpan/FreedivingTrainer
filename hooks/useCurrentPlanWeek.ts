@@ -1,6 +1,7 @@
 import { planCopy, planLevelLine } from '@/i18n/labels'
 import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
+import { practiceFromValue } from '@/utils/practice'
 import {
   baselineRetestDue,
   currentPlanWeek,
@@ -25,6 +26,7 @@ export type PlanWeek = {
 export default function useCurrentPlanWeek(): PlanWeek | null {
   const { settings } = useSQLContext()
   const { t } = useI18n()
+  const practice = practiceFromValue(settings.practice)
   const plan = trainingPlanFromSettings(settings)
   const startedAt = settings.trainingPlanStartedAt
   const baselineMaxSeconds = settings.baselineMaxHoldSeconds
@@ -34,13 +36,13 @@ export default function useCurrentPlanWeek(): PlanWeek | null {
   const week = currentPlanWeek(startedAt, now, plan.weeks)
   const retestDue = baselineRetestDue(plan, startedAt, settings.baselineTestedAt, now)
   return {
-    planName: planCopy(plan.id, 'name', t),
-    level: planLevelLine(plan.id, t),
+    planName: planCopy(plan.id, 'name', t, practice),
+    level: planLevelLine(plan.id, t, practice),
     weeks: plan.weeks,
     week,
     frequency: plan.id === 'custom'
       ? customPlanFrequency(plan.sessionKinds ?? [], t)
-      : planCopy(plan.id, 'frequency', t),
+      : planCopy(plan.id, 'frequency', t, practice),
     setsO2: plan.setsO2,
     retestDue,
     sessions: weeklySessions({
@@ -48,6 +50,7 @@ export default function useCurrentPlanWeek(): PlanWeek | null {
       contractionSeconds: settings.baselineContractionSeconds,
       plan,
       week,
+      practice,
     }),
   }
 }

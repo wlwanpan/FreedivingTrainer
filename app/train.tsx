@@ -61,6 +61,8 @@ export default function TrainScreen() {
         stepCount={training.stepCount}
         roundCount={training.roundCount}
         heartRateBpm={training.heartRateBpm}
+        openHold={training.openHold}
+        steps={training.steps}
         paused={training.paused}
         done={training.done}
         saving={training.saving}
@@ -73,6 +75,7 @@ export default function TrainScreen() {
         onTogglePause={training.togglePause}
         onRememberTap={training.rememberTap}
         onLogContraction={training.logContraction}
+        onFinishOpenHold={training.finishOpenHold}
       />
     </WrapperScreen>
   )

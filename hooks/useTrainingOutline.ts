@@ -1,6 +1,7 @@
 import { planCopy, planLevelLine, sessionDisplayName } from '@/i18n/labels'
 import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
+import { practiceFromValue } from '@/utils/practice'
 import {
   baselineRetestDue,
   completedSessionIndexes,
@@ -59,6 +60,7 @@ export function nextTrainingSession(outline: TrainingOutline | null): NextTraini
 export default function useTrainingOutline(): TrainingOutline | null {
   const { settings, sessions } = useSQLContext()
   const { t } = useI18n()
+  const practice = practiceFromValue(settings.practice)
   const plan = trainingPlanFromSettings(settings)
   const startedAt = settings.trainingPlanStartedAt
   const baselineMaxSeconds = settings.baselineMaxHoldSeconds
@@ -71,6 +73,7 @@ export default function useTrainingOutline(): TrainingOutline | null {
     baselineMaxSeconds,
     contractionSeconds: settings.baselineContractionSeconds,
     plan,
+    practice,
   }).map((entry) => ({
     ...entry,
     completed: completedSessionIndexes(
@@ -87,11 +90,11 @@ export default function useTrainingOutline(): TrainingOutline | null {
     && currentSessions.every((session) => currentCompleted.has(session.index))
 
   return {
-    planName: planCopy(plan.id, 'name', t),
-    level: planLevelLine(plan.id, t),
+    planName: planCopy(plan.id, 'name', t, practice),
+    level: planLevelLine(plan.id, t, practice),
     frequency: plan.id === 'custom'
       ? customPlanFrequency(plan.sessionKinds ?? [], t)
-      : planCopy(plan.id, 'frequency', t),
+      : planCopy(plan.id, 'frequency', t, practice),
     weeks: plan.weeks,
     week,
     weekComplete: currentWeekComplete,

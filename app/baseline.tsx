@@ -6,18 +6,26 @@ import BaselineTimer from '@/components/BaselineTimer'
 import WrapperScreen from '@/components/WrapperScreen'
 import useBaselineTest from '@/hooks/useBaselineTest'
 import { useSQLContext } from '@/providers/sql'
+import { practiceFromValue } from '@/utils/practice'
 import { trainingPlanById } from '@/utils/training_plan'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 
 
 export default function BaselineScreen() {
   const router = useRouter()
-  const { entry, start } = useLocalSearchParams<{ entry?: string | string[]; start?: string | string[] }>()
+  const { entry, start, practice } = useLocalSearchParams<{
+    entry?: string | string[]
+    start?: string | string[]
+    practice?: string | string[]
+  }>()
   const entryValue = Array.isArray(entry) ? entry[0] : entry
   const startValue = Array.isArray(start) ? start[0] : start
+  const practiceValue = Array.isArray(practice) ? practice[0] : practice
   const initialStage = startValue === 'manual' ? 'manual' : 'prep'
   const { settings } = useSQLContext()
-  const test = useBaselineTest(entryValue === 'onboarding', initialStage)
+  const onboarding = entryValue === 'onboarding'
+  const selectedPractice = practiceFromValue(onboarding ? practiceValue : settings.practice)
+  const test = useBaselineTest(onboarding, initialStage, selectedPractice)
 
   return (
     <WrapperScreen skipBottomInset>
@@ -55,6 +63,7 @@ export default function BaselineScreen() {
         <BaselinePlans
           outcome={test.outcome}
           saving={test.saving}
+          practice={selectedPractice}
           initialPlanId={trainingPlanById(settings.trainingPlan)?.id}
           initialCustomPlan={settings.customPlan}
           onStart={(choice) => { void test.save(choice) }}

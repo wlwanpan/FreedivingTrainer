@@ -1,6 +1,7 @@
 import { TableType } from '@/constants/tables'
 import { englishTranslate } from '@/i18n/translate'
 import { Translate } from '@/i18n/types'
+import { Practice, practiceFromValue } from '@/utils/practice'
 import { buildCo2Table, buildO2Table, TableRound } from '@/utils/table'
 
 
@@ -119,9 +120,16 @@ const LegacyPlanIds: Record<string, TrainingPlanId> = {
   long: 'advanced',
 }
 
-export type SessionKind = 'co2' | 'o2' | 'one-breath' | 'walk'
+export type SessionKind = 'co2' | 'o2' | 'one-breath' | 'walk' | 'distance'
 
-export const CustomSessionChoices: readonly { kind: SessionKind; label: string }[] = [
+export const MERMAID_WALK_HOLD_SECONDS = 45
+export const MERMAID_WALK_ROUNDS = 8
+export const MERMAID_WALK_REST_START_SECONDS = 120
+export const MERMAID_WALK_REST_STEP_SECONDS = 15
+export const MERMAID_DISTANCE_BREATHE_SECONDS = 120
+export const MERMAID_DISTANCE_SESSIONS = 3
+
+export const CustomSessionChoices: readonly { kind: Exclude<SessionKind, 'distance'>; label: string }[] = [
   { kind: 'co2', label: 'CO2' },
   { kind: 'o2', label: 'O2' },
   { kind: 'one-breath', label: 'One breath' },
@@ -152,6 +160,8 @@ export type WeekSession = {
   restStepSeconds: number
   rounds: number
   note: string
+  openHold?: boolean
+  breatheUpSeconds?: number
 }
 
 export function trainingPlanById(id: string | null | undefined): TrainingPlan | null {
@@ -244,15 +254,26 @@ export function planFromChoice(choice: PlanChoice): TrainingPlan | null {
   return withCustomPlan(plan, custom)
 }
 
+export function applyPractice(plan: TrainingPlan, practice: Practice): TrainingPlan {
+  if (practice !== 'mermaid' || plan.id !== 'intermediate') return plan
+  return { ...plan, retestAtWeek: null }
+}
+
 export function trainingPlanFromSettings(input: {
   trainingPlan: string | null | undefined
   customPlan: string | null | undefined
+  practice?: string | null
 }): TrainingPlan | null {
   const plan = trainingPlanById(input.trainingPlan)
-  if (plan?.id !== 'custom') return plan
-  const custom = parseCustomPlan(input.customPlan)
-  if (custom == null) return null
-  return withCustomPlan(plan, custom)
+  if (plan == null) return null
+  const resolved = plan.id === 'custom'
+    ? (() => {
+      const custom = parseCustomPlan(input.customPlan)
+      return custom == null ? null : withCustomPlan(plan, custom)
+    })()
+    : plan
+  if (resolved == null) return null
+  return applyPractice(resolved, practiceFromValue(input.practice))
 }
 
 export function currentPlanWeek(startedAt: Date, now: Date, weeks: number): number {
@@ -279,6 +300,7 @@ export function planSchedule(input: {
   baselineMaxSeconds: number
   contractionSeconds: number | null
   plan: TrainingPlan
+  practice?: Practice
 }): { week: number; sessions: WeekSession[] }[] {
   return Array.from({ length: input.plan.weeks }, (_, index) => {
     const week = index + 1
@@ -410,30 +432,57 @@ export function weeklySessions(input: {
   contractionSeconds: number | null
   plan: TrainingPlan
   week: number
+  practice?: Practice
 }): WeekSession[] {
   const baseline = Math.max(1, Math.floor(input.baselineMaxSeconds))
   const contraction = input.contractionSeconds == null
     ? null
     : Math.min(baseline, Math.max(0, Math.floor(input.contractionSeconds)))
   const week = Math.min(input.plan.weeks, Math.max(1, input.week))
+  const practice = input.practice ?? 'freediver'
 
-  const sessions = input.plan.id === 'beginner'
-    ? [beginnerSession(baseline, contraction, week)]
-    : input.plan.id === 'intermediate'
-      ? intermediateSessions(baseline)
-      : input.plan.id === 'advanced'
-        ? advancedSessions(baseline)
-        : customSessions(baseline, input.plan.sessionKinds ?? ['co2'])
+  const sessions = practice === 'mermaid'
+    ? mermaidSessions(baseline, contraction, input.plan, week)
+    : freediverSessions(baseline, contraction, input.plan, week)
 
   return sessions.map((session, index) => ({ ...session, index: index + 1 }))
+}
+
+function freediverSessions(
+  baseline: number,
+  contraction: number | null,
+  plan: TrainingPlan,
+  week: number,
+): WeekSession[] {
+  if (plan.id === 'beginner') return [beginnerSession(baseline, contraction, week)]
+  if (plan.id === 'intermediate') return intermediateSessions(baseline)
+  if (plan.id === 'advanced') return advancedSessions(baseline)
+  return customSessions(baseline, plan.sessionKinds ?? ['co2'])
+}
+
+function mermaidSessions(
+  baseline: number,
+  contraction: number | null,
+  plan: TrainingPlan,
+  week: number,
+): WeekSession[] {
+  if (plan.id === 'beginner') return [beginnerSession(baseline, contraction, week)]
+  if (plan.id === 'intermediate') return mermaidIntermediateSessions(baseline)
+  if (plan.id === 'advanced') return mermaidAdvancedSessions()
+  return customSessions(baseline, plan.sessionKinds ?? ['co2'])
 }
 
 export type TableSpec = Pick<
   WeekSession,
   'tableType' | 'holdSeconds' | 'holdStepSeconds' | 'restStartSeconds' | 'restStepSeconds' | 'rounds'
->
+> & {
+  openHold?: boolean
+}
 
 export function sessionRounds(session: TableSpec): TableRound[] {
+  if (session.openHold) {
+    return [{ index: 1, holdSeconds: 0, restSeconds: 0 }]
+  }
   if (session.tableType === 'o2') {
     return buildO2Table({
       co2Rounds: 1,
@@ -590,6 +639,60 @@ function oneBreathSession(baseline: number): WeekSession {
     restStepSeconds: 0,
     rounds: 8,
     note: 'plan.note.oneBreath',
+  }
+}
+
+export function mermaidWalkHold(baselineSeconds: number): number {
+  return Math.min(
+    MERMAID_WALK_HOLD_SECONDS,
+    Math.max(MIN_HOLD_SECONDS, snap(baselineSeconds)),
+  )
+}
+
+function mermaidIntermediateSessions(baseline: number): WeekSession[] {
+  const o2 = o2Session(baseline, 'O2')
+  return [
+    { ...o2, note: 'plan.note.mermaidO2' },
+    mermaidWalk(baseline, 'Apnea walk'),
+    mermaidWalk(baseline, 'Apnea walk 2'),
+  ]
+}
+
+function mermaidWalk(baseline: number, name: string): WeekSession {
+  return {
+    index: 1,
+    name,
+    kind: 'walk',
+    tableType: 'walk',
+    holdSeconds: mermaidWalkHold(baseline),
+    holdStepSeconds: 0,
+    restStartSeconds: MERMAID_WALK_REST_START_SECONDS,
+    restStepSeconds: MERMAID_WALK_REST_STEP_SECONDS,
+    rounds: MERMAID_WALK_ROUNDS,
+    note: 'plan.note.mermaidWalk',
+  }
+}
+
+function mermaidAdvancedSessions(): WeekSession[] {
+  return Array.from({ length: MERMAID_DISTANCE_SESSIONS }, (_, index) => (
+    maximumDistanceSession(index === 0 ? 'Maximum distance' : `Maximum distance ${index + 1}`)
+  ))
+}
+
+function maximumDistanceSession(name: string): WeekSession {
+  return {
+    index: 1,
+    name,
+    kind: 'distance',
+    tableType: 'walk',
+    holdSeconds: 0,
+    holdStepSeconds: 0,
+    restStartSeconds: 0,
+    restStepSeconds: 0,
+    rounds: 1,
+    note: 'plan.note.mermaidDistance',
+    openHold: true,
+    breatheUpSeconds: MERMAID_DISTANCE_BREATHE_SECONDS,
   }
 }
 

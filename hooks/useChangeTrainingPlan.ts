@@ -3,6 +3,7 @@ import { planCopy } from '@/i18n/labels'
 import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useWarningModal } from '@/providers/warning_modal'
+import { practiceFromValue } from '@/utils/practice'
 import {
   isCurrentPlanChoice,
   PlanChoice,
@@ -37,7 +38,7 @@ export default function useChangeTrainingPlan() {
     if (current != null && outline?.progress !== 1) {
       const confirmed = await showConfirmation(
         t('plan.changeTitle'),
-        withWatchTrainingLoss(planSwitchWarning(planCopy(current.id, 'name', t), planWeek?.week ?? null, t), t),
+        withWatchTrainingLoss(planSwitchWarning(planCopy(current.id, 'name', t, practiceFromValue(sql.settings.practice)), planWeek?.week ?? null, t), t),
       )
       if (!confirmed) return 'cancelled'
     }
@@ -48,6 +49,7 @@ export default function useChangeTrainingPlan() {
       contractionSeconds: sql.settings.baselineContractionSeconds,
       plan: next,
       week: 1,
+      practice: practiceFromValue(sql.settings.practice),
     })
     const co2 = sessions.find((session) => session.kind === 'co2') ?? null
     const o2 = sessions.find((session) => session.kind === 'o2') ?? null

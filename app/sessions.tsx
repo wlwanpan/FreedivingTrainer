@@ -10,6 +10,7 @@ import { useFormatterContext } from '@/providers/formatter'
 import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { planCopy } from '@/i18n/labels'
+import { practiceFromValue } from '@/utils/practice'
 import { groupSessionsByPlanWeek, trainedDays } from '@/utils/session_log'
 import { trainingPlanFromSettings } from '@/utils/training_plan'
 import { useRouter } from 'expo-router'
@@ -28,7 +29,7 @@ export default function SessionsScreen() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const groups = groupSessionsByPlanWeek(
     sessions,
-    plan == null ? null : planCopy(plan.id, 'name', t),
+    plan == null ? null : planCopy(plan.id, 'name', t, practiceFromValue(settings.practice)),
     settings.trainingPlanStartedAt,
     t,
   )

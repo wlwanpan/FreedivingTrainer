@@ -20,4 +20,6 @@ function ensureColumn(
 export function repairSettingsSchema(db: SQLiteDatabase) {
   ensureColumn(db, 'settings', 'safety_rule_dismissed', 'integer DEFAULT false NOT NULL')
   ensureColumn(db, 'settings', 'training_sound', 'integer DEFAULT true NOT NULL')
+  ensureColumn(db, 'settings', 'practice', "text DEFAULT 'freediver' NOT NULL")
+  ensureColumn(db, 'sessions', 'steps', 'integer')
 }
