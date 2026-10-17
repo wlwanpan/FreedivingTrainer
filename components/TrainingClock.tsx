@@ -38,6 +38,8 @@ type Props = {
   stepCount: number
   roundCount: number
   heartRateBpm: number | null
+  openHold?: boolean
+  steps?: number | null
   paused: boolean
   done: boolean
   saving: boolean
@@ -50,6 +52,7 @@ type Props = {
   onTogglePause: () => void
   onRememberTap: () => void
   onLogContraction: () => ContractionTap
+  onFinishOpenHold?: () => void
 }
 
 export default function TrainingClock({
@@ -63,6 +66,8 @@ export default function TrainingClock({
   stepCount,
   roundCount,
   heartRateBpm,
+  openHold = false,
+  steps = null,
   paused,
   done,
   saving,
@@ -75,6 +80,7 @@ export default function TrainingClock({
   onTogglePause,
   onRememberTap,
   onLogContraction,
+  onFinishOpenHold,
 }: Props) {
   const { t } = useI18n()
   const { settings, updatedAt } = useSQLContext()
@@ -243,7 +249,16 @@ export default function TrainingClock({
     const height = event.nativeEvent.layout.height
     setChainHeight((currentHeight) => (currentHeight === height ? currentHeight : height))
   }
-  const note = sessionResultNote(contractions.length, saveFailed, t)
+  const savedNote = sessionResultNote(contractions.length, saveFailed, t)
+  const note = openHold && steps != null
+    ? `${t('training.stepsSaved', { count: steps })} ${savedNote}`
+    : savedNote
+  const mermaid = settings.practice === 'mermaid'
+  const currentCue = current?.open
+    ? t('training.cueWalkOpen')
+    : current?.kind === 'breathe' && mermaid
+      ? t('training.cueBreatheMermaid')
+      : undefined
   const previousAside = asideFor(previous, contractions, t)
   const currentAside = asideFor(current, contractions, t)
 
@@ -277,6 +292,8 @@ export default function TrainingClock({
         roundCount={roundCount}
         heartRateBpm={heartRateBpm}
         contractions={contractions}
+        steps={openHold ? steps : null}
+        openHold={openHold}
       />
       <SStage>
         <GestureDetector gesture={taps}>
@@ -321,6 +338,7 @@ export default function TrainingClock({
                 stepIndex={current.index}
                 stepCount={stepCount}
                 aside={currentAside}
+                cue={currentCue}
                 animated={animated}
               />
             ) : null}
@@ -340,6 +358,7 @@ export default function TrainingClock({
                 y={trainingStepY('next', chainHeight, cardSize)}
                 kind={next.kind}
                 seconds={next.seconds}
+                open={next.open}
                 roundIndex={next.roundIndex}
                 roundCount={roundCount}
                 stepIndex={next.index}
@@ -350,7 +369,7 @@ export default function TrainingClock({
           </SChain>
         </GestureDetector>
         {!done && !tutorialOpen ? (
-          <SNotices pointerEvents='none' style={{ bottom: bottomInset }}>
+          <SNotices pointerEvents='none' style={{ bottom: current?.open ? bottomInset + Layout.PrimaryButton + 16 : bottomInset }}>
             {feedback ? <SPill><SPillText>{feedback.text}</SPillText></SPill> : null}
           </SNotices>
         ) : null}
@@ -362,6 +381,14 @@ export default function TrainingClock({
             loading={saving}
             disabled={!saved && !saveFailed}
             onPress={saved ? onClose : onRetry}
+          />
+        </Footer>
+      ) : current?.open ? (
+        <Footer>
+          <Button
+            title={t('baseline.needBreathe')}
+            onPress={onFinishOpenHold}
+            disabled={paused}
           />
         </Footer>
       ) : null}

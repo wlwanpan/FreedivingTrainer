@@ -16,6 +16,8 @@ export type TrainRouteParams = {
   week?: string | string[]
   session?: string | string[]
   note?: string | string[]
+  open?: string | string[]
+  breathe?: string | string[]
 }
 
 export function trainParamsFromSession(session: WeekSession, week: number): Record<string, string> {
@@ -30,6 +32,10 @@ export function trainParamsFromSession(session: WeekSession, week: number): Reco
     week: String(week),
     session: String(session.index),
     note: session.note,
+    ...(session.openHold ? {
+      open: '1',
+      breathe: String(session.breatheUpSeconds ?? 0),
+    } : {}),
   }
 }
 
@@ -65,26 +71,36 @@ export function parseSlot(params: {
   return { week, index }
 }
 
+export function parseFlag(value: string | string[] | undefined): boolean {
+  const raw = Array.isArray(value) ? value[0] : value
+  return raw === '1'
+}
+
 export function parseTrainTable(params: {
   hold?: string | string[]
   holdStep?: string | string[]
   restStart?: string | string[]
   restStep?: string | string[]
   rounds?: string | string[]
+  open?: string | string[]
+  breathe?: string | string[]
 }): TrainTable | null {
-  const holdSeconds = parseCount(params.hold, false)
+  const openHold = parseFlag(params.open)
+  const holdSeconds = parseCount(params.hold, openHold)
   const restStartSeconds = parseCount(params.restStart, true)
   const restStepSeconds = parseCount(params.restStep, true)
   const rounds = parseCount(params.rounds, false)
   if (holdSeconds == null || restStartSeconds == null || restStepSeconds == null || rounds == null) {
     return null
   }
+  const breatheUpSeconds = parseCount(params.breathe, true)
   return {
     holdSeconds,
     holdStepSeconds: parseCount(params.holdStep, true) ?? 0,
     restStartSeconds,
     restStepSeconds,
     rounds,
+    ...(openHold ? { openHold: true, breatheUpSeconds: breatheUpSeconds ?? 0 } : {}),
   }
 }
 

@@ -120,6 +120,13 @@
       "when": 1792096963860,
       "tag": "0016_bumpy_nighthawk",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1792263768779,
+      "tag": "0017_acoustic_enchantress",
+      "breakpoints": true
     }
   ]
 }

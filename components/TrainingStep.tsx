@@ -114,6 +114,8 @@ type Props = {
   stepCount?: number
   note?: string
   aside?: string
+  cue?: string
+  open?: boolean
   animated?: boolean
 }
 
@@ -129,6 +131,8 @@ export default function TrainingStep({
   stepCount,
   note,
   aside,
+  cue,
+  open = false,
   animated = true,
 }: Props) {
   const { t, language } = useI18n()
@@ -221,11 +225,13 @@ export default function TrainingStep({
                   )}
                 </SRailTitleRow>
                 <SRailMeta numberOfLines={1}>
-                  {t('training.upcoming', { time: formatSeconds(seconds), phase: t(PhaseShortKey[kind]) })}
+                  {open
+                    ? t('training.openWalkUpcoming')
+                    : t('training.upcoming', { time: formatSeconds(seconds), phase: t(PhaseShortKey[kind]) })}
                 </SRailMeta>
               </SRailCopy>
               <SRailTime style={{ fontVariant: ['tabular-nums'] }}>
-                {formatSeconds(seconds)}
+                {open ? t('training.openMark') : formatSeconds(seconds)}
               </SRailTime>
             </SRail>
           ) : (
@@ -262,7 +268,7 @@ export default function TrainingStep({
                   />
                 </SNoteIcon>
                 <SNoteText>
-                  {role === 'complete' ? note ?? '' : t(PhaseCueKey[kind])}
+                  {role === 'complete' ? note ?? '' : cue ?? t(PhaseCueKey[kind])}
                 </SNoteText>
               </SNote>
             </SHero>

@@ -2,6 +2,7 @@ import OnboardingBaselineIntro from '@/components/OnboardingBaselineIntro'
 import OnboardingWelcome from '@/components/OnboardingWelcome'
 import WrapperScreen from '@/components/WrapperScreen'
 import { useSQLContext } from '@/providers/sql'
+import { Practice } from '@/utils/practice'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 
@@ -13,6 +14,7 @@ export default function OnboardingScreen() {
   const sql = useSQLContext()
   const onboardedAt = sql.settings.createdAt?.getTime() ?? null
   const [step, setStep] = useState<OnboardingStep>('welcome')
+  const [practice, setPractice] = useState<Practice | null>(null)
 
   useEffect(() => {
     if (onboardedAt != null) {
@@ -21,17 +23,26 @@ export default function OnboardingScreen() {
   }, [onboardedAt, router])
 
   const startTest = () => {
-    router.push({ pathname: '/baseline', params: { entry: 'onboarding' } })
+    if (practice == null) return
+    router.push({ pathname: '/baseline', params: { entry: 'onboarding', practice } })
   }
 
   const enterTimes = () => {
-    router.push({ pathname: '/baseline', params: { entry: 'onboarding', start: 'manual' } })
+    if (practice == null) return
+    router.push({ pathname: '/baseline', params: { entry: 'onboarding', start: 'manual', practice } })
   }
 
   return (
     <WrapperScreen skipBottomInset>
       {step === 'welcome' ? (
-        <OnboardingWelcome onContinue={() => setStep('baseline')} />
+        <OnboardingWelcome
+          practice={practice}
+          onSelect={setPractice}
+          onContinue={() => {
+            if (practice == null) return
+            setStep('baseline')
+          }}
+        />
       ) : (
         <OnboardingBaselineIntro onStart={startTest} onEnterTimes={enterTimes} />
       )}

@@ -127,6 +127,10 @@
     "planNeedBaseline": "Haz un test de línea base para elegir un plan.",
     "planChoose": "Elige un plan o crea el tuyo. Mantén CO2 y O2 en días distintos.",
     "changePlan": "Cambiar plan",
+    "practice": "Práctica",
+    "practiceNote": "Freediver mantiene las tablas actuales. Mermaid usa planes en seco.",
+    "practiceTitle": "¿Cambiar la práctica?",
+    "practiceBody": "Los planes propuestos cambian con esta elección. Las sesiones que ya no coincidan se mostrarán como no hechas.",
     "co2Table": "Tabla CO2",
     "planSetsCo2": "Este plan define la tabla CO2.",
     "planNoCo2": "Este plan no incluye una tabla CO2.",
@@ -159,7 +163,11 @@
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
     "welcomeTitle": "Bienvenido",
-    "welcomeCopy": "Tablas de apnea estática CO2 y O2 ajustadas a tu apnea máxima. Primero encontraremos tu línea base; después podrás elegir un plan de entrenamiento.",
+    "welcomeCopy": "Elige cómo entrenas. Una apnea máxima dimensiona tus tablas y después eliges un plan.",
+    "practiceFreediver": "Freediver",
+    "practiceMermaid": "Mermaid",
+    "practiceFreediverCopy": "Tablas estáticas de CO2 y O2, dimensionadas a partir de tu apnea máxima.",
+    "practiceMermaidCopy": "Tablas en seco: apneas estáticas, caminatas en apnea y caminatas de distancia máxima.",
     "continue": "Continuar",
     "title": "Encuentra tu línea base",
     "copy": "Una apnea estática máxima dimensiona tus tablas. Marca la primera contracción y sigue hasta que necesites respirar. Después, elige un plan o crea el tuyo. Mantén CO2 y O2 en días distintos.",
@@ -188,7 +196,9 @@
     "weekDone": "Todas las sesiones de esta semana están hechas.",
     "sessionSummary": "{name} · {hold} · {count} rondas",
     "holdsFrom": "Apneas desde {time}",
-    "hold": "Apnea {time}"
+    "hold": "Apnea {time}",
+    "openWalk": "Hasta que necesites respirar",
+    "sessionSummaryOpen": "{name} · camina hasta que necesites respirar"
   },
   "table": {
     "title": "Tablas",
@@ -198,7 +208,8 @@
   "prepare": {
     "duration": "Duración total de la sesión",
     "steps": "Pasos totales",
-    "metaA11y": "{duration} de duración total. {count} pasos en total."
+    "metaA11y": "{duration} de duración total. {count} pasos en total.",
+    "openHold": "Caminata abierta"
   },
   "training": {
     "title": "Entrenamiento",
@@ -230,6 +241,12 @@
     "holdPhaseName": "Fase de apnea",
     "recoveryPhase": "Fase de recuperación",
     "cueBreathe": "Inhala respiraciones abdominales suaves. Relaja cuello, mandíbula y hombros.",
+    "cueBreatheMermaid": "Respira en calma. No hiperventiles. Mantén baja la frecuencia cardíaca.",
+    "cueWalkOpen": "Camina a un ritmo moderado sobre una superficie blanda. Para cuando necesites respirar.",
+    "openWalkSummary": "Camina hasta que necesites respirar",
+    "openWalkUpcoming": "Hasta que pares",
+    "openMark": "Abierta",
+    "stepsSaved": "{count} pasos registrados.",
     "cueHold": "Quédate quieto. Suaviza cara, cuello y hombros.",
     "cueRest": "Inhala respiraciones abdominales suaves. Relaja cuello, mandíbula y hombros.",
     "noCompletedStep": "Aún no hay un paso completado",
@@ -383,6 +400,39 @@
       "focus": "Adaptación máxima y una salida del estancamiento.",
       "method": "Alterna CO2 y O2 estándar con tablas de una respiración a unos 40 % de tu mejor marca, más caminatas de apnea seca."
     },
+    "mermaid": {
+      "notCardio": "Estas tablas no son entrenamiento cardiovascular. Mantén baja la frecuencia cardíaca.",
+      "noHyperventilation": "No hiperventiles en la respiración previa. Respirar de más elimina CO2 y oculta la necesidad de respirar.",
+      "eyesClosed": "Quédate quieto y apoyado. Puedes cerrar los ojos y seguir las señales hápticas o de audio.",
+      "softSurface": "Camina solo sobre una superficie blanda: arena, hierba blanda o una colchoneta gruesa.",
+      "spotter": "Un acompañante debe caminar a tu lado para proteger tu cabeza si pierdes el control motor o te desmayas.",
+      "methodBeginnerMarked": "Tabla sin contracción. Apnea {time}, tu primera contracción, durante 7 rondas. El descanso baja de 2:00 a 0:30. Después de la semana 2, la apnea suma 15–20 segundos. Quédate quieto y apoyado, con los ojos cerrados, y sigue las señales.",
+      "methodBeginnerUnmarked": "Tabla de CO2 estándar. Apnea {time}, la mitad de tu máximo, porque no se marcó ninguna contracción, durante 7 rondas. El descanso baja de 2:00 a 0:30. Después de la semana 2, la apnea suma 15–20 segundos. Quédate quieto y apoyado, con los ojos cerrados, y sigue las señales.",
+      "beginner": {
+        "name": "Fundacional",
+        "level": "Fundacional",
+        "levelFocus": "CO2 estático",
+        "frequency": "2–3 sesiones estáticas de CO2 por semana",
+        "focus": "Retrasa la necesidad de respirar mientras permaneces quieto.",
+        "method": "Una tabla sin contracción si marcas la primera contracción, o una tabla de CO2 estándar a la mitad de tu máximo. Quédate apoyado, cierra los ojos y sigue las señales."
+      },
+      "intermediate": {
+        "name": "Intermedio",
+        "level": "Intermedio",
+        "levelFocus": "Caminatas en apnea",
+        "frequency": "3 sesiones por semana, en días distintos",
+        "focus": "O2 estático en un sofá o una cama, y caminatas dinámicas de CO2.",
+        "method": "El descanso de O2 se mantiene fijo mientras la apnea sube. Las caminatas en apnea mantienen un ritmo constante durante un tiempo fijo, y el descanso entre caminatas se acorta. Camina solo sobre arena, hierba blanda o una colchoneta gruesa."
+      },
+      "advanced": {
+        "name": "Avanzado",
+        "level": "Avanzado",
+        "levelFocus": "Distancia máxima",
+        "frequency": "3 sesiones por semana, con un día de descanso",
+        "focus": "Camina hasta que la necesidad de respirar te detenga.",
+        "method": "Siéntate para una respiración previa de 2:00 y luego camina a un ritmo moderado hasta que debas respirar. Solo superficies blandas. Un acompañante camina a tu lado. El podómetro del iPhone registra tus pasos, y el Apple Watch añade la frecuencia cardíaca cuando está conectado."
+      }
+    },
     "custom": {
       "name": "Tu plan",
       "level": "Personalizado",
@@ -401,11 +451,19 @@
       "co2": "La apnea se queda en la banda 60–75 %. El descanso baja. Hazlo un día distinto al O2.",
       "o2": "El descanso se mantiene en 2:00. Las apneas suben y la última se queda en el 80 % o menos de tu máximo.",
       "oneBreath": "Unos 40 % de tu mejor marca. Una respiración de recuperación y otra apnea.",
-      "walk": "Camina durante cada apnea. Quédate quieto al recuperar."
+      "walk": "Camina durante cada apnea. Quédate quieto al recuperar.",
+      "mermaidO2": "Sofá o cama. El descanso se mantiene fijo y la apnea sube. No hiperventiles en la respiración previa.",
+      "mermaidWalk": "Ritmo constante y apnea fija. El descanso se acorta entre caminatas. Solo arena, hierba blanda o una colchoneta gruesa.",
+      "mermaidDistance": "Respiración previa de 2:00 y luego camina hasta que necesites respirar. Un acompañante debe ir a tu lado."
     },
     "session": {
       "co21": "CO2 1",
-      "co22": "CO2 2"
+      "co22": "CO2 2",
+      "apneaWalk": "Caminata en apnea",
+      "apneaWalk2": "Caminata en apnea 2",
+      "maxDistance": "Distancia máxima",
+      "maxDistance2": "Distancia máxima 2",
+      "maxDistance3": "Distancia máxima 3"
     }
   },
   "baseline": {
@@ -473,6 +531,7 @@
     "avgContraction": "Contr. media",
     "round": "Ronda",
     "heartRate": "Frec. cardíaca",
+    "steps": "Pasos",
     "a11y": "{elapsed} transcurrido de {total}. Primera contracción media {contraction}. Ronda {round} de {rounds}. Frecuencia cardíaca {heart}."
   },
   "sessionItem": {
@@ -480,6 +539,7 @@
     "holdRest": "Apnea {hold} · Descanso {rest}",
     "avgHr": "FC media {bpm} lpm",
     "zeroContractions": "0 contracciones",
+    "steps": "{count} pasos",
     "delete": "Eliminar",
     "dayWatch": "{day} · "
   },

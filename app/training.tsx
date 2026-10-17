@@ -29,7 +29,7 @@ export default function TrainingScreen() {
 
   const open = (session: WeekSession, week: number, locked: boolean) => {
     if (locked) return
-    if (sessionRounds(session).length === 0) {
+    if (!session.openHold && sessionRounds(session).length === 0) {
       showWarning(t('errors.input'), t('home.addRound'))
       return
     }
@@ -117,6 +117,7 @@ function sessionSummary(
   formatSeconds: (seconds: number) => string,
   t: ReturnType<typeof useI18n>['t'],
 ): string {
+  if (session.openHold) return t('training.openWalkSummary')
   return t('training.holdRounds', {
     hold: holdLabel(session.tableType, formatSeconds(session.holdSeconds), t),
     count: session.rounds,

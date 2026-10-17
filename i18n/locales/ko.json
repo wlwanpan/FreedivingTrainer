@@ -127,6 +127,10 @@
     "planNeedBaseline": "플랜을 고르려면 베이스라인 테스트를 하세요.",
     "planChoose": "플랜을 고르거나 직접 만드세요. CO2와 O2는 다른 날에 하세요.",
     "changePlan": "플랜 변경",
+    "practice": "수련",
+    "practiceNote": "프리다이버는 현재 테이블을 유지합니다. 머메이드는 육상 계획을 사용합니다.",
+    "practiceTitle": "수련을 바꿀까요?",
+    "practiceBody": "제안된 계획이 이 선택에 따라 바뀝니다. 더 이상 맞지 않는 세션은 미완료로 표시됩니다.",
     "co2Table": "CO2 테이블",
     "planSetsCo2": "이 플랜이 CO2 테이블을 정합니다.",
     "planNoCo2": "이 플랜에는 CO2 테이블이 없습니다.",
@@ -159,7 +163,11 @@
   "onboarding": {
     "eyebrow": "FreedivingTrainer",
     "welcomeTitle": "환영합니다",
-    "welcomeCopy": "최대 잠수에 맞춘 CO2·O2 정적 잠수 테이블입니다. 먼저 베이스라인을 찾은 뒤, 훈련 플랜을 고르세요.",
+    "welcomeCopy": "훈련 방식을 고르세요. 최대 숨 참기로 테이블이 정해지고, 그다음 계획을 고릅니다.",
+    "practiceFreediver": "프리다이버",
+    "practiceMermaid": "머메이드",
+    "practiceFreediverCopy": "최대 숨 참기에 맞춘 CO2와 O2 정적 테이블입니다.",
+    "practiceMermaidCopy": "육상 테이블: 정적 숨 참기, 무호흡 걷기, 최대 거리 걷기.",
     "continue": "계속",
     "title": "베이스라인 찾기",
     "copy": "한 번의 최대 정적 잠수가 테이블 크기를 정합니다. 첫 수축을 표시한 뒤, 숨이 필요할 때까지 참으세요. 그다음 플랜을 고르거나 직접 만드세요. CO2와 O2는 다른 날에 하세요.",
@@ -188,7 +196,9 @@
     "weekDone": "이번 주 세션을 모두 마쳤습니다.",
     "sessionSummary": "{name} · {hold} · {count}라운드",
     "holdsFrom": "{time}부터 잠수",
-    "hold": "잠수 {time}"
+    "hold": "잠수 {time}",
+    "openWalk": "숨이 필요할 때까지",
+    "sessionSummaryOpen": "{name} · 숨이 필요할 때까지 걷기"
   },
   "table": {
     "title": "테이블",
@@ -198,7 +208,8 @@
   "prepare": {
     "duration": "총 세션 시간",
     "steps": "총 단계",
-    "metaA11y": "총 세션 시간 {duration}. 총 단계 {count}."
+    "metaA11y": "총 세션 시간 {duration}. 총 단계 {count}.",
+    "openHold": "열린 걷기"
   },
   "training": {
     "title": "훈련",
@@ -230,6 +241,12 @@
     "holdPhaseName": "잠수 단계",
     "recoveryPhase": "회복 단계",
     "cueBreathe": "부드러운 복식 호흡을 하세요. 목, 턱, 어깨를 푸세요.",
+    "cueBreatheMermaid": "조용히 호흡하세요. 과호흡하지 마세요. 심박수는 낮게 유지하세요.",
+    "cueWalkOpen": "부드러운 바닥에서 보통 속도로 걸으세요. 숨이 필요하면 멈추세요.",
+    "openWalkSummary": "숨이 필요할 때까지 걷기",
+    "openWalkUpcoming": "멈출 때까지",
+    "openMark": "열림",
+    "stepsSaved": "{count}걸음을 기록했습니다.",
     "cueHold": "가만히 있으세요. 얼굴, 목, 어깨를 부드럽게 하세요.",
     "cueRest": "부드러운 복식 호흡을 하세요. 목, 턱, 어깨를 푸세요.",
     "noCompletedStep": "아직 완료된 단계가 없습니다",
@@ -383,6 +400,39 @@
       "focus": "정점 적응과 정체 돌파.",
       "method": "표준 CO2와 O2를 최고 기록의 약 40% 원 브레스 테이블, 드라이 무호흡 걷기와 번갈아 하세요."
     },
+    "mermaid": {
+      "notCardio": "이 테이블은 유산소 운동이 아닙니다. 심박수는 낮게 유지하세요.",
+      "noHyperventilation": "호흡 준비에서 과호흡하지 마세요. 과도한 호흡은 이산화탄소를 빼앗아 숨쉬고 싶은 신호를 가립니다.",
+      "eyesClosed": "가만히 지지된 자세를 유지하세요. 눈을 감고 햅틱이나 소리 신호에 집중할 수 있습니다.",
+      "softSurface": "모래, 부드러운 잔디, 두꺼운 운동 매트처럼 부드러운 바닥에서만 걸으세요.",
+      "spotter": "운동 조절을 잃거나 실신할 경우 머리를 보호하도록 보조자가 옆에서 함께 걸어야 합니다.",
+      "methodBeginnerMarked": "수축 없는 테이블. {time} 동안, 첫 수축 시점에 맞춰 7라운드를 참습니다. 휴식은 2:00에서 0:30으로 줄어듭니다. 2주 후에는 참기 시간이 15–20초 늘어납니다. 지지된 자세로 눈을 감고 신호에 따르세요.",
+      "methodBeginnerUnmarked": "표준 CO2 테이블. 수축을 표시하지 않았으므로 최대의 절반인 {time} 동안 7라운드를 참습니다. 휴식은 2:00에서 0:30으로 줄어듭니다. 2주 후에는 참기 시간이 15–20초 늘어납니다. 지지된 자세로 눈을 감고 신호에 따르세요.",
+      "beginner": {
+        "name": "기초",
+        "level": "기초",
+        "levelFocus": "정적 CO2",
+        "frequency": "주 2–3회 정적 CO2 세션",
+        "focus": "가만히 있는 동안 호흡 욕구를 늦춥니다.",
+        "method": "첫 수축을 표시하면 수축 없는 테이블을, 그렇지 않으면 최대의 절반으로 표준 CO2 테이블을 진행합니다. 지지된 자세로 눈을 감고 신호를 따르세요."
+      },
+      "intermediate": {
+        "name": "중급",
+        "level": "중급",
+        "levelFocus": "무호흡 걷기",
+        "frequency": "주 3회, 서로 다른 날",
+        "focus": "소파나 침대에서 하는 정적 O2와 동적 CO2 걷기.",
+        "method": "O2는 휴식이 고정되고 참기 시간이 늘어납니다. 무호흡 걷기는 일정한 속도로 고정된 시간 동안 걷고, 걷기 사이 휴식은 줄어듭니다. 모래, 부드러운 잔디, 두꺼운 매트에서만 걸으세요."
+      },
+      "advanced": {
+        "name": "고급",
+        "level": "고급",
+        "levelFocus": "최대 거리",
+        "frequency": "주 3회, 하루는 완전히 쉽니다",
+        "focus": "숨쉬고 싶어질 때까지 걷습니다.",
+        "method": "2:00 동안 앉아서 호흡한 뒤, 보통 속도로 숨이 필요할 때까지 걷습니다. 부드러운 바닥만 사용합니다. 보조자가 옆에서 걷습니다. iPhone 만보기가 걸음 수를 기록하고, Apple Watch가 연결되어 있으면 심박수를 더합니다."
+      }
+    },
     "custom": {
       "name": "내 플랜",
       "level": "맞춤",
@@ -401,11 +451,19 @@
       "co2": "잠수는 60–75% 구간에 둡니다. 휴식은 줄어듭니다. O2와 다른 날에 하세요.",
       "o2": "휴식은 2:00을 유지합니다. 잠수는 올라가고, 마지막은 최대의 80% 이하입니다.",
       "oneBreath": "최고 기록의 약 40%. 회복 호흡 한 번 후 다시 잠수하세요.",
-      "walk": "각 잠수 동안 걷고, 회복할 때는 서 있으세요."
+      "walk": "각 잠수 동안 걷고, 회복할 때는 서 있으세요.",
+      "mermaidO2": "소파나 침대. 휴식은 고정되고 참기 시간은 늘어납니다. 호흡 준비에서 과호흡하지 마세요.",
+      "mermaidWalk": "일정한 속도, 고정된 참기. 걷기 사이 휴식은 줄어듭니다. 모래, 부드러운 잔디, 두꺼운 매트만 사용하세요.",
+      "mermaidDistance": "2:00 호흡 후 숨이 필요할 때까지 걷습니다. 보조자가 옆에 있어야 합니다."
     },
     "session": {
       "co21": "CO2 1",
-      "co22": "CO2 2"
+      "co22": "CO2 2",
+      "apneaWalk": "무호흡 걷기",
+      "apneaWalk2": "무호흡 걷기 2",
+      "maxDistance": "최대 거리",
+      "maxDistance2": "최대 거리 2",
+      "maxDistance3": "최대 거리 3"
     }
   },
   "baseline": {
@@ -473,6 +531,7 @@
     "avgContraction": "평균 수축",
     "round": "라운드",
     "heartRate": "심박수",
+    "steps": "걸음",
     "a11y": "{total} 중 {elapsed} 경과. 평균 첫 수축 {contraction}. {rounds}라운드 중 {round}라운드. 심박수 {heart}."
   },
   "sessionItem": {
@@ -480,6 +539,7 @@
     "holdRest": "잠수 {hold} · 휴식 {rest}",
     "avgHr": "평균 심박수 {bpm} bpm",
     "zeroContractions": "수축 0회",
+    "steps": "{count}걸음",
     "delete": "삭제",
     "dayWatch": "{day} · "
   },

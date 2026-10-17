@@ -16,6 +16,7 @@ const settings = {
   trainingSound: true,
   trainingGesturesSeen: true,
   safetyRuleDismissed: false,
+  practice: 'freediver',
   co2HoldSeconds: 90,
   co2RestStartSeconds: 120,
   co2RestStepSeconds: 15,

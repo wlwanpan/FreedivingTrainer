@@ -15,7 +15,8 @@
       "supportsTablet": false,
       "userInterfaceStyle": "light",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMotionUsageDescription": "Freediving & CO2 Tables counts steps during dry-land apnea walks so you can see how far each maximum-distance walk reached."
       }
     },
     "android": {

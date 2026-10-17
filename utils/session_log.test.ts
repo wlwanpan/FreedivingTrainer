@@ -24,6 +24,7 @@ function session(input: {
     startedAt: createdAt,
     source: 'phone',
     watchDetail: null,
+    steps: null,
     updatedAt: createdAt,
     createdAt,
   }

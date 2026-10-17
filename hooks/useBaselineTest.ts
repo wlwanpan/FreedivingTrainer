@@ -9,6 +9,7 @@ import {
   MIN_BASELINE_SECONDS,
   tableSettingsFromPlan,
 } from '@/utils/baseline'
+import { Practice, practiceFromValue } from '@/utils/practice'
 import {
   currentPlanWeek,
   isCurrentPlanChoice,
@@ -39,6 +40,7 @@ const CONTROL_DELAY_MS = 400
 export default function useBaselineTest(
   finishToHome: boolean,
   initialStage: BaselineStage = 'prep',
+  onboardingPractice: Practice = 'freediver',
 ) {
   const sql = useSQLContext()
   const { t, language } = useI18n()
@@ -177,16 +179,18 @@ export default function useBaselineTest(
         : currentPlanWeek(priorStart, nowDate, currentPlan.weeks)
       const confirmed = await showConfirmation(
         t('plan.changeTitle'),
-        withWatchTrainingLoss(planSwitchWarning(planCopy(currentPlan.id, 'name', t), week, t), t),
+        withWatchTrainingLoss(planSwitchWarning(planCopy(currentPlan.id, 'name', t, practiceFromValue(sql.settings.practice)), week, t), t),
       )
       if (!confirmed) return
     }
     const startedAt = continuing ? priorStart : nowDate
+    const practice = finishToHome ? onboardingPractice : practiceFromValue(sql.settings.practice)
     const sessions = weeklySessions({
       baselineMaxSeconds: outcome.maxHoldSeconds,
       contractionSeconds: outcome.contractionSeconds,
       plan,
       week: currentPlanWeek(startedAt, nowDate, plan.weeks),
+      practice,
     })
     const storedTable = sessions.find((session) => session.kind === 'co2') ?? null
     const o2Table = sessions.find((session) => session.kind === 'o2') ?? null
@@ -240,6 +244,7 @@ export default function useBaselineTest(
       baselineContractionSeconds: outcome.contractionSeconds,
       baselineTestedAt: nowDate,
       trainingPlan: plan.id,
+      ...(finishToHome ? { practice } : {}),
       customPlan: choice.custom == null ? sql.settings.customPlan : serializeCustomPlan(choice.custom),
       trainingPlanStartedAt: startedAt,
       createdAt: sql.settings.createdAt ?? nowDate,

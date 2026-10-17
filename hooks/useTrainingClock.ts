@@ -18,6 +18,7 @@ import { AppState } from 'react-native'
 import { publishPhoneTraining } from './phoneTraining'
 import { recordCompletedSession } from './recordCompletedSession'
 import useSessionHeartRate from './useSessionHeartRate'
+import useWalkSteps from './useWalkSteps'
 import useTablePlan from './useTablePlan'
 
 
@@ -28,12 +29,14 @@ export type TrainStep = {
   kind: TrainPhaseKind
   seconds: number
   roundIndex: number | null
+  open?: boolean
 }
 
 type TrainPhase = {
   kind: TrainPhaseKind
   seconds: number
   roundIndex: number | null
+  open?: boolean
 }
 
 export type TrainTable = {
@@ -42,6 +45,8 @@ export type TrainTable = {
   restStartSeconds: number
   restStepSeconds: number
   rounds: number
+  openHold?: boolean
+  breatheUpSeconds?: number
 }
 
 export type TrainPlanSlot = {
@@ -80,7 +85,15 @@ function roundsFromTable(tableType: TableType, table: TrainTable): TableRound[] 
   })
 }
 
-function buildPhases(breatheUpSeconds: number, rounds: TableRound[]): TrainPhase[] {
+function buildPhases(breatheUpSeconds: number, rounds: TableRound[], openHold: boolean): TrainPhase[] {
+  if (openHold) {
+    const phases: TrainPhase[] = []
+    if (breatheUpSeconds > 0) {
+      phases.push({ kind: 'breathe', seconds: breatheUpSeconds, roundIndex: null })
+    }
+    phases.push({ kind: 'hold', seconds: 0, roundIndex: 1, open: true })
+    return phases
+  }
   const phases: TrainPhase[] = []
   if (breatheUpSeconds > 0) {
     phases.push({ kind: 'breathe', seconds: breatheUpSeconds, roundIndex: null })
@@ -96,10 +109,13 @@ function buildPhases(breatheUpSeconds: number, rounds: TableRound[]): TrainPhase
   return phases
 }
 
-function locate(phases: TrainPhase[], elapsedSeconds: number): Location {
+function locate(phases: TrainPhase[], elapsedSeconds: number, stopped: boolean): Location {
   let cursor = elapsedSeconds
   for (let index = 0; index < phases.length; index += 1) {
     const phase = phases[index]
+    if (phase.open) {
+      return { index, remaining: Math.max(0, cursor), done: stopped }
+    }
     if (cursor < phase.seconds) {
       return { index, remaining: phase.seconds - cursor, done: false }
     }
@@ -117,13 +133,19 @@ export default function useTrainingClock(
   const sql = useSQLContext()
   const { t } = useI18n()
   const { showWarning } = useWarningModal()
+  const openHold = table?.openHold === true
   const plannedRounds = useTablePlan(tableType ?? 'co2')
-  const rounds = table != null && tableType != null
-    ? roundsFromTable(tableType, table)
-    : plannedRounds
+  const rounds = openHold
+    ? [{ index: 1, holdSeconds: 0, restSeconds: 0 }]
+    : table != null && tableType != null
+      ? roundsFromTable(tableType, table)
+      : plannedRounds
+  const breatheUpSeconds = openHold
+    ? (table?.breatheUpSeconds ?? sql.settings.breatheUpSeconds)
+    : sql.settings.breatheUpSeconds
   const phases = tableType == null
     ? []
-    : buildPhases(sql.settings.breatheUpSeconds, rounds)
+    : buildPhases(breatheUpSeconds, rounds, openHold)
 
   const wallStartedAtRef = useRef(Date.now())
   const startedAtRef = useRef(wallStartedAtRef.current)
@@ -141,21 +163,30 @@ export default function useTrainingClock(
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveFailed, setSaveFailed] = useState(false)
+  const [stoppedAt, setStoppedAt] = useState<number | null>(null)
 
-  const elapsedSeconds = Math.floor((now - startedAtRef.current) / 1000)
-  const location = locate(phases, elapsedSeconds)
-  const totalSeconds = phases.reduce((sum, phase) => sum + phase.seconds, 0)
-  const elapsedTotalSeconds = Math.min(totalSeconds, Math.max(0, elapsedSeconds))
+  const elapsedSeconds = Math.floor(((stoppedAt ?? now) - startedAtRef.current) / 1000)
+  const location = locate(phases, elapsedSeconds, stoppedAt != null)
+  const fixedSeconds = phases.reduce((sum, phase) => sum + (phase.open ? 0 : phase.seconds), 0)
+  const totalSeconds = openHold ? elapsedSeconds : fixedSeconds
+  const elapsedTotalSeconds = openHold
+    ? Math.max(0, elapsedSeconds)
+    : Math.min(fixedSeconds, Math.max(0, elapsedSeconds))
   const done = phases.length > 0 && location.done
   const heartRate = useSessionHeartRate(tableType != null && !done)
+  const countingSteps = openHold && !done && phases[location.index]?.open === true
+  const steps = useWalkSteps(countingSteps)
+  const stepsRef = useRef(steps)
+  stepsRef.current = steps
   const stepAt = (index: number): TrainStep | null => {
     const phase = phases[index]
     if (!phase) return null
     return {
       index,
       kind: phase.kind,
-      seconds: phase.seconds,
+      seconds: phase.open ? location.remaining : phase.seconds,
       roundIndex: phase.roundIndex,
+      open: phase.open,
     }
   }
   const previous = done
@@ -294,15 +325,19 @@ export default function useTrainingClock(
     setSaving(true)
     setSaveFailed(false)
     const createdAt = new Date()
+    const openElapsed = Math.max(1, location.remaining)
     const res = await recordCompletedSession({
       tableType,
       day: todayDate(),
       roundsCompleted: rounds.length,
       roundsPlanned: rounds.length,
-      holdSeconds: first.holdSeconds,
-      restSeconds: table?.restStartSeconds
-        ?? (tableType === 'o2' ? sql.settings.o2RestSeconds : sql.settings.co2RestStartSeconds),
+      holdSeconds: openHold ? openElapsed : first.holdSeconds,
+      restSeconds: openHold
+        ? 0
+        : table?.restStartSeconds
+          ?? (tableType === 'o2' ? sql.settings.o2RestSeconds : sql.settings.co2RestStartSeconds),
       contractions: serializeContractions(contractionsRef.current),
+      steps: openHold ? stepsRef.current : null,
       planWeek: slot?.week ?? null,
       planSession: slot?.index ?? null,
       startedAt: new Date(wallStartedAtRef.current),
@@ -334,13 +369,21 @@ export default function useTrainingClock(
     void persist()
   }
 
+  const finishOpenHold = () => {
+    if (!openHold || doneRef.current) return
+    if (kindRef.current !== 'hold') return
+    setStoppedAt(pausedAtRef.current ?? Date.now())
+  }
+
   return {
     ready: phases.length > 0,
+    openHold,
     paused,
     done,
     saving,
     saved,
     saveFailed,
+    steps,
     remainingSeconds: location.remaining,
     elapsedTotalSeconds,
     totalSeconds,
@@ -355,5 +398,6 @@ export default function useTrainingClock(
     togglePause,
     rememberTap,
     logContraction,
+    finishOpenHold,
   }
 }

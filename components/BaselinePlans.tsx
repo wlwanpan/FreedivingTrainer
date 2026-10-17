@@ -1,5 +1,6 @@
 import Button from '@/components/Button'
 import HeaderWithBtn from '@/components/HeaderWithBtn'
+import PracticeNotices from '@/components/PracticeNotices'
 import SettingsChoice from '@/components/SettingsChoice'
 import SettingsStepper from '@/components/SettingsStepper'
 import { Footer } from '@/design/styled'
@@ -7,6 +8,7 @@ import { Colors, FontSizes } from '@/design/styles'
 import { BaselineOutcome } from '@/hooks/useBaselineTest'
 import { planCopy, planLevelLine, tableTypeLabel } from '@/i18n/labels'
 import { Translate } from '@/i18n/types'
+import { Practice, practiceNotices } from '@/utils/practice'
 import { useFormatterContext } from '@/providers/formatter'
 import { useI18n } from '@/providers/i18n'
 import {
@@ -33,6 +35,7 @@ import { styled } from 'styled-components/native'
 type Props = {
   outcome: BaselineOutcome
   saving: boolean
+  practice?: Practice
   initialPlanId?: TrainingPlanId
   initialCustomPlan?: string | null
   onStart: (choice: PlanChoice) => void
@@ -43,6 +46,7 @@ type Props = {
 export default function BaselinePlans({
   outcome,
   saving,
+  practice = 'freediver',
   initialPlanId,
   initialCustomPlan,
   onStart,
@@ -84,9 +88,13 @@ export default function BaselinePlans({
         disabled={saving}
       />
       <SOptions showsVerticalScrollIndicator={false}>
-        <SRule>
-          {t('plan.rule')}
-        </SRule>
+        {practice === 'mermaid' ? (
+          <PracticeNotices notices={practiceNotices(practice, 'plan')} />
+        ) : (
+          <SRule>
+            {t('plan.rule')}
+          </SRule>
+        )}
         {TrainingPlans.map((plan) => {
           const selectedPlan = plan.id === planId
           return (
@@ -100,7 +108,7 @@ export default function BaselinePlans({
                   {plan.recommended ? (
                     <SRecommend>{t('plan.startHere')}</SRecommend>
                   ) : null}
-                  <SName>{planCopy(plan.id, 'name', t)}</SName>
+                  <SName>{planCopy(plan.id, 'name', t, practice)}</SName>
                 </STopText>
                 {plan.id === 'custom' ? null : (
                   <SGain>
@@ -108,18 +116,18 @@ export default function BaselinePlans({
                   </SGain>
                 )}
               </STop>
-              <SMeta>{planLevelLine(plan.id, t)}</SMeta>
+                <SMeta>{planLevelLine(plan.id, t, practice)}</SMeta>
               <SMeta>
                 {plan.id === 'custom' && selectedPlan
                   ? t('plan.weeksMeta', {
                     weeks: customWeeks,
                     frequency: customPlanFrequency(customSessions, t),
                   })
-                  : planCopy(plan.id, 'frequency', t)}
+                  : planCopy(plan.id, 'frequency', t, practice)}
               </SMeta>
-              <SFocus>{planCopy(plan.id, 'focus', t)}</SFocus>
+              <SFocus>{planCopy(plan.id, 'focus', t, practice)}</SFocus>
               {plan.id === 'custom' && selectedPlan ? null : (
-                <SMethod>{methodCopy(plan, outcome, formatSeconds, t)}</SMethod>
+                <SMethod>{methodCopy(plan, outcome, formatSeconds, t, practice)}</SMethod>
               )}
               </SCardPress>
               {plan.id === 'custom' && selectedPlan ? (
@@ -155,7 +163,7 @@ export default function BaselinePlans({
             ? t('plan.continue')
             : selected.id === 'custom'
               ? t('plan.startYour')
-              : t('plan.startNamed', { name: planCopy(selected.id, 'name', t) })}
+              : t('plan.startNamed', { name: planCopy(selected.id, 'name', t, practice) })}
           onPress={() => onStart({
             planId: selected.id,
             custom: selected.id === 'custom' ? customPlan : null,
@@ -191,13 +199,15 @@ function methodCopy(
   outcome: BaselineOutcome,
   formatSeconds: (seconds: number) => string,
   t: Translate,
+  practice: Practice,
 ): string {
-  if (plan.id !== 'beginner') return planCopy(plan.id, 'method', t)
+  if (plan.id !== 'beginner') return planCopy(plan.id, 'method', t, practice)
   const hold = beginnerBaseHold(outcome.maxHoldSeconds, outcome.contractionSeconds)
   const marked = usesMarkedContraction(outcome.contractionSeconds)
-  return t(marked ? 'plan.methodBeginnerMarked' : 'plan.methodBeginnerUnmarked', {
-    time: formatSeconds(hold),
-  })
+  const key = practice === 'mermaid'
+    ? (marked ? 'plan.mermaid.methodBeginnerMarked' : 'plan.mermaid.methodBeginnerUnmarked')
+    : (marked ? 'plan.methodBeginnerMarked' : 'plan.methodBeginnerUnmarked')
+  return t(key, { time: formatSeconds(hold) })
 }
 
 const Wrapper = styled.View`

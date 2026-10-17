@@ -13,6 +13,8 @@ type Props = {
   roundCount: number
   heartRateBpm: number | null
   contractions: LoggedContraction[]
+  steps?: number | null
+  openHold?: boolean
 }
 
 export default function TrainingTelemetry({
@@ -22,6 +24,8 @@ export default function TrainingTelemetry({
   roundCount,
   heartRateBpm,
   contractions,
+  steps = null,
+  openHold = false,
 }: Props) {
   const { t } = useI18n()
   const { sessions } = useSQLContext()
@@ -44,15 +48,17 @@ export default function TrainingTelemetry({
       <SRow>
         <SFlexTile>
           <SValue>
-            {formatSeconds(elapsedTotalSeconds)} / {formatSeconds(totalSeconds)}
+            {openHold
+              ? formatSeconds(elapsedTotalSeconds)
+              : `${formatSeconds(elapsedTotalSeconds)} / ${formatSeconds(totalSeconds)}`}
           </SValue>
           <SLabel>{t('telemetry.time')}</SLabel>
         </SFlexTile>
         <SFlexTile>
-          <SValue $muted={avgContraction == null}>
-            {avgContraction == null ? '—' : formatSeconds(avgContraction)}
+          <SValue $muted={steps == null && avgContraction == null}>
+            {steps != null ? String(steps) : avgContraction == null ? '—' : formatSeconds(avgContraction)}
           </SValue>
-          <SLabel>{t('telemetry.avgContraction')}</SLabel>
+          <SLabel>{steps != null ? t('telemetry.steps') : t('telemetry.avgContraction')}</SLabel>
         </SFlexTile>
       </SRow>
       <SRow>

@@ -16,6 +16,7 @@ const session = (overrides: Partial<Session> & Pick<Session, 'id' | 'createdAt'>
   startedAt: null,
   source: 'watch',
   watchDetail: 'ios',
+  steps: null,
   updatedAt: overrides.createdAt,
   ...overrides,
 })

@@ -13,6 +13,7 @@ export const settings = sqliteTable('settings', {
   trainingSound: integer('training_sound', { mode: 'boolean' }).notNull().default(true),
   trainingGesturesSeen: integer('training_gestures_seen', { mode: 'boolean' }).notNull().default(false),
   safetyRuleDismissed: integer('safety_rule_dismissed', { mode: 'boolean' }).notNull().default(false),
+  practice: text('practice').notNull().default('freediver'),
   co2HoldSeconds: integer('co2_hold_seconds').notNull().default(90),
   co2RestStartSeconds: integer('co2_rest_start_seconds').notNull().default(120),
   co2RestStepSeconds: integer('co2_rest_step_seconds').notNull().default(15),
@@ -54,6 +55,7 @@ export const sessions = sqliteTable('sessions', {
   startedAt: integer('started_at', { mode: 'timestamp' }),
   source: text('source', { enum: SessionSources }).$type<SessionSource>().notNull().default('phone'),
   watchDetail: text('watch_detail', { enum: WatchDetails }).$type<WatchDetail>(),
+  steps: integer('steps'),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })

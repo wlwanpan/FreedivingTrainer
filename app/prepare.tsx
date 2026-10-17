@@ -10,8 +10,11 @@ import { useI18n } from '@/providers/i18n'
 import { useSQLContext } from '@/providers/sql'
 import { useSubscriptionContext } from '@/providers/subscription'
 import { useWarningModal } from '@/providers/warning_modal'
+import PracticeNotices from '@/components/PracticeNotices'
+import { practiceFromValue, practiceNotices } from '@/utils/practice'
 import { sessionOutline } from '@/utils/training_plan'
 import {
+  parseFlag,
   parseLabel,
   parseSlot,
   parseTableType,
@@ -37,6 +40,8 @@ export default function PrepareScreen() {
     week?: string | string[]
     session?: string | string[]
     note?: string | string[]
+    open?: string | string[]
+    breathe?: string | string[]
   }>()
   const { settings } = useSQLContext()
   const subscription = useSubscriptionContext()
@@ -48,9 +53,15 @@ export default function PrepareScreen() {
   const title = trainTitle(params.name, tableType, t)
   const note = parseLabel(params.note)
   const slot = parseSlot(params)
+  const openHold = parseFlag(params.open)
+  const breatheUpSeconds = openHold
+    ? (table?.breatheUpSeconds ?? settings.breatheUpSeconds)
+    : settings.breatheUpSeconds
   const outline = tableType == null || table == null
     ? null
-    : sessionOutline({ tableType, ...table }, settings.breatheUpSeconds)
+    : sessionOutline({ tableType, ...table, openHold }, breatheUpSeconds)
+  const surface = openHold ? 'distance' : tableType === 'walk' ? 'walk' : 'static'
+  const notices = practiceNotices(practiceFromValue(settings.practice), surface)
   const ready = outline != null && outline.rounds.length > 0
 
   const leave = useCallback(() => {
@@ -87,6 +98,10 @@ export default function PrepareScreen() {
         restStart: String(table?.restStartSeconds ?? ''),
         restStep: String(table?.restStepSeconds ?? 0),
         rounds: String(table?.rounds ?? ''),
+        ...(openHold ? {
+          open: '1',
+          breathe: String(breatheUpSeconds),
+        } : {}),
         ...(slot == null ? {} : {
           week: String(slot.week),
           session: String(slot.index),
@@ -121,14 +136,20 @@ export default function PrepareScreen() {
             <SValue style={{ fontVariant: ['tabular-nums'] }}>
               {formatSeconds(outline.totalSeconds)}
             </SValue>
-            <SLabel>{t('prepare.duration')}</SLabel>
+            <SLabel>{openHold ? t('settings.breatheUp') : t('prepare.duration')}</SLabel>
           </STile>
           <STile>
-            <SValue>{outline.stepCount}</SValue>
-            <SLabel>{t('prepare.steps')}</SLabel>
+            <SValue>{openHold ? t('training.openMark') : outline.stepCount}</SValue>
+            <SLabel>{openHold ? t('prepare.openHold') : t('prepare.steps')}</SLabel>
           </STile>
         </SMeta>
+        {notices.length === 0 ? null : (
+          <SNotices>
+            <PracticeNotices notices={notices} />
+          </SNotices>
+        )}
         {note == null ? null : <SNote>{note}</SNote>}
+        {openHold ? null : (
         <SRounds>
           {outline.rounds.map((round, index) => (
             <TableRoundRow
@@ -139,6 +160,7 @@ export default function PrepareScreen() {
             />
           ))}
         </SRounds>
+        )}
       </SScroll>
       <Footer>
         <Button
@@ -204,6 +226,10 @@ const SLabel = styled.Text`
   letter-spacing: 0.7px;
   text-transform: uppercase;
   color: ${Colors.TextMuted};
+`
+
+const SNotices = styled.View`
+  margin: ${Space.md}px ${Space.screen}px 0;
 `
 
 const SNote = styled.Text`

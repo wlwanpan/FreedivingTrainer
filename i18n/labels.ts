@@ -1,5 +1,6 @@
 import { TableType } from '@/constants/tables'
 import { WatchDetail } from '@/constants/sessions'
+import { Practice } from '@/utils/practice'
 import { TrainingPlanId } from '@/utils/training_plan'
 import { Language } from './languages'
 import { Translate } from './types'
@@ -31,6 +32,11 @@ export function sessionDisplayName(name: string, t: Translate): string {
   if (name === 'One breath') return t('tables.oneBreath')
   if (name === 'Dry walk') return t('tables.walk')
   if (name === 'CO2') return t('tables.co2')
+  if (name === 'Apnea walk') return t('plan.session.apneaWalk')
+  if (name === 'Apnea walk 2') return t('plan.session.apneaWalk2')
+  if (name === 'Maximum distance') return t('plan.session.maxDistance')
+  if (name === 'Maximum distance 2') return t('plan.session.maxDistance2')
+  if (name === 'Maximum distance 3') return t('plan.session.maxDistance3')
   return name
 }
 
@@ -40,13 +46,19 @@ export function watchDetailLabel(detail: WatchDetail, t: Translate): string {
   return t('sessions.watch')
 }
 
-export function planCopy(id: TrainingPlanId, field: 'name' | 'level' | 'levelFocus' | 'frequency' | 'focus' | 'method', t: Translate): string {
+export function planCopy(
+  id: TrainingPlanId,
+  field: 'name' | 'level' | 'levelFocus' | 'frequency' | 'focus' | 'method',
+  t: Translate,
+  practice: Practice = 'freediver',
+): string {
+  if (practice === 'mermaid' && id !== 'custom') return t(`plan.mermaid.${id}.${field}`)
   return t(`plan.${id}.${field}`)
 }
 
-export function planLevelLine(id: TrainingPlanId, t: Translate): string {
-  const level = planCopy(id, 'level', t)
-  const focus = planCopy(id, 'levelFocus', t)
+export function planLevelLine(id: TrainingPlanId, t: Translate, practice: Practice = 'freediver'): string {
+  const level = planCopy(id, 'level', t, practice)
+  const focus = planCopy(id, 'levelFocus', t, practice)
   return focus === '' ? level : `${level} · ${focus}`
 }
 
