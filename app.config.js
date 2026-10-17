@@ -1,6 +1,6 @@
 const IS_DEV = process.env.APP_VARIANT === 'development'
 const IS_PREVIEW = process.env.APP_VARIANT === 'preview'
-const APP_NAME = 'Freediving & CO2 Tables'
+const APP_NAME = 'Freediver & Mermaid Apnea'
 const APPLE_TEAM_ID = 'WD73B9M86L'
 
 const getUniqueIdentifier = () => {

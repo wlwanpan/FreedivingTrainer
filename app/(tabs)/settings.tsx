@@ -27,7 +27,7 @@ import { useEffect, useState } from 'react'
 import { styled } from 'styled-components/native'
 
 
-const appName = Constants.expoConfig?.name ?? 'Freediving & CO2 Tables'
+const appName = Constants.expoConfig?.name ?? 'Freediver & Mermaid Apnea'
 const appVersion = Constants.nativeAppVersion ?? Constants.expoConfig?.version ?? ''
 
 
